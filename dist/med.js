@@ -420,9 +420,12 @@ Caret.prototype.focusElement = function (tagName) {
   } else {
     if (document.getSelection){
       node = document.getSelection().focusNode;
-      return node.nodeType === document.ELEMENT_NODE
-        ? node
-        : node.parentElement;
+
+      while (node && node.nodeType !== document.ELEMENT_NODE) {
+        node = node.parentNode;
+      }
+
+      return node;
     } else {
       return document.selection.createRange().parentElement();
     }
