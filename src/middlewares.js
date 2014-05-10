@@ -52,10 +52,6 @@ middlewares.basic = function (editor) {
     }
 
     if (this.key === 'enter' && !this.shift) {
-      if (el.tagName !== 'P') {
-        return next();
-      }
-
       this.prevent();
 
       if (!(el.textContent || el.innerText || '').trim()) {
@@ -82,10 +78,16 @@ middlewares.basic = function (editor) {
           editor.el.appendChild(section);
           editor.caret.moveToStart(el);
         }
+      } else if (!editor.caret.textAfter(el).trim()) {
+        // 指標後有文字，不管是什麼 tag，都建立新的 <p>
+        var p = document.createElement('p');
+        p.innerHTML = '<br type="_med_placeholder">';
+        el.parentElement.insertBefore(p, el.nextSibling);
+        editor.caret.focusTo(p);
       } else if (editor.caret.textBefore(el).trim()) {
         // 指標前面有文字
-        // 需要把目前所在的 <p> 分成了段
-        // 把新 <p> 的 name 清空，等下次 scan 的時候自動命名
+        // 需要把目前所在的 element 分成了段
+        // 把新 element 的 name 清空，等下次 scan 的時候自動命名
         var p = editor.caret.split(el);
         p.setAttribute('name', '');
 
@@ -94,7 +96,7 @@ middlewares.basic = function (editor) {
         }
       } else if (el.previousElementSibling) {
         // 指標前面沒文字
-        // 需要把目前所在的 <p> 分成兩段
+        // 需要把目前所在的 element 分成兩段
         // 需要建立新 <section>
         var section = document.createElement('section');
         var currentSection = editor.caret.focusElement('section');

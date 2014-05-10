@@ -18,17 +18,13 @@ Caret.prototype.focusElement = function (tagName) {
       ? node
       : null;
   } else {
-    if (document.getSelection){
-      node = document.getSelection().focusNode;
+    node = document.getSelection().focusNode;
 
-      while (node && node.nodeType !== document.ELEMENT_NODE) {
-        node = node.parentNode;
-      }
-
-      return node;
-    } else {
-      return document.selection.createRange().parentElement();
+    while (node && node.nodeType !== document.ELEMENT_NODE) {
+      node = node.parentNode;
     }
+
+    return node;
   }
 };
 
@@ -67,32 +63,17 @@ Caret.prototype.textAfter = function () {
 };
 
 Caret.prototype.moveToStart = function (el) {
-  if (document.getSelection){
-    el.focus();
-    document.getSelection().collapse(el, true);
-  } else {
-    var range = document.body.createTextRange();
-    range.moveToElementText(el);
-    range.collapse(true);
-    range.select();
-  }
+  el.focus();
+  document.getSelection().collapse(el, true);
 };
 
 Caret.prototype.moveToEnd = function (el) {
-  if (document.getSelection) {
-    var range = document.createRange();
-    var selection = window.getSelection();
-    range.selectNodeContents(el);
-    range.collapse(false);
-    selection.removeAllRanges();
-    selection.addRange(range);
-  } else {
-    el.focus();
-    var textRange = document.body.createTextRange();
-    textRange.moveToElementText(el);
-    textRange.collapse(false);
-    textRange.select();
-  }
+  var range = document.createRange();
+  var selection = window.getSelection();
+  range.selectNodeContents(el);
+  range.collapse(false);
+  selection.removeAllRanges();
+  selection.addRange(range);
 };
 
 Caret.prototype.split = function (el) {
@@ -142,15 +123,18 @@ Caret.prototype.restore = function () {
 };
 
 Caret.prototype.selectAllText = function (el) {
-  if (document.getSelection) {
-    var selection = window.getSelection();        
-    var range = document.createRange();
-    range.selectNodeContents(el);
-    selection.removeAllRanges();
-    selection.addRange(range);
-  } else {
-    var range = document.body.createTextRange();
-    range.moveToElementText(element);
-    range.select();
-  }
+  var selection = window.getSelection();        
+  var range = document.createRange();
+  range.selectNodeContents(el);
+  selection.removeAllRanges();
+  selection.addRange(range);
+};
+
+Caret.prototype.insertElement = function (el) {
+  var selection = document.getSelection();
+  var range = selection.getRangeAt(0);
+  
+  range.deleteContents();
+
+  range.insertNode(el);
 };
