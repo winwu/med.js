@@ -520,6 +520,35 @@ Caret.prototype.split = function (el) {
 
   return el;
 };
+
+Caret.prototype.save = function () {
+  var selection = document.getSelection();
+  var range;
+
+  if (!selection) {
+    return;
+  }
+
+  if (selection.rangeCount) {
+    range = selection.getRangeAt(0);
+  }
+
+  this._range = range;
+};
+
+Caret.prototype.restore = function () {
+  var range = this._range;
+
+  if (range) {
+    var r = document.createRange();
+    var selection = document.getSelection();
+
+    r.setStart(range.startContainer, range.startOffset);
+    r.setEnd(range.endContainer, range.endOffset);
+    selection.removeAllRanges();
+    selection.addRange(r);
+  }
+};
 function Middleware() {
   this.middleware = [];
 }
