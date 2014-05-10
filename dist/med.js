@@ -549,6 +549,20 @@ Caret.prototype.restore = function () {
     selection.addRange(r);
   }
 };
+
+Caret.prototype.selectAllText = function (el) {
+  if (document.getSelection) {
+    var selection = window.getSelection();        
+    var range = document.createRange();
+    range.selectNodeContents(el);
+    selection.removeAllRanges();
+    selection.addRange(range);
+  } else {
+    var range = document.body.createTextRange();
+    range.moveToElementText(element);
+    range.select();
+  }
+};
 function Middleware() {
   this.middleware = [];
 }
