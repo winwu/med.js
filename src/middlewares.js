@@ -51,6 +51,10 @@ middlewares.basic = function (editor) {
       return this.prevent();
     }
 
+    if (el.tagName !== 'P') {
+      return next();
+    }
+
     if (this.key === 'enter' && !this.shift) {
       this.prevent();
 
