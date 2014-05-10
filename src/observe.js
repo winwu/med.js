@@ -75,6 +75,11 @@ Observe.section = function (el, data, structure, shouldBeDelete) {
   utils.each(el.children, function (child) {
     var schema = this.schema[child.tagName.toLowerCase()];
 
+    if (!schema) {
+      Observe.handleUnknownElement(child);
+      return;
+    }
+
     if (!~structure.sections.indexOf(data.id)) {
       structure.sections.push(data.id);
     }
@@ -95,6 +100,11 @@ Observe.paragraphs = function (el, data, structure, shouldBeDelete) {
   utils.each(el.children, function (child) {
     var schema = this.schema[child.tagName.toLowerCase()];
 
+    if (!schema) {
+      Observe.handleUnknownElement(child);
+      return;
+    }
+
     structure.sections.push(data.id);
 
     if (schema.type === 'paragraph') {
@@ -111,6 +121,11 @@ Observe.paragraph = function (el, data, structure, shouldBeDelete) {
 
   utils.each(el.children, function (child) {
     var schema = this.schema[child.tagName.toLowerCase()];
+
+    if (!schema) {
+      Observe.handleUnknownElement(child);
+      return;
+    }
 
     structure.sections.push(data.id);
 
@@ -141,6 +156,12 @@ Observe.dataset = function (el, data, attr) {
 Observe.content = function (el, data, attr) {
   var text = el.textContent || el.innerText;
   data.set(attr.name, text);
+};
+
+Observe.handleUnknownElement = function (el) {
+  var text = el.textContent || el.innerText;
+  var node = document.createTextNode(text);
+  el.parentElement.replaceChild(node, el);
 };
 
 Observe.getOffset = function (el) {
