@@ -1,0 +1,26 @@
+{
+  "name": "med.js",
+  "version": "0.0.0",
+  "homepage": "https://github.com/poying/med.js",
+  "authors": [
+    "Po-Ying Chen <poying.me@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polyfills": "poying/polyfills"
+  },
+  "moduleType": [
+    "amd",
+    "globals"
+  ],
+  "keywords": [
+    "editor"
+  ]
+}
