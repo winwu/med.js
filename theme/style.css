@@ -15,6 +15,7 @@
 }
 
 .med section {
+  position: relative;
   margin-bottom: 12px;
   padding-bottom: 12px;
   padding-top: 12px;
