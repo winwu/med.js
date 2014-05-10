@@ -35,6 +35,15 @@ middlewares.init = function () {
 };
 
 middlewares.basic = function (editor) {
+
+  editor.el.addEventListener('blur', function (e) {
+    var el = editor.caret.focusElement('p');
+
+    if (el && !(el.textContent || el.innerText || '').trim()) {
+      el.innerHTML = '<br type="_med_placeholder">';
+    }
+  });
+
   return function (next) {
     var el = editor.caret.focusElement();
 

@@ -14,7 +14,7 @@ Caret.prototype.focusElement = function (tagName) {
       node = node.parentElement;
     }
 
-    return node.tagName === tagName
+    return (node && node.tagName === tagName)
       ? node
       : null;
   } else {
