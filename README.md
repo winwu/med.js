@@ -64,6 +64,18 @@ context:
 
 #### caret#split(el)
 
+#### caret#save()
+
+保存當前選取範圍
+
+#### caret#restore()
+
+恢復選取範圍
+
+#### caret#selectAllText(el)
+
+#### caret#insertElement(el)
+
 ## License
 
 (The MIT License)
