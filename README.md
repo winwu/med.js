@@ -5,6 +5,10 @@ med.js
 
 > med.js 只是一個基本的框架，其他功能需要透過 plugin 擴充
 
+## Plugins
+
+* [med-toolbar](https://github.com/poying/med-toolbar)
+
 ## API
 
 ### Basic
