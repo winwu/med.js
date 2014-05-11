@@ -215,6 +215,26 @@ middlewares.p = function (editor) {
 };
 
 middlewares.walker = function (editor) {
+  var removeExtraNode = function (el) {
+    var nodes = el.children;
+    var len = nodes.length;
+    var curr, prev;
+    
+    while (len--) {
+      curr = nodes[len];
+      prev = nodes[len - 1];
+
+      if (prev && prev.nodeType === curr.nodeType) {
+        if (prev.nodeType === document.TEXT_NODE) {
+          prev.appendData(curr.data);
+        } else if (prev.nodeType === document.ELEMENT_NODE) {
+          prev.innerHTML += curr.textContent || curr.innerHTML || '';
+        }
+        curr.parentNode.removeChild(curr);
+      }
+    }
+  };
+
   return function (next) {
     setTimeout(function () {
       var els = editor.el.querySelectorAll('[name]');
@@ -222,6 +242,7 @@ middlewares.walker = function (editor) {
       
       Array.prototype.forEach.call(els, function (el) {
         var name = el.getAttribute('name');
+        var s = schema[el.tagName.toLowerCase()];
         
         if (names[name]) {
           el.setAttribute('name', '');
@@ -231,6 +252,10 @@ middlewares.walker = function (editor) {
 
         // chrome
         el.setAttribute('style', '');
+
+        if (s.type === 'paragraph') {
+          removeExtraNode(el);
+        }
       });
     }.bind(this));
 
