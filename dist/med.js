@@ -655,6 +655,7 @@ Data.prototype.get = function (key) {
   }
 
   var keys = utils.split(key, '.');
+  var data = this.data;
 
   while (key = keys.shift()) {
     if (data === undefined) {
@@ -790,8 +791,6 @@ Observe.paragraphs = function (el, data, structure, shouldBeDelete) {
       return;
     }
 
-    structure.sections.push(data.id);
-
     if (schema.type === 'paragraph') {
       p.push(this._scan(child, structure, shouldBeDelete).id);
     }
@@ -811,8 +810,6 @@ Observe.paragraph = function (el, data, structure, shouldBeDelete) {
       Observe.handleUnknownElement(child);
       return;
     }
-
-    structure.sections.push(data.id);
 
     if (schema.type === 'detail') {
       detail.push(this._scan(child, structure, shouldBeDelete).id);

@@ -38,6 +38,7 @@ Data.prototype.get = function (key) {
   }
 
   var keys = utils.split(key, '.');
+  var data = this.data;
 
   while (key = keys.shift()) {
     if (data === undefined) {
