@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="bower_components/med.js/theme/style.css"></link>
+  <link rel="stylesheet" href="bower_components/github-markdown-css/github-markdown.css"></link>
+  <link rel="stylesheet" href="style.css"></link>
+  <style>
+    body {
+      padding: 0;
+      margin: 0;
+      font-size: 16px;
+    }
+
+    #title {
+      margin: 60px 0 12px;
+    }
+
+    .container {
+      width: 600px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 id="title">med.js toolbar</h1>
+    <div class="editor"></div>
+  </div>
+  <script src="bower_components/polyfills/element.js"></script>
+  <script src="bower_components/med.js/dist/med.js"></script>
+  <script src="med-toolbar.js"></script>
+  <script>
+    var el = document.querySelector('.editor');
+    var editor = new Med({
+      el: el
+    });
+
+    medToolbar(editor);
+
+    editor.toolbar
+      .createButton('_', function () {
+        var el = editor.caret.focusSection();
+        editor.caret.split(el);
+        if (!(el.textContent || el.innserText || '').trim()) {
+          el.innerHTML = '<p><br class="_med_placeholder" /></p>';
+        }
+      }, function () {
+        return false;
+      })
+      .createButton('i', function () {
+        document.execCommand('italic', false);
+      }, function () {
+        return editor.caret.focusElement('i');
+      })
+      .createButton('B', function () {
+        var el = editor.caret.focusParagraph();
+        if (!/^h\d/i.test(el.tagName)) {
+          document.execCommand('bold', false);
+        }
+      }, function () {
+        return editor.caret.focusElement('b');
+      })
+      .createButton('H1', function (e, active) {
+        if (active) {
+          var el = editor.caret.focusElement('h1');
+          var text = el.textContent || el.innerText;
+          var node = document.createElement('p');
+          node.innerHTML = text;
+          el.parentElement.replaceChild(node, el);
+          editor.caret.selectAllText(node);
+        } else {
+          var el = editor.caret.focusParagraph();
+          var h1 = document.createElement('h1');
+          h1.innerHTML = el.textContent || el.innerText || '';
+          el.parentElement.replaceChild(h1, el);
+          editor.caret.selectAllText(h1);
+        }
+      }, function () {
+        return editor.caret.focusElement('h1');
+      })
+      .createButton('H2', function (e, active) {
+        if (active) {
+          var el = editor.caret.focusElement('h2');
+          var text = el.textContent || el.innerText;
+          var node = document.createElement('p');
+          node.innerHTML = text;
+          el.parentElement.replaceChild(node, el);
+          editor.caret.selectAllText(node);
+        } else {
+          var el = editor.caret.focusParagraph();
+          var h2 = document.createElement('h2');
+          h2.innerHTML = el.textContent || el.innerText || '';
+          el.parentElement.replaceChild(h2, el);
+          editor.caret.selectAllText(h2);
+        }
+      }, function () {
+        return editor.caret.focusElement('h2');
+      });
+
+    editor.use(editor.default());
+
+    editor.on('error', function (e) {
+      console.log(e);
+    });
+
+    editor.on('change', function () {
+      console.log(arguments);
+    });
+  </script>
+</body>
+</html>

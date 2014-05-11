@@ -1,0 +1,81 @@
+.med-toolbar {
+  display: none;
+  position: absolute;
+  border-radius: 5px;
+  border: 1px solid;
+  border-color: #262625 #1c1c1b #121211;
+  background-image: linear-gradient(to bottom, rgba(49,49,47,0.97), #262625);
+  background-image: -webkit-linear-gradient(top, rgba(49,49,47,0.97), #262625);
+  background-image: -moz-linear-gradient(top, rgba(49,49,47,0.97), #262625);
+  background-image: -o-linear-gradient(top, rgba(49,49,47,0.97), #262625);
+  box-shadow: 0 1px 3px -1px rgba(0, 0, 0, 0.8), inset 0 0 1px rgba(255, 255, 255, 0.07), inset 0 0 2px rgba(255, 255, 255, 0.15);
+}
+
+.med-toolbar.is-visible {
+  transition: all .1s;
+  display: block;
+  opacity: .5;
+  -webkit-transform: translate3d(0, 6px, 0) scale(.9);
+}
+
+.med-toolbar.do-transition {
+  opacity: 1;
+  -webkit-transform: translate3d(0, 0, 0) scale(1);
+}
+
+.med-toolbar-triangle {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  width: 30px;
+  height: 10px;
+  margin-left: -15px;
+  overflow: hidden;
+}
+
+.med-toolbar-triangle:after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin-left: -8.5px;
+  -webkit-transform: rotateZ(45deg);
+  -moz-transform: rotateZ(45deg);
+  -o-transform: rotateZ(45deg);
+  transform: rotateZ(45deg);
+  border: 1px #121211 solid;
+  background-image: linear-gradient(to right bottom, rgba(49,49,47,0.97), #262625);
+  background-image: -webkit-linear-gradient(left top, rgba(49,49,47,0.97), #262625);
+  background-image: -moz-linear-gradient(left top, rgba(49,49,47,0.97), #262625);
+  background-image: -o-linear-gradient(left top, rgba(49,49,47,0.97), #262625);
+}
+
+.med-toolbar ul {
+  white-space: nowrap;
+  list-style: none;
+  margin: 0;
+  padding: 0 6px;
+}
+
+.med-toolbar li {
+  display: inline-block;
+  text-align: center;
+  line-height: 43px;
+}
+
+.med-toolbar button {
+  display: block;
+  height: 43px;
+  width: 43px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  outline: none;
+}
+
+.med-toolbar .active button {
+  color: #60d778;
+}

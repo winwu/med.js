@@ -1,0 +1,27 @@
+{
+  "name": "polyfills",
+  "authors": [
+    "Po-Ying Chen <poying.me@gmail.com>"
+  ],
+  "keywords": [
+    "polyfills"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "homepage": "https://github.com/poying/polyfills",
+  "_release": "fbf4bd1112",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "fbf4bd1112e19f57beb0aa478775249529d3bc56"
+  },
+  "_source": "git://github.com/poying/polyfills.git",
+  "_target": "*",
+  "_originalSource": "poying/polyfills"
+}

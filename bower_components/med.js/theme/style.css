@@ -1,0 +1,50 @@
+.med {
+  outline: none;
+  position: relative;
+  zoom: 1;
+}
+
+.med:before,
+.med:after {
+  content: "";
+  display: table;
+}
+
+.med:after {
+  clear: both;
+}
+
+.med section {
+  position: relative;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  padding-top: 12px;
+}
+
+.med.is-empty section p:first-child {
+  position: relative;
+}
+
+.med.is-empty section p:first-child:before {
+  content: 'Type Something...';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  line-height: normal;
+  opacity: .5;
+  pointer-events: none;
+}
+
+.med section:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 35%;
+  width: 30%;
+  border-top: 1px rgba(0, 0, 0, .1) solid;
+}
+
+.med section:first-child:after {
+  border-top: none;
+}

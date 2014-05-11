@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="bower_components/med.js/theme/style.css"></link>
+  <link rel="stylesheet" href="bower_components/github-markdown-css/github-markdown.css"></link>
+  <link rel="stylesheet" href="bower_components/med-toolbar/style.css"></link>
+  <style>
+    body {
+      padding: 0;
+      margin: 0;
+      font-size: 16px;
+    }
+
+    #title {
+      margin: 60px 0 12px;
+    }
+
+    .container {
+      width: 600px;
+      margin: 0 auto 48px;
+    }
+
+    .wrapper {
+      overflow: hidden;
+    }
+
+    .editor {
+      width: 295px;
+      float: left;
+    }
+
+    .data {
+      width: 295px;
+      float: right;
+      border-left: 1px rgba(0, 0, 0, .1) solid;
+      padding-left: 9px;
+      overflow-x: scroll;
+    }
+  </style>
+</head>
+<body>
+  <a href="https://github.com/you"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/652c5b9acfaddf3a9c326fa6bde407b87f7be0f4/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6f72616e67655f6666373630302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png"></a>
+  <div class="container">
+    <h1 id="title">med.js</h1>
+    <div class="wrapper">
+      <div class="editor"></div>
+      <div class="data">
+      </div>
+    </div>
+  </div>
+  <script src="bower_components/polyfills/element.js"></script>
+  <script src="bower_components/med.js/dist/med.js"></script>
+  <script src="bower_components/med-toolbar/med-toolbar.js"></script>
+  <script>
+    var el = document.querySelector('.editor');
+    var editor = new Med({
+      el: el
+    });
+
+    medToolbar(editor);
+
+    editor.toolbar
+      .createButton('_', function () {
+        var el = editor.caret.focusSection();
+        editor.caret.split(el);
+        if (!(el.textContent || el.innserText || '').trim()) {
+          el.innerHTML = '<p><br class="_med_placeholder" /></p>';
+        }
+      }, function () {
+        return false;
+      })
+      .createButton('i', function () {
+        document.execCommand('italic', false);
+      }, function () {
+        return editor.caret.focusElement('i');
+      })
+      .createButton('B', function () {
+        var el = editor.caret.focusParagraph();
+        if (!/^h\d/i.test(el.tagName)) {
+          document.execCommand('bold', false);
+        }
+      }, function () {
+        return editor.caret.focusElement('b');
+      })
+      .createButton('H1', function (e, active) {
+        if (active) {
+          var el = editor.caret.focusElement('h1');
+          var text = el.textContent || el.innerText;
+          var node = document.createElement('p');
+          node.innerHTML = text;
+          el.parentElement.replaceChild(node, el);
+          editor.caret.selectAllText(node);
+        } else {
+          var el = editor.caret.focusParagraph();
+          var h1 = document.createElement('h1');
+          h1.innerHTML = el.textContent || el.innerText || '';
+          el.parentElement.replaceChild(h1, el);
+          editor.caret.selectAllText(h1);
+        }
+      }, function () {
+        return editor.caret.focusElement('h1');
+      })
+      .createButton('H2', function (e, active) {
+        if (active) {
+          var el = editor.caret.focusElement('h2');
+          var text = el.textContent || el.innerText;
+          var node = document.createElement('p');
+          node.innerHTML = text;
+          el.parentElement.replaceChild(node, el);
+          editor.caret.selectAllText(node);
+        } else {
+          var el = editor.caret.focusParagraph();
+          var h2 = document.createElement('h2');
+          h2.innerHTML = el.textContent || el.innerText || '';
+          el.parentElement.replaceChild(h2, el);
+          editor.caret.selectAllText(h2);
+        }
+      }, function () {
+        return editor.caret.focusElement('h2');
+      });
+
+    editor.use(editor.default());
+
+    editor.on('error', function (e) {
+      console.log(e);
+    });
+
+
+    editor.el.addEventListener('keyup', function () {
+      var el = document.querySelector('.data');
+      setTimeout(function () {
+        el.innerHTML = '<pre><code>'
+          + JSON.stringify(editor.toJSON(), null, 2)
+          + '</code></pre>';
+      });
+    });
+  </script>
+</body>
+</html>

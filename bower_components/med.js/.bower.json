@@ -1,0 +1,35 @@
+{
+  "name": "med.js",
+  "homepage": "https://github.com/poying/med.js",
+  "authors": [
+    "Po-Ying Chen <poying.me@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polyfills": "poying/polyfills",
+    "github-markdown-css": "~0.1.0"
+  },
+  "moduleType": [
+    "amd",
+    "globals"
+  ],
+  "keywords": [
+    "editor"
+  ],
+  "_release": "7bb0361ad3",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "7bb0361ad39c34ef236c048fe7bb51d56b052ced"
+  },
+  "_source": "git://github.com/poying/med.js.git",
+  "_target": "*",
+  "_originalSource": "poying/med.js"
+}

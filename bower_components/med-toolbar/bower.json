@@ -1,0 +1,27 @@
+{
+  "name": "med-toolbar",
+  "main": "med-toolbar.js",
+  "version": "0.0.0",
+  "authors": [
+    "Po-Ying Chen <poying.me@gmail.com>"
+  ],
+  "moduleType": [
+    "amd",
+    "globals"
+  ],
+  "keywords": [
+    "med.js",
+    "editor"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "med.js": "poying/med.js"
+  }
+}
