@@ -29,8 +29,14 @@ function Editor(options) {
   this.handleEmpty();
 
   this.use(middlewares.init());
-  this.use(middlewares.basic(this));
 }
+
+Editor.prototype.default = function () {
+  return this.compose([
+    middlewares.p(this),
+    middlewares.walker(this)
+  ]);
+};
 
 Editor.prototype.schema = schema;
 

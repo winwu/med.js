@@ -129,6 +129,8 @@ middlewares.init = function () {
       return;
     }
 
+    var editor = this.editor;
+
     this.ctrl = e.ctrlKey;
     this.option = this.alt = e.altKey;
     this.shift = e.shiftKey;
@@ -136,7 +138,11 @@ middlewares.init = function () {
     this.code = code;
     this.key = keyboard.map[code];
     this.super = this[keyboard.super];
-    this.event = e;
+    this.element = editor.caret.focusElement();
+    this.section = editor.caret.focusSection();
+    this.paragraph = editor.caret.focusParagraph();
+    this.paragraphs = editor.caret.focusParagraphs();
+    this.detail = editor.caret.focusDetail();
     
     if (this.key === 'backspace' && this.editor.isEmpty()) {
       this.prevent();
@@ -153,9 +159,9 @@ middlewares.init = function () {
   };
 };
 
-middlewares.basic = function (editor) {
+middlewares.p = function (editor) {
 
-  editor.el.addEventListener('blur', function (e) {
+  editor.el.addEventListener('blur', function () {
     var el = editor.caret.focusElement('p');
 
     if (el && !(el.textContent || el.innerText || '').trim()) {
@@ -164,7 +170,7 @@ middlewares.basic = function (editor) {
   });
 
   return function (next) {
-    var el = editor.caret.focusElement();
+    var el = this.element;
 
     if (el.tagName === 'SECTION') {
       return this.prevent();
@@ -175,9 +181,9 @@ middlewares.basic = function (editor) {
     }
 
     if (this.key === 'enter' && !this.shift) {
-      this.prevent();
-
       if (!(el.textContent || el.innerText || '').trim()) {
+        this.prevent();
+
         // 目前這一行是空的
         // 需要建立一個新的 <section>
         var section = document.createElement('section');
@@ -201,57 +207,32 @@ middlewares.basic = function (editor) {
           editor.el.appendChild(section);
           editor.caret.moveToStart(el);
         }
-      } else if (!editor.caret.textAfter(el).trim()) {
-        // 指標後有文字，不管是什麼 tag，都建立新的 <p>
-        var p = document.createElement('p');
-        p.innerHTML = '<br type="_med_placeholder">';
-        el.parentElement.insertBefore(p, el.nextSibling);
-        editor.caret.focusTo(p);
-      } else if (editor.caret.textBefore(el).trim()) {
-        // 指標前面有文字
-        // 需要把目前所在的 element 分成了段
-        // 把新 element 的 name 清空，等下次 scan 的時候自動命名
-        var p = editor.caret.split(el);
-        p.setAttribute('name', '');
-
-        if (!(p.textContent || p.innerText)) {
-          p.innerHTML = '<br type="_med_placeholder">';
-        }
-      } else if (el.previousElementSibling) {
-        // 指標前面沒文字
-        // 需要把目前所在的 element 分成兩段
-        // 需要建立新 <section>
-        var section = document.createElement('section');
-        var currentSection = editor.caret.focusElement('section');
-        var p = editor.caret.split(el);
-
-        el = p.previousElementSibling;
-
-        // 把新 <p> 的 name 清空，等下次 scan 的時候自動命名
-        p.setAttribute('name', '');
-
-        // 把新 <p> 移到 新 <section> 下
-        section.appendChild(p);
-
-        if (!(p.textContent || p.innerText)) {
-          p.innerHTML = '<br type="_med_placeholder">';
-        }
-
-        if (currentSection) {
-          currentSection
-            .parentElement
-            .insertBefore(section, currentSection.nextSibling);
-        } else {
-          editor.el.appendChild(section);
-        }
-
-        if (!(el.textContent || el.innerText || '').trim()) {
-          el.parentElement.removeChild(el);
-        }
-
-        editor.caret.moveToStart(p);
       }
     }
+
+    next();
+  };
+};
+
+middlewares.walker = function (editor) {
+  return function (next) {
+    setTimeout(function () {
+      var els = editor.el.querySelectorAll('[name]');
+      var names = {};
+      
+      Array.prototype.forEach.call(els, function (el) {
+        var name = el.getAttribute('name');
+        
+        if (names[name]) {
+          el.setAttribute('name', '');
+        } else {
+          names[name] = 1;
+        }
+
+        // chrome
+        el.setAttribute('style', '');
+      });
+    }.bind(this));
 
     next();
   };
@@ -443,6 +424,43 @@ Caret.prototype.focusElement = function (tagName) {
   }
 };
 
+Caret.prototype.focusSection = function () {
+  return this.focusType('section');
+};
+
+Caret.prototype.focusParagraph = function () {
+  return this.focusType('paragraph');
+};
+
+Caret.prototype.focusParagraphs = function () {
+  return this.focusType('paragraphs');
+};
+
+Caret.prototype.focusDetail = function () {
+  return this.focusType('detail');
+};
+
+Caret.prototype.focusType = function (type) {
+  var node = this.focusElement();
+  var s;
+
+  while (true) {
+    if (!node) {
+      break;
+    }
+
+    s = node && schema[node.tagName.toLowerCase()];
+
+    if (s && s.type === type) {
+      return node;
+    }
+
+    node = node.parentElement;
+  }
+
+  return null;
+};
+
 Caret.prototype.focusTo = function (el) {
   if (el.innerHTML.trim()) {
     this.moveToStart(el);
@@ -568,28 +586,34 @@ Middleware.prototype.use = function (fn) {
 };
 
 Middleware.prototype.exec = function (ctx, cb) {
-  var fns = this.middleware;
-  var i = 0;
+  var fn = this.compose(this.middleware);
+  fn.call(ctx, cb);
+};
 
-  var next = function (err) {
-    if (err) {
-      return cb(err);
-    }
-    
-    var fn = fns[i++];
-    
-    if (!fn) {
-      return cb();
-    }
+Middleware.prototype.compose = function (fns) {
+  return function (cb) {
+    var i = 0;
 
-    try {
-      fn.call(ctx, next);
-    } catch (e) {
-      cb(e);
-    }
+    var next = (function (err) {
+      if (err) {
+        return cb(err);
+      }
+      
+      var fn = fns[i++];
+      
+      if (!fn) {
+        return cb();
+      }
+
+      try {
+        fn.call(this, next);
+      } catch (e) {
+        cb(e);
+      }
+    }).bind(this);
+
+    next();
   };
-
-  next();
 };
 function Data(id) {
   this.id = id;
@@ -1039,8 +1063,14 @@ function Editor(options) {
   this.handleEmpty();
 
   this.use(middlewares.init());
-  this.use(middlewares.basic(this));
 }
+
+Editor.prototype.default = function () {
+  return this.compose([
+    middlewares.p(this),
+    middlewares.walker(this)
+  ]);
+};
 
 Editor.prototype.schema = schema;
 

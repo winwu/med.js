@@ -28,6 +28,43 @@ Caret.prototype.focusElement = function (tagName) {
   }
 };
 
+Caret.prototype.focusSection = function () {
+  return this.focusType('section');
+};
+
+Caret.prototype.focusParagraph = function () {
+  return this.focusType('paragraph');
+};
+
+Caret.prototype.focusParagraphs = function () {
+  return this.focusType('paragraphs');
+};
+
+Caret.prototype.focusDetail = function () {
+  return this.focusType('detail');
+};
+
+Caret.prototype.focusType = function (type) {
+  var node = this.focusElement();
+  var s;
+
+  while (true) {
+    if (!node) {
+      break;
+    }
+
+    s = node && schema[node.tagName.toLowerCase()];
+
+    if (s && s.type === type) {
+      return node;
+    }
+
+    node = node.parentElement;
+  }
+
+  return null;
+};
+
 Caret.prototype.focusTo = function (el) {
   if (el.innerHTML.trim()) {
     this.moveToStart(el);

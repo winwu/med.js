@@ -13,26 +13,32 @@ Middleware.prototype.use = function (fn) {
 };
 
 Middleware.prototype.exec = function (ctx, cb) {
-  var fns = this.middleware;
-  var i = 0;
+  var fn = this.compose(this.middleware);
+  fn.call(ctx, cb);
+};
 
-  var next = function (err) {
-    if (err) {
-      return cb(err);
-    }
-    
-    var fn = fns[i++];
-    
-    if (!fn) {
-      return cb();
-    }
+Middleware.prototype.compose = function (fns) {
+  return function (cb) {
+    var i = 0;
 
-    try {
-      fn.call(ctx, next);
-    } catch (e) {
-      cb(e);
-    }
+    var next = (function (err) {
+      if (err) {
+        return cb(err);
+      }
+      
+      var fn = fns[i++];
+      
+      if (!fn) {
+        return cb();
+      }
+
+      try {
+        fn.call(this, next);
+      } catch (e) {
+        cb(e);
+      }
+    }).bind(this);
+
+    next();
   };
-
-  next();
 };
