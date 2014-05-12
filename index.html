@@ -64,9 +64,6 @@
       .createButton('_', function () {
         var el = editor.caret.focusSection();
         editor.caret.split(el);
-        if (!(el.textContent || el.innserText || '').trim()) {
-          el.innerHTML = '<p><br class="_med_placeholder" /></p>';
-        }
       }, function () {
         return false;
       })
