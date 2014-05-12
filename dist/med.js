@@ -214,7 +214,28 @@ middlewares.p = function (editor) {
   };
 };
 
-middlewares.walker = function (editor) {
+middlewares.renameElements = function (editor) {
+  editor.on('walkStart', function (ctx) {
+    ctx.names = {};
+  });
+
+  editor.on('walk', function (ctx) {
+    if (ctx.names[ctx.name]) {
+      ctx.el.setAttribute('name', '');
+    } else {
+      ctx.names[ctx.name] = 1;
+    }
+  });
+};
+
+middlewares.removeInlineStyle = function () {
+  editor.on('walk', function (ctx) {
+    // chrome
+    ctx.el.setAttribute('style', '');
+  });
+};
+
+middlewares.removeExtraNodes = function () {
   var removeExtraNode = function (el) {
     var nodes = el.children;
     var len = nodes.length;
@@ -235,32 +256,12 @@ middlewares.walker = function (editor) {
     }
   };
 
-  return function (next) {
-    setTimeout(function () {
-      var els = editor.el.querySelectorAll('[name]');
-      var names = {};
-      
-      Array.prototype.forEach.call(els, function (el) {
-        var name = el.getAttribute('name');
-        var s = schema[el.tagName.toLowerCase()];
-        
-        if (names[name]) {
-          el.setAttribute('name', '');
-        } else {
-          names[name] = 1;
-        }
-
-        // chrome
-        el.setAttribute('style', '');
-
-        if (s.type === 'paragraph') {
-          removeExtraNode(el);
-        }
-      });
-    }.bind(this));
-
-    next();
-  };
+  editor.on('walk', function (ctx) {
+    var s = schema[ctx.el.tagName.toLowerCase()];
+    if (s.type === 'paragraph') {
+      removeExtraNode(ctx.el);
+    }
+  });
 };
 var schema = {
   section: {
@@ -1090,7 +1091,9 @@ function Editor(options) {
 Editor.prototype.default = function () {
   return this.compose([
     middlewares.p(this),
-    middlewares.walker(this)
+    middlewares.removeExtraNodes(this),
+    middlewares.renameElements(this),
+    middlewares.removeInlineStyle(this)
   ]);
 };
 
@@ -1101,7 +1104,6 @@ Editor.prototype.bindEvents = function () {
   var bind = el.addEventListener.bind(el);
 
   bind('keydown', this.onKeydown.bind(this));
-  bind('keyup', this.sync.bind(this));
   bind('keyup', this.handleEmpty.bind(this));
   bind('blur', this.handleEmpty.bind(this));
   bind('focus', this.handleEmpty.bind(this));
@@ -1121,6 +1123,11 @@ Editor.prototype.onKeydown = function (e) {
   ctx = Object.create(this.context);
   ctx.event = e;
   ctx.prevent = utils.preventEvent.bind(null, e);
+
+  setTimeout(function () {
+    this.walk();
+    this.sync();
+  }.bind(this));
 
   this.exec(ctx, function (e) {
     if (e) {
@@ -1154,5 +1161,22 @@ Editor.prototype.handleEmpty = function () {
   } else {
     this.el.classList.remove('is-empty');
   }
+};
+
+Editor.prototype.walk = function () {
+  var els = editor.el.querySelectorAll('[name]');
+  var context = {};
+
+  this.emit('walkStart', context);
+
+  Array.prototype.forEach.call(els, function (el) {
+    var childContext = Object.create(context);
+    childContext.el = el;
+    childContext.name = el.getAttribute('name');
+    childContext.data = this.data[childContext.name];
+    this.emit('walk', childContext);
+  }.bind(this));
+
+  this.emit('walkEnd', context);
 };
 })(this);

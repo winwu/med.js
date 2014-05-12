@@ -95,7 +95,28 @@ middlewares.p = function (editor) {
   };
 };
 
-middlewares.walker = function (editor) {
+middlewares.renameElements = function (editor) {
+  editor.on('walkStart', function (ctx) {
+    ctx.names = {};
+  });
+
+  editor.on('walk', function (ctx) {
+    if (ctx.names[ctx.name]) {
+      ctx.el.setAttribute('name', '');
+    } else {
+      ctx.names[ctx.name] = 1;
+    }
+  });
+};
+
+middlewares.removeInlineStyle = function () {
+  editor.on('walk', function (ctx) {
+    // chrome
+    ctx.el.setAttribute('style', '');
+  });
+};
+
+middlewares.removeExtraNodes = function () {
   var removeExtraNode = function (el) {
     var nodes = el.children;
     var len = nodes.length;
@@ -116,30 +137,10 @@ middlewares.walker = function (editor) {
     }
   };
 
-  return function (next) {
-    setTimeout(function () {
-      var els = editor.el.querySelectorAll('[name]');
-      var names = {};
-      
-      Array.prototype.forEach.call(els, function (el) {
-        var name = el.getAttribute('name');
-        var s = schema[el.tagName.toLowerCase()];
-        
-        if (names[name]) {
-          el.setAttribute('name', '');
-        } else {
-          names[name] = 1;
-        }
-
-        // chrome
-        el.setAttribute('style', '');
-
-        if (s.type === 'paragraph') {
-          removeExtraNode(el);
-        }
-      });
-    }.bind(this));
-
-    next();
-  };
+  editor.on('walk', function (ctx) {
+    var s = schema[ctx.el.tagName.toLowerCase()];
+    if (s.type === 'paragraph') {
+      removeExtraNode(ctx.el);
+    }
+  });
 };

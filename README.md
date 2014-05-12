@@ -27,6 +27,11 @@ med.js
 
 ### Events
 
+* changed
+* walkStart
+* walk
+* walkEnd
+
 #### editor#on(event, handler)
 
 #### editor#once(event, handler)
@@ -34,7 +39,6 @@ med.js
 #### editor#off(event, handler)
 
 #### editor#emit(event)
-
 
 ### Middleware
 

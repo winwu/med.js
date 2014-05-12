@@ -34,7 +34,9 @@ function Editor(options) {
 Editor.prototype.default = function () {
   return this.compose([
     middlewares.p(this),
-    middlewares.walker(this)
+    middlewares.removeExtraNodes(this),
+    middlewares.renameElements(this),
+    middlewares.removeInlineStyle(this)
   ]);
 };
 
@@ -45,7 +47,6 @@ Editor.prototype.bindEvents = function () {
   var bind = el.addEventListener.bind(el);
 
   bind('keydown', this.onKeydown.bind(this));
-  bind('keyup', this.sync.bind(this));
   bind('keyup', this.handleEmpty.bind(this));
   bind('blur', this.handleEmpty.bind(this));
   bind('focus', this.handleEmpty.bind(this));
@@ -65,6 +66,11 @@ Editor.prototype.onKeydown = function (e) {
   ctx = Object.create(this.context);
   ctx.event = e;
   ctx.prevent = utils.preventEvent.bind(null, e);
+
+  setTimeout(function () {
+    this.walk();
+    this.sync();
+  }.bind(this));
 
   this.exec(ctx, function (e) {
     if (e) {
@@ -98,4 +104,21 @@ Editor.prototype.handleEmpty = function () {
   } else {
     this.el.classList.remove('is-empty');
   }
+};
+
+Editor.prototype.walk = function () {
+  var els = editor.el.querySelectorAll('[name]');
+  var context = {};
+
+  this.emit('walkStart', context);
+
+  Array.prototype.forEach.call(els, function (el) {
+    var childContext = Object.create(context);
+    childContext.el = el;
+    childContext.name = el.getAttribute('name');
+    childContext.data = this.data[childContext.name];
+    this.emit('walk', childContext);
+  }.bind(this));
+
+  this.emit('walkEnd', context);
 };
