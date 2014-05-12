@@ -197,7 +197,7 @@ middlewares.p = function (editor) {
   return function (next) {
     var el = this.element;
 
-    if (el.tagName === 'SECTION') {
+    if (el === el.section) {
       return this.prevent();
     }
 
@@ -294,6 +294,25 @@ middlewares.handleEmptyParagraph = function (editor) {
       el.innerHTML = '<br class="_med_placeholder" />';
     }
   });
+};
+
+middlewares.createNewParagraph = function () {
+  return function (next) {
+    var shouldHandleThisEvent = this.key === 'enter'
+      && this.section === this.editor.caret.focusSection()
+      && !this.shift
+      && this.element === this.paragraph
+      && !this.editor.caret.textAfter(this.element);
+
+    if (shouldHandleThisEvent) {
+      this.prevent();
+      var el = document.createElement('p');
+      this.element.parentElement.insertBefore(el, this.element.nextSibling);
+      this.editor.caret.focusTo(el);
+    }
+
+    next();
+  };
 };
 var schema = {
   section: {
@@ -1122,12 +1141,14 @@ function Editor(options) {
 }
 
 Editor.prototype.default = function () {
+  middlewares.removeExtraNodes(this);
+  middlewares.renameElements(this);
+  middlewares.removeInlineStyle(this);
+  middlewares.handleEmptyParagraph(this);
+
   return this.compose([
     middlewares.p(this),
-    middlewares.removeExtraNodes(this),
-    middlewares.renameElements(this),
-    middlewares.removeInlineStyle(this),
-    middlewares.handleEmptyParagraph(this)
+    middlewares.createNewParagraph()
   ]);
 };
 
@@ -1159,8 +1180,8 @@ Editor.prototype.onKeydown = function (e) {
   ctx.prevent = utils.preventEvent.bind(null, e);
 
   setTimeout(function () {
-    this.walk();
     this.sync();
+    this.walk();
   }.bind(this));
 
   this.exec(ctx, function (e) {

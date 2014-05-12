@@ -32,12 +32,14 @@ function Editor(options) {
 }
 
 Editor.prototype.default = function () {
+  middlewares.removeExtraNodes(this);
+  middlewares.renameElements(this);
+  middlewares.removeInlineStyle(this);
+  middlewares.handleEmptyParagraph(this);
+
   return this.compose([
     middlewares.p(this),
-    middlewares.removeExtraNodes(this),
-    middlewares.renameElements(this),
-    middlewares.removeInlineStyle(this),
-    middlewares.handleEmptyParagraph(this)
+    middlewares.createNewParagraph()
   ]);
 };
 
@@ -69,8 +71,8 @@ Editor.prototype.onKeydown = function (e) {
   ctx.prevent = utils.preventEvent.bind(null, e);
 
   setTimeout(function () {
-    this.walk();
     this.sync();
+    this.walk();
   }.bind(this));
 
   this.exec(ctx, function (e) {
