@@ -6,8 +6,12 @@ function Data(id) {
 }
 
 Data.prototype.set = function (key, val) {
+  if (!utils.equal(this.get(key), val)) {
+    this.modified = true;
+  }
+
   this.tmp[key] = val;
-  this.modified = true;
+
   return this;
 };
 
@@ -24,10 +28,7 @@ Data.prototype._set = function (key, val) {
     }
   }
 
-  if (data[last] !== val) {
-    this.modified = true;
-    data[last] = val;
-  }
+  data[last] = val;
 
   return this;
 };

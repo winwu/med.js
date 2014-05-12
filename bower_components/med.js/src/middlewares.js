@@ -42,14 +42,6 @@ middlewares.init = function () {
 
 middlewares.p = function (editor) {
 
-  editor.el.addEventListener('blur', function () {
-    var el = editor.caret.focusElement('p');
-
-    if (el && !(el.textContent || el.innerText || '').trim()) {
-      el.innerHTML = '<br type="_med_placeholder">';
-    }
-  });
-
   return function (next) {
     var el = this.element;
 
@@ -69,8 +61,6 @@ middlewares.p = function (editor) {
         // 需要建立一個新的 <section>
         var section = document.createElement('section');
         var currentSection = editor.caret.focusElement('section');
-
-        el.innerHTML = '<br type="_med_placeholder">';
 
         if (currentSection) {
           if ((currentSection.textContent || currentSection.innerText || '').trim()) {
@@ -95,7 +85,28 @@ middlewares.p = function (editor) {
   };
 };
 
-middlewares.walker = function (editor) {
+middlewares.renameElements = function (editor) {
+  editor.on('walkStart', function (ctx) {
+    ctx.names = {};
+  });
+
+  editor.on('walk', function (ctx) {
+    if (ctx.names[ctx.name]) {
+      ctx.el.setAttribute('name', '');
+    } else {
+      ctx.names[ctx.name] = 1;
+    }
+  });
+};
+
+middlewares.removeInlineStyle = function () {
+  editor.on('walk', function (ctx) {
+    // chrome
+    ctx.el.setAttribute('style', '');
+  });
+};
+
+middlewares.removeExtraNodes = function () {
   var removeExtraNode = function (el) {
     var nodes = el.children;
     var len = nodes.length;
@@ -116,30 +127,19 @@ middlewares.walker = function (editor) {
     }
   };
 
-  return function (next) {
-    setTimeout(function () {
-      var els = editor.el.querySelectorAll('[name]');
-      var names = {};
-      
-      Array.prototype.forEach.call(els, function (el) {
-        var name = el.getAttribute('name');
-        var s = schema[el.tagName.toLowerCase()];
-        
-        if (names[name]) {
-          el.setAttribute('name', '');
-        } else {
-          names[name] = 1;
-        }
+  editor.on('walk', function (ctx) {
+    var s = schema[ctx.el.tagName.toLowerCase()];
+    if (s.type === 'paragraph') {
+      removeExtraNode(ctx.el);
+    }
+  });
+};
 
-        // chrome
-        el.setAttribute('style', '');
-
-        if (s.type === 'paragraph') {
-          removeExtraNode(el);
-        }
-      });
-    }.bind(this));
-
-    next();
-  };
+middlewares.handleEmptyParagraph = function (editor) {
+  editor.on('walk', function (ctx) {
+    var el = ctx.el;
+    if (el.tagName === 'P' && !(el.textContent || el.innerText || '').trim()) {
+      el.innerHTML = '<br class="_med_placeholder" />';
+    }
+  });
 };
