@@ -24,11 +24,11 @@
     "med.js": "poying/med.js"
   },
   "homepage": "https://github.com/poying/med-toolbar",
-  "_release": "ebce6160b2",
+  "_release": "7f101aa76b",
   "_resolution": {
     "type": "branch",
     "branch": "master",
-    "commit": "ebce6160b2b95c08e352be35420df2af7066d282"
+    "commit": "7f101aa76bd03bebe5b8bd2162f172ab6646d347"
   },
   "_source": "git://github.com/poying/med-toolbar.git",
   "_target": "*",
