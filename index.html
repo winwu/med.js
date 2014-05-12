@@ -127,7 +127,7 @@
     });
 
 
-    editor.el.addEventListener('keyup', function () {
+    editor.on('changed', function () {
       var el = document.querySelector('.data');
       setTimeout(function () {
         el.innerHTML = '<pre><code>'

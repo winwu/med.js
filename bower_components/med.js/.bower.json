@@ -23,11 +23,11 @@
   "keywords": [
     "editor"
   ],
-  "_release": "7bb0361ad3",
+  "_release": "e820637a62",
   "_resolution": {
     "type": "branch",
     "branch": "master",
-    "commit": "7bb0361ad39c34ef236c048fe7bb51d56b052ced"
+    "commit": "e820637a628b7de1a71b714db865904c19355aa0"
   },
   "_source": "git://github.com/poying/med.js.git",
   "_target": "*",

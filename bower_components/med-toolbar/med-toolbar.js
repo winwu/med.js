@@ -125,6 +125,7 @@
       action.call(this, e, isActive());
       this.checkActive();
       this.updatePosition();
+      editor.sync();
     }.bind(this));
 
     this.buttons.push({
