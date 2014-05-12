@@ -72,3 +72,36 @@ utils.clone = function (obj) {
 
   return copy;
 };
+
+utils.equal = function (a, b) {
+  // primitive
+  if (a === null || /^[sbn]/.test(typeof a)) {
+    return a === b;
+  }
+
+  if (a instanceof Array) {
+    if (b instanceof Array) {
+      a = a.slice().sort();
+      b = b.slice().sort();
+      return a.join() === b.join();
+    } else {
+      return;
+    }
+  }
+
+  if (typeof a === 'object') {
+    if (typeof b === 'object') {
+      var prop;
+
+      for (prop in a) {
+        if (a.hasOwnProperty(prop) && b.hasOwnProperty(prop) && a[prop] !== b[prop]) {
+          return false;
+        }
+      }
+
+      return true;
+    } else {
+      return false;
+    }
+  }
+};
