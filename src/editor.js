@@ -36,7 +36,8 @@ Editor.prototype.default = function () {
     middlewares.p(this),
     middlewares.removeExtraNodes(this),
     middlewares.renameElements(this),
-    middlewares.removeInlineStyle(this)
+    middlewares.removeInlineStyle(this),
+    middlewares.handleEmptyParagraph(this)
   ]);
 };
 

@@ -42,14 +42,6 @@ middlewares.init = function () {
 
 middlewares.p = function (editor) {
 
-  editor.el.addEventListener('blur', function () {
-    var el = editor.caret.focusElement('p');
-
-    if (el && !(el.textContent || el.innerText || '').trim()) {
-      el.innerHTML = '<br type="_med_placeholder">';
-    }
-  });
-
   return function (next) {
     var el = this.element;
 
@@ -69,8 +61,6 @@ middlewares.p = function (editor) {
         // 需要建立一個新的 <section>
         var section = document.createElement('section');
         var currentSection = editor.caret.focusElement('section');
-
-        el.innerHTML = '<br type="_med_placeholder">';
 
         if (currentSection) {
           if ((currentSection.textContent || currentSection.innerText || '').trim()) {
@@ -141,6 +131,15 @@ middlewares.removeExtraNodes = function () {
     var s = schema[ctx.el.tagName.toLowerCase()];
     if (s.type === 'paragraph') {
       removeExtraNode(ctx.el);
+    }
+  });
+};
+
+middlewares.handleEmptyParagraph = function (editor) {
+  editor.on('walk', function (ctx) {
+    var el = ctx.el;
+    if (el.tagName === 'P' && !(el.textContent || el.innerText || '').trim()) {
+      el.innerHTML = '<br class="_med_placeholder" />';
     }
   });
 };
