@@ -67,10 +67,18 @@ modules:
 
 bower:
 	@if [ ! -d $(BC) ]; then\
-		@$(BOWER) i;\
+		$(BOWER) i;\
 	fi
 
 clean:
+	@if [ -d $(NM) ]; then\
+		rm -r $(NM);\
+	fi
+
+	@if [ -d $(BC) ]; then\
+		rm -r $(BC);\
+	fi
+
 	@if [ -d $(DEST) ]; then\
 		rm -r $(DEST);\
 	fi
