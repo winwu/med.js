@@ -1,7 +1,9 @@
 NM = ./node_modules
+BC = ./bower_components
 
 UGLIFY = $(NM)/.bin/uglifyjs
 ZUUL = $(NM)/.bin/zuul
+BOWER = $(NM)/.bin/bower
 SOURCE = ./src
 DEST = ./dist
 
@@ -63,15 +65,20 @@ modules:
 		npm i;\
 	fi
 
+bower:
+	@if [ ! -d $(BC) ]; then\
+		@$(BOWER) i;\
+	fi
+
 clean:
 	@if [ -d $(DEST) ]; then\
 		rm -r $(DEST);\
 	fi
 
-test: build-test
+test: bower build-test
 	@zuul -- test/*.js
 
-test-local: build-test
+test-local: bower build-test
 	@zuul --local 8080 -- test/*.js
 
 .PHONY: build clean test

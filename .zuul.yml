@@ -1,5 +1,6 @@
 ui: mocha-bdd
 scripts:
+  - "bower_components/polyfills/element.js"
   - "dist/med.test.js"
 browsers:
   - name: chrome

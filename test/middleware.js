@@ -3,7 +3,7 @@ var expect = require('chai').expect;
 describe('middleware', function () {
   describe('#use(fn)', function () {
     it('should work', function () {
-      var med = new Med({});
+      var med = new Middleware();
       med.middleware = [];
       med.use(function () {});
       expect(med.middleware).to.have.length(1);
@@ -12,7 +12,7 @@ describe('middleware', function () {
 
   describe('#compose(fns)', function () {
     it('should execute all functions', function (done) {
-      var med = new Med({});
+      var med = new Middleware();
       var fns = [];
 
       fns.push(function (next) {
@@ -29,7 +29,7 @@ describe('middleware', function () {
 
   describe('#exec(ctx, cb)', function () {
     it('should execute all middlewares', function (done) {
-      var med = new Med({});
+      var med = new Middleware();
       var ctx = {};
 
       med.middleware = [function (next) {

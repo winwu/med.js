@@ -3,7 +3,7 @@ var expect = require('chai').expect;
 describe('Emitter', function () {
   describe('#on(event, handler)', function () {
     it('should work', function () {
-      var emitter = new Med({});
+      var emitter = new Emitter();
       var handler = function () {};
       emitter.on('test', handler);
       expect(emitter.events.test).to.have.length(1);
@@ -12,7 +12,7 @@ describe('Emitter', function () {
 
   describe('#off(event, handler)', function () {
     it('should remove the handler', function () {
-      var emitter = new Med({});
+      var emitter = new Emitter();
       var handler = function () {};
 
       emitter.on('test', handler);
@@ -25,7 +25,7 @@ describe('Emitter', function () {
 
   describe('#emit(event, [arg1], [arg2], [...])', function () {
     it('should work', function () {
-      var emitter = new Med({});
+      var emitter = new Emitter();
       var arg1 = {}, arg2 = {};
 
       emitter.on('test', function (a1, a2) {
@@ -39,7 +39,7 @@ describe('Emitter', function () {
 
   describe('#once(event, handler)', function () {
     it('should execute the handler only once', function () {
-      var emitter = new Med({});
+      var emitter = new Emitter();
       var counter = 0;
 
       emitter.once('test', function () {
