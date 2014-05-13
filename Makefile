@@ -7,6 +7,8 @@ BOWER = $(NM)/.bin/bower
 SOURCE = ./src
 DEST = ./dist
 
+DATE = `date +'%Y%m%d'`
+
 # js
 JS_FILES := $(SOURCE)/exports.js\
 	$(SOURCE)/utils.js\
@@ -88,5 +90,14 @@ test: bower build-test
 
 test-local: bower build-test
 	@zuul --local 8080 -- test/*.js
+
+release:
+	git checkout release
+	git merge master
+	make
+	git add .
+	git commit -am 'release 0.0.'$(DATE)
+	git tag -a '0.0.'$(DATE) -m '0.0.'$(DATE)': '$<
+	git checkout master
 
 .PHONY: build clean test
