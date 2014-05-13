@@ -103,7 +103,7 @@ utils.equal = function (a, b) {
       b = b.slice().sort();
       return a.join() === b.join();
     } else {
-      return;
+      return false;
     }
   }
 
@@ -112,16 +112,18 @@ utils.equal = function (a, b) {
       var prop;
 
       for (prop in a) {
-        if (a.hasOwnProperty(prop) && b.hasOwnProperty(prop) && a[prop] !== b[prop]) {
+        if (a.hasOwnProperty(prop) && b.hasOwnProperty(prop) && !utils.equal(a[prop], b[prop])) {
           return false;
         }
       }
 
       return true;
-    } else {
-      return false;
     }
+
+    return false;
   }
+
+  return false;
 };
 var keyboard = {};
 
