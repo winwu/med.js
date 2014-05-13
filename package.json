@@ -2,13 +2,16 @@
   "name": "med",
   "version": "0.0.0",
   "scripts": {
-    "test": "mocha --harmony test"
+    "test": "zuul -- test/*.js"
   },
   "author": "Po-Ying Chen <poying.me@gmail.com> (陳柏穎)",
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
-    "uglify-js": "^2.4.13"
+    "uglify-js": "^2.4.13",
+    "mocha": "^1.18.2",
+    "zuul": "^1.6.4",
+    "chai": "^1.9.1"
   },
   "directories": {
     "test": "test"

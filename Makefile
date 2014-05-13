@@ -1,6 +1,7 @@
 NM = ./node_modules
 
 UGLIFY = $(NM)/.bin/uglifyjs
+ZUUL = $(NM)/.bin/zuul
 SOURCE = ./src
 DEST = ./dist
 
@@ -58,5 +59,11 @@ clean:
 	@if [ -d $(DEST) ]; then\
 		rm -r $(DEST);\
 	fi
+
+test:
+	@zuul -- test/*.js
+
+test-local:
+	@zuul --local 8080 -- test/*.js
 
 .PHONY: build clean test
