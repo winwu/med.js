@@ -451,9 +451,9 @@ Emitter.prototype.off = function (event, handler) {
   var list = this.events[event];
   var len = list.length;
 
-  while (len -= 1) {
+  while (len--) {
     if (handler === list[len]) {
-      list.split(len, 1);
+      list.splice(len, 1);
     }
   }
 
@@ -464,10 +464,16 @@ Emitter.prototype.emit = function () {
   var args = Array.prototype.slice.call(arguments);
   var event = args.shift();
   var list = this.events[event] || [];
+  var len = list.length;
+  var handler;
 
-  list.forEach(function (handler) {
+  while (len--) {
+    handler = list[len];
     handler.apply(this, args);
-  }.bind(this));
+    if (handler._once) {
+      list.splice(len, 1);
+    }
+  }
 
   return this;
 };
