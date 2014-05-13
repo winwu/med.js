@@ -1,6 +1,24 @@
 var expect = require('chai').expect;
 
 describe('Observe', function () {
+  var els = [];
+
+  after(function () {
+    els.forEach(function (el) {
+      el.parentElement.removeChild(el);
+    });
+  });
+
+  var createElement = function () {
+    var el = document.createElement('div');
+
+    el.style.display = 'none';
+    document.body.appendChild(el);
+    els.push(el);
+
+    return el;
+  };
+
   describe('get values from element', function () {
     describe('.attribute(el, data, attr)', function () {
       it('should get attribute value from the element', function () {
@@ -77,7 +95,7 @@ describe('Observe', function () {
 
     describe('.sync()', function () {
       it('should turn elements (except ul/ol) to data object', function () {
-        var el = document.createElement('div');
+        var el = createElement();
         var med = new Med({ el: el });
         var firstSection, p, i, b;
 
@@ -101,6 +119,49 @@ describe('Observe', function () {
         expect(i.get('end')).to.be.equal(5);
         expect(b.get('start')).to.be.equal(6);
         expect(b.get('end')).to.be.equal(7);
+      });
+
+      it('should turn ul/ol to data object', function () {
+        var el = createElement();
+        var med = new Med({ el: el });
+        var li2;
+
+        el.innerHTML = '<section><ul><li>item 1</li><li><b>item 2</b></li></ul></section>';
+        
+        med.sync();
+
+        expect(med.structure.paragraphs).to.have.length(3);
+
+        li2 = med.data[med.structure.paragraphs[0]];
+
+        expect(li2.get('detail')).to.have.length(1);
+        expect(li2.get('text')).to.be.equal('item 2');
+      });
+    });
+
+    describe('#toJSON()', function () {
+      it('should turn elements (except ol/ul) to JSON', function () {
+        var el = createElement();
+        var med = new Med({ el: el });
+        var json;
+
+        el.innerHTML = '<section><p>hello</p><p><i>world</i> <b>!</b></p></section><section><p>section 2</p></section>';
+        
+        med.sync();
+
+        json = med.toJSON();
+
+        expect(json.sections).to.have.length(2);
+        expect(json.paragraphs).to.have.length(3);
+
+        expect(json.sections[0].start).to.be.equal(0);
+        expect(json.sections[0].end).to.be.equal(2);
+
+        expect(json.paragraphs[1].text).to.be.equal('world !');
+        expect(json.paragraphs[1].detail[0].start).to.be.equal(0);
+        expect(json.paragraphs[1].detail[0].end).to.be.equal(5);
+        expect(json.paragraphs[1].detail[1].start).to.be.equal(6);
+        expect(json.paragraphs[1].detail[1].end).to.be.equal(7);
       });
     });
   });
