@@ -1,5 +1,4 @@
 var expect = require('chai').expect;
-var Med = require('../dist/med');
 
 describe('middleware', function () {
   describe('#use(fn)', function () {

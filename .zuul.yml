@@ -1,4 +1,6 @@
 ui: mocha-bdd
+scripts:
+  - "dist/med.test.js"
 browsers:
   - name: chrome
     version: latest

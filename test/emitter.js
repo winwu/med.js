@@ -1,5 +1,4 @@
 var expect = require('chai').expect;
-var Med = require('../dist/med');
 
 describe('Emitter', function () {
   describe('#on(event, handler)', function () {
