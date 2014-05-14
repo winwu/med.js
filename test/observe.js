@@ -163,6 +163,25 @@ describe('Observe', function () {
         expect(json.paragraphs[1].detail[1].start).to.be.equal(6);
         expect(json.paragraphs[1].detail[1].end).to.be.equal(7);
       });
+
+      it('should turn ol/ul to JSON', function () {
+        var el = createElement();
+        var med = new Med({ el: el });
+        var json;
+
+        el.innerHTML = '<section><ul><li>item 1</li><li><b>item 2</b></li></ul></section>';
+        
+        med.sync();
+
+        json = med.toJSON();
+
+        expect(json.paragraphs).to.have.length(3);
+
+        // paragraphs: [li, li, ul]
+        expect(json.paragraphs[1].detail).to.have.length(1);
+        expect(json.paragraphs[1].text).to.be.equal('item 2');
+        console.log(json);
+      });
     });
   });
 });
