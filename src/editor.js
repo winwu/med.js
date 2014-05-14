@@ -9,7 +9,7 @@ function Editor(options) {
   Observe.call(this);
   HtmlBuilder.call(this);
 
-  this.options = utils.mixin(Object.create(defaultOptions), options);
+  this.options = utils.mixin(Object.create(defaultOptions), options || {});
   this.context = {};
   this.context.editor = this;
 
