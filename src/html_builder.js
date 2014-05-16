@@ -55,14 +55,15 @@ HtmlBuilder.importData = function (json) {
 HtmlBuilder.buildHTML = function () {
   var docfrag = document.createDocumentFragment();
   var el = this.el;
+  var html = '';
 
   HtmlBuilder.createElements(docfrag, this.structure, this.data);
 
-  el.innerHTML = '';
-
   utils.each(docfrag.children, function (child) {
-    el.appendChild(child);
+    html += child.outerHTML;
   });
+
+  el.innerHTML = html;
 };
 
 HtmlBuilder.createElements = function (container, structure, data) {
