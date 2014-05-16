@@ -48,29 +48,7 @@ utils.split = function (separator, limit) {
 };
 
 utils.clone = function (obj) {
-  if (null === obj || 'object' !== typeof obj) {
-    return obj;
-  }
-
-  if (obj instanceof Date) {
-    var copy = new Date();
-    copy.setTime(obj.getTime());
-    return copy;
-  }
-
-  if (obj instanceof Array) {
-    return obj.slice();
-  }
-
-  var copy = {};
-
-  for (var attr in obj) {
-    if (obj.hasOwnProperty(attr)) {
-      copy[attr] = utils.clone(obj[attr]);
-    }
-  }
-
-  return copy;
+  return JSON.parse(JSON.stringify(obj));
 };
 
 utils.equal = function (a, b) {

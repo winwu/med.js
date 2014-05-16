@@ -180,7 +180,6 @@ describe('Observe', function () {
         // paragraphs: [li, li, ul]
         expect(json.paragraphs[1].detail).to.have.length(1);
         expect(json.paragraphs[1].text).to.be.equal('item 2');
-        console.log(json);
       });
     });
   });

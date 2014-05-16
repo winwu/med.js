@@ -2,103 +2,162 @@ function HtmlBuilder() {
 }
 
 HtmlBuilder.prototype.fromJSON = function (json) {
-  var el = this.el;
-  var sections = json.sections;
-  var paragraphs = json.paragraphs;
-  
-  sections.forEach(function (section, i) {
-    var $section = el.querySelector('[name="' + section.name + '"]');
-    var prev = sections[i - 1];
-    var $prev = prev && el.querySelector('[name="' + prev.name + '"]');
-    var i, paragraph, $paragraph;
-
-    if (!$section) {
-      $section = document.createElement(section.tag);
-      $section.setAttribute('name', section.name);
-    }
-
-    for (i = section.start; i < section.end; i += 1) {
-      paragraph = paragraphs[i];
-      $paragraph = $section.querySelector('[name="' + paragraph.name + '"]');
-
-      if (!$paragraph) {
-        $paragraph = document.createElement(paragraph.tag);
-        $paragraph.setAttribute('name', paragraph.name);
-      }
-
-      HtmlBuilder.initElement.call(this, $paragraph, paragraph);
-      HtmlBuilder.createDetail.call(this, $paragraph, paragraph);
-
-      if (!$paragraph.parentElement) {
-        $section.appendChild($paragraph);
-      }
-    }
-
-    if (!$section.parentElement) {
-      if ($prev) {
-        $prev.parentElement.insertBefore($section, $prev.nextSibling);
-      } else {
-        this.el.appendChild($section);
-      }
-    }
-  }.bind(this));
-
-  this.handleEmpty();
+  HtmlBuilder.importData.call(this, json);
+  HtmlBuilder.buildHTML.call(this);
 };
 
-HtmlBuilder.createDetail = function (el, data) {
-  var text = el.textContent || el.innerText;
-  var detail = data.detail || [];
-  var html = '';
-  var cursor = 0;
+HtmlBuilder.importData = function (json) {
+  json = utils.clone(json);
 
-  detail.forEach(function (data) {
-    var $detail = el.querySelector('[name="' + data.name + '"]');
+  var data = this.data = {};
+  var structure = this.structure = {};
+  var sections = structure.sections = [];
+  var paragraphs = structure.paragraphs = [];
 
-    if (!$detail) {
-      $detail = document.createElement(data.tag);
-      $detail.setAttribute('name', data.name);
+  (json.sections || []).forEach(function (section) {
+    var name = section.name;
+    var d = data[name] = new Data(name);
+
+    delete section.name;
+    d.data = section;
+    d.update();
+
+    sections.push(name);
+  });
+
+  (json.paragraphs || []).forEach(function (paragraph) {
+    var name = paragraph.name;
+    var d = data[name] = new Data(name);
+
+    delete paragraph.name;
+
+    d.data = paragraph;
+    paragraph.detail = (paragraph.detail || []).map(detail);
+    d.update();
+
+    paragraphs.push(name);
+  });
+
+  function detail(detail) {
+    var name = detail.name;
+    var d = data[name] = new Data(name);
+
+    delete detail.name;
+    d.data = detail;
+    d.update();
+
+    return name;
+  }
+
+  return this;
+};
+
+HtmlBuilder.buildHTML = function () {
+  var docfrag = document.createDocumentFragment();
+  var el = this.el;
+
+  HtmlBuilder.createElements(docfrag, this.structure, this.data);
+
+  el.innerHTML = '';
+
+  utils.each(docfrag.children, function (child) {
+    el.appendChild(child);
+  });
+};
+
+HtmlBuilder.createElements = function (container, structure, data) {
+  HtmlBuilder.createSections(container, structure, data);
+};
+
+HtmlBuilder.createSections = function (container, structure, data) {
+  structure.sections.forEach(function (name) {
+    var section = data[name];
+    var el = HtmlBuilder.createElement(section);
+
+    HtmlBuilder.createParagraphs(section, el, structure, data);
+
+    container.appendChild(el);
+  });
+};
+
+HtmlBuilder.createParagraphs = function (section, container, structure, data) {
+  structure
+    .paragraphs
+    .slice(section.get('start'), section.get('end'))
+    .forEach(function (name) {
+      var paragraph = data[name];
+      var el = HtmlBuilder.createElement(paragraph);
+
+      var s = schema[paragraph.get('tag')];
+
+      if (s.type === 'paragraphs') {
+        HtmlBuilder.createParagraphs(paragraph, el, structure, data);
+      } else if (!paragraph.get('in-paragraphs')) {
+        HtmlBuilder.createDetails(paragraph, el, structure, data);
+      }
+
+      container.appendChild(el);
+    });
+};
+
+HtmlBuilder.createDetails = function (paragraph, container, structure, data) {
+  var detail = paragraph.get('detail');
+  var text = paragraph.get('text');
+  var pointer = 0;
+
+  container.innerHTML = '';
+
+  detail.forEach(function (name) {
+    var d = data[name];
+    var el = HtmlBuilder.createElement(d);
+    var start = d.get('start');
+    var end = d.get('end');
+
+    if (pointer !== start) {
+      container.appendChild(document.createTextNode(text.slice(pointer, start)));
     }
 
-    HtmlBuilder.initElement.call(this, $detail, data);
+    el.innerHTML = text.slice(start, end);
+    container.appendChild(el);
 
-    if ($detail.textContent === undefined) {
-      $detail.innerText = text.substr(data.start, data.end - data.start);
-    } else {
-      $detail.textContent = text.substr(data.start, data.end - data.start);
-    }
+    pointer = end;
+  });
 
-    html += text.substr(cursor, data.start - cursor)
-      + $detail.outerHTML;
+  if (pointer !== text.length) {
+    container.appendChild(document.createTextNode(text.slice(pointer, text.length)));
+  }
+};
 
-    cursor = data.end;
-  }.bind(this));
+HtmlBuilder.createElement = function (data) {
+  var tagName = data.get('tag');
+  var el = document.createElement(tagName);
 
-  html += text.substr(cursor, text.length - cursor);
+  el.setAttribute('name', data.id);
+  HtmlBuilder.initElement(el, data);
 
-  el.innerHTML = html;
+  return el;
 };
 
 HtmlBuilder.initElement = function (el, data) {
-  var schema = this.schema[data.tag];
+  var s = schema[data.get('tag')];
 
-  schema.attrs.forEach(function (attr) {
+  s.attrs.forEach(function (attr) {
     HtmlBuilder[attr.type].call(this, el, data, attr);
   });
 };
 
 HtmlBuilder.attribute = function (el, data, attr) {
-  el.setAttribute(attr.name, data[attr.name]);
+  el.setAttribute(attr.name, data.get(attr.name));
 };
 
 HtmlBuilder.dataset = function (el, data, attr) {
-  el.setAttribute('data-' + attr.name, data[attr.name]);
+  el.setAttribute('data-' + attr.name, data.get(attr.name));
 };
 
 HtmlBuilder.content = function (el, data, attr) {
   if (el.textContent === undefined) {
-    el.innerText = data[attr.name];
+    el.innerText = data.get(attr.name);
   } else {
-    el.textContent = data[attr.name];
+    el.textContent = data.get(attr.name);
   }
 };
