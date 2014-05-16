@@ -67,16 +67,16 @@ describe('HtmlBuilder', function () {
     it('should turn JSON to HTML', function () {
       var med = new Med();
       var html = ''
-        + '<div contenteditable="true" class="med is-empty">'
-          + '<section name="1">'
-            + '<p name="2"><i name="3">a</i>bc</p>'
-            + '<p name="4">123</p>'
-          + '</section>'
-        + '</div>';
+        + '<section name="1">'
+          + '<p name="2"><i name="3">a</i>bc</p>'
+          + '<p name="4">123</p>'
+        + '</section>';
 
       med.fromJSON(json);
 
-      expect(med.el.outerHTML).to.be.equal(html);
+      console.log(html);
+      console.log(med.el.outerHTML);
+      expect(med.el.innerHTML).to.be.equal(html);
     });
   });
 

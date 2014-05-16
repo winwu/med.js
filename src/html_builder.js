@@ -59,7 +59,7 @@ HtmlBuilder.buildHTML = function () {
 
   HtmlBuilder.createElements(docfrag, this.structure, this.data);
 
-  utils.each(docfrag.children, function (child) {
+  utils.each(docfrag.childNodes, function (child) {
     html += child.outerHTML;
   });
 
