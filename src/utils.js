@@ -85,3 +85,19 @@ utils.equal = function (a, b) {
 
   return false;
 };
+
+utils.getTextContent = function (el) {
+  return el.textContent || el.innerText || '';
+};
+
+utils.isEmpty = function (el) {
+  return !utils.getTextContent(el).trim();
+};
+
+utils.isNotEmpty = function (el) {
+  return !utils.isEmpty(el);
+};
+
+utils.isTag = function (tagName, el) {
+  return el.tagName === tagName.toUpperCase();
+};

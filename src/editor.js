@@ -94,7 +94,10 @@ Editor.prototype.handleEmpty = function () {
     first.appendChild(p);
     this.el.appendChild(first);
     this.sync(this.el);
-    this.caret.focusTo(p);
+
+    setTimeout(function () {
+      this.caret.focusTo(p);
+    }.bind(this));
   }
 
   if (this.isEmpty()) {
@@ -113,6 +116,7 @@ Editor.prototype.walk = function () {
   Array.prototype.forEach.call(els, function (el) {
     var childContext = Object.create(context);
     childContext.el = el;
+    childContext.element = el;
     childContext.name = el.getAttribute('name');
     childContext.data = this.data[childContext.name];
     this.emit('walk', childContext);

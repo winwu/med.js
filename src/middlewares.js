@@ -67,34 +67,46 @@ middlewares.p = function (editor) {
     }
 
     if (this.key === 'enter' && !this.shift) {
-      if (!(el.textContent || el.innerText || '').trim()) {
+      if (utils.isEmpty(el)) {
         this.prevent();
 
         // 目前這一行是空的
         // 需要建立一個新的 <section>
         var section = document.createElement('section');
-        var currentSection = editor.caret.focusElement('section');
 
-        if (currentSection) {
-          if ((currentSection.textContent || currentSection.innerText || '').trim()) {
+        if (this.section) {
+          if (utils.isNotEmpty(this.section)) {
             section.appendChild(el);
-            currentSection
+            this.section
               .parentElement
-              .insertBefore(section, currentSection.nextSibling);
-            editor.caret.moveToStart(el);
-          } else {
-            // 目前是在一個 <section> 下，而且 <section> 的內容是空的，
-            // 就忽略這個動作
+              .insertBefore(section, this.section.nextSibling);
+            
+            setTimeout(function () {
+              editor.caret.moveToStart(el);
+            });
+
+            next();
           }
         } else {
           section.appendChild(el);
           editor.el.appendChild(section);
           editor.caret.moveToStart(el);
-        }
-      }
-    }
 
-    next();
+          next();
+        }
+      } else if (!editor.caret.textBefore(el)) {
+        // 在行頭
+        // 需要把 section 分段
+        editor.caret.split(this.section);
+        setTimeout(function () {
+          editor.caret.moveToStart(this.section);
+        }.bind(this))
+
+        next();
+      }
+    } else {
+      next();
+    }
   };
 };
 
@@ -150,7 +162,7 @@ middlewares.removeExtraNodes = function () {
 
 middlewares.handleEmptyParagraph = function (editor) {
   editor.on('walk', function (ctx) {
-    var el = ctx.el;
+    var el = ctx.element;
     if (el.tagName === 'P' && !(el.textContent || el.innerText || '').trim()) {
       el.innerHTML = '<br class="_med_placeholder" />';
     }
