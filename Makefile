@@ -35,7 +35,7 @@ JS_FILE_MAP := $(DEST)/$(FILE_NAME).map
 
 all: clean modules build;
 
-build: create-folder $(JS_FILE) $(JS_FILE_MIN);
+build: build-test $(JS_FILE) $(JS_FILE_MIN);
 
 build-test: create-folder $(JS_TEST_FILE);
 
@@ -93,7 +93,7 @@ test-local: bower build-test
 
 release:
 	git checkout release
-	git merge master
+	-git merge master
 	make
 	git add .
 	git commit -am 'release 0.0.'$(DATE)
