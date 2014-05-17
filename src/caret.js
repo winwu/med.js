@@ -2,6 +2,10 @@ function Caret(editor) {
   this.editor = editor;
 }
 
+Caret.prototype.focusNode = function () {
+  return document.getSelection().focusNode;
+};
+
 Caret.prototype.focusElement = function (tagName) {
   var node;
 
@@ -60,6 +64,24 @@ Caret.prototype.focusType = function (type) {
     }
 
     node = node.parentElement;
+  }
+
+  return null;
+};
+
+Caret.prototype.nextElement = function (node) {
+  if (node) {
+    node = node.nextSibling;
+  } else {
+    node = this.focusNode().nextSibling;
+  }
+
+  while (node) {
+    if (node.nodeType === document.ELEMENT_NODE) {
+      return node;
+    }
+
+    node = node.nextSibling;
   }
 
   return null;
@@ -174,4 +196,9 @@ Caret.prototype.insertElement = function (el) {
   range.deleteContents();
 
   range.insertNode(el);
+};
+
+Caret.prototype.closestElement = function () {
+  var node = this.focusNode();
+  return this.nextElement(node);
 };

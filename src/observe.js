@@ -17,7 +17,9 @@ Observe.prototype.sync = function () {
     shouldBeDelete[name] = 1;
   });
 
-  this._scan(this.el, structure, shouldBeDelete);
+  utils.each(this.el.children, function (el) {
+    Observe.scan.call(this, el, structure, shouldBeDelete);
+  }.bind(this));
 
   Object.keys(shouldBeDelete).forEach(function (name) {
     delete data[name];
@@ -26,18 +28,18 @@ Observe.prototype.sync = function () {
   this.structure = structure;
 };
 
-Observe.prototype._scan = function (el, structure, shouldBeDelete) {
+Observe.scan = function (el, structure, shouldBeDelete) {
   var tagName = el.tagName.toLowerCase();
   var name = el.getAttribute('name');
   var data = this.data[name];
   var schema = this.schema[tagName];
   
   if (!schema) {
-    utils.each(el.children, function (el) {
-      this._scan(el, structure, shouldBeDelete);
-    }.bind(this));
+    el.parentElement.removeChild(el);
     return;
   }
+
+  Observe.checkAndRemoveStrangeElement.call(this, el);
 
   if (name) {
     delete shouldBeDelete[name];
@@ -85,7 +87,7 @@ Observe.section = function (el, data, structure, shouldBeDelete) {
     }
 
     if (/^paragraph/.test(schema.type)) {
-      p.push(this._scan(child, structure, shouldBeDelete).id);
+      p.push(Observe.scan.call(this, child, structure, shouldBeDelete).id);
     }
 
   }.bind(this));
@@ -106,7 +108,7 @@ Observe.paragraphs = function (el, data, structure, shouldBeDelete) {
     }
 
     if (schema.type === 'paragraph') {
-      p.push(this._scan(child, structure, shouldBeDelete).id);
+      p.push(Observe.scan.call(this, child, structure, shouldBeDelete).id);
     }
   }.bind(this));
 
@@ -126,7 +128,7 @@ Observe.paragraph = function (el, data, structure, shouldBeDelete) {
     }
 
     if (schema.type === 'detail') {
-      detail.push(this._scan(child, structure, shouldBeDelete).id);
+      detail.push(Observe.scan.call(this, child, structure, shouldBeDelete).id);
     }
   }.bind(this));
 
@@ -230,4 +232,41 @@ Observe.prototype.toJSON = function () {
   }
 
   return json;
+};
+
+Observe.rules = {
+  section: {
+    paragraph: 1,
+    paragraphs: 1
+  },
+
+  paragraphs: {
+    paragraph: 1
+  },
+
+  paragraph: {
+    detail: 1
+  },
+
+  detail: {}
+};
+
+Observe.checkAndRemoveStrangeElement = function (el) {
+  var type = (schema[el.tagName.toLowerCase()] || {}).type;
+  var parentType = (schema[el.parentElement.tagName.toLowerCase()] || {}).type;
+  var shouldRemove = true;
+
+  if (type && parentType) {
+    if (Observe.rules[parentType][type]) {
+      shouldRemove = false;
+    }
+  } else if (el.parentElement === this.el) {
+    if (type === 'section') {
+      shouldRemove = false;
+    }
+  }
+
+  if (shouldRemove) {
+    el.parentElement.removeChild(el);
+  }
 };
