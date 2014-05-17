@@ -40,10 +40,24 @@ var json = {
 };
 
 describe('HtmlBuilder', function () {
+  var els = [];
+
+  after(function () {
+    els.forEach(function (el) {
+      el.parentElement.removeChild(el);
+    });
+  });
+
   describe('.importData(json)', function () {
     it('should turn JSON to `Data`', function () {
-      var med = new Med();
+      var el = document.createElement('div');
+
+      document.body.appendChild(el);
+
+      var med = new Med({ el: el });
       var p, d;
+
+      els.push(el);
 
       HtmlBuilder.importData.call(med, json);
       
@@ -65,17 +79,21 @@ describe('HtmlBuilder', function () {
 
   describe('.fromJSON(json)', function () {
     it('should turn JSON to HTML', function () {
-      var med = new Med();
+      var el = document.createElement('div');
+
+      document.body.appendChild(el);
+
+      var med = new Med({ el: el });
       var html = ''
         + '<section name="1">'
           + '<p name="2"><i name="3">a</i>bc</p>'
           + '<p name="4">123</p>'
         + '</section>';
 
+      els.push(el);
+
       med.fromJSON(json);
 
-      console.log(html);
-      console.log(med.el.outerHTML);
       expect(med.el.innerHTML).to.be.equal(html);
     });
   });

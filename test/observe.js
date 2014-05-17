@@ -132,7 +132,7 @@ describe('Observe', function () {
 
         expect(med.structure.paragraphs).to.have.length(3);
 
-        li2 = med.data[med.structure.paragraphs[0]];
+        li2 = med.data[med.structure.paragraphs[1]];
 
         expect(li2.get('detail')).to.have.length(1);
         expect(li2.get('text')).to.be.equal('item 2');
