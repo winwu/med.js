@@ -1,5 +1,6 @@
 {
   "name": "med.js",
+  "version": "0.0.20140517",
   "homepage": "https://github.com/poying/med.js",
   "authors": [
     "Po-Ying Chen <poying.me@gmail.com>"
@@ -23,11 +24,11 @@
   "keywords": [
     "editor"
   ],
-  "_release": "072ca2ef28",
+  "_release": "0.0.20140517",
   "_resolution": {
-    "type": "branch",
-    "branch": "master",
-    "commit": "072ca2ef2805d708d75375b2b5c2fb02196f56ab"
+    "type": "version",
+    "tag": "0.0.20140517",
+    "commit": "5db4b72ecd2fe6e6bba27b33028c0382e3bdfbe9"
   },
   "_source": "git://github.com/poying/med.js.git",
   "_target": "*",

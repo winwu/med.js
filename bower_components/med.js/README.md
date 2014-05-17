@@ -1,6 +1,8 @@
 med.js
 ------
 
+[![Build Status](https://travis-ci.org/poying/med.js.svg)](https://travis-ci.org/poying/med.js)
+
 仿 Medium 式的 HTML5 編輯器 framework。
 
 > med.js 只是一個基本的框架，其他功能需要透過 plugin 擴充

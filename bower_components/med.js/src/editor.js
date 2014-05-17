@@ -9,7 +9,7 @@ function Editor(options) {
   Observe.call(this);
   HtmlBuilder.call(this);
 
-  this.options = utils.mixin(Object.create(defaultOptions), options);
+  this.options = utils.mixin(Object.create(defaultOptions), options || {});
   this.context = {};
   this.context.editor = this;
 
@@ -32,12 +32,15 @@ function Editor(options) {
 }
 
 Editor.prototype.default = function () {
+  middlewares.removeExtraNodes(this);
+  middlewares.renameElements(this);
+  middlewares.removeInlineStyle(this);
+  middlewares.handleEmptyParagraph(this);
+
   return this.compose([
+    middlewares.prevent(),
     middlewares.p(this),
-    middlewares.removeExtraNodes(this),
-    middlewares.renameElements(this),
-    middlewares.removeInlineStyle(this),
-    middlewares.handleEmptyParagraph(this)
+    middlewares.createNewParagraph()
   ]);
 };
 
@@ -54,13 +57,7 @@ Editor.prototype.bindEvents = function () {
 };
 
 Editor.prototype.onKeydown = function (e) {
-  var focus = this.caret.focusElement();
   var ctx;
-
-  if (focus === this.el || focus === document.body) {
-    utils.preventEvent(e);
-    return;
-  }
 
   this.handleEmpty();
   
@@ -69,8 +66,8 @@ Editor.prototype.onKeydown = function (e) {
   ctx.prevent = utils.preventEvent.bind(null, e);
 
   setTimeout(function () {
-    this.walk();
     this.sync();
+    this.walk();
   }.bind(this));
 
   this.exec(ctx, function (e) {

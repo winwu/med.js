@@ -1,12 +1,16 @@
 NM = ./node_modules
+BC = ./bower_components
 
 UGLIFY = $(NM)/.bin/uglifyjs
+ZUUL = $(NM)/.bin/zuul
+BOWER = $(NM)/.bin/bower
 SOURCE = ./src
 DEST = ./dist
 
+DATE = `date +'%Y%m%d'`
+
 # js
-JS_FILES := $(SOURCE)/header.js\
-	$(SOURCE)/exports.js\
+JS_FILES := $(SOURCE)/exports.js\
 	$(SOURCE)/utils.js\
 	$(SOURCE)/keyboard.js\
 	$(SOURCE)/middlewares.js\
@@ -18,19 +22,28 @@ JS_FILES := $(SOURCE)/header.js\
 	$(SOURCE)/observe.js\
 	$(SOURCE)/html_builder.js\
 	$(SOURCE)/default_options.js\
-	$(SOURCE)/editor.js\
-	$(SOURCE)/footer.js
+	$(SOURCE)/editor.js
+
+JS_HEADER := $(SOURCE)/header.js
+JS_FOOTER := $(SOURCE)/footer.js
 
 FILE_NAME := med
 JS_FILE := $(DEST)/$(FILE_NAME).js
+JS_TEST_FILE := $(DEST)/$(FILE_NAME).test.js
 JS_FILE_MIN := $(DEST)/$(FILE_NAME).min.js
 JS_FILE_MAP := $(DEST)/$(FILE_NAME).map
 
 all: clean modules build;
 
-build: create-folder $(JS_FILE) $(JS_FILE_MIN);
+build: build-test $(JS_FILE) $(JS_FILE_MIN);
 
-$(JS_FILE): $(JS_FILES)
+build-test: create-folder $(JS_TEST_FILE);
+
+$(JS_FILE): $(JS_HEADER) $(JS_FILES) $(JS_FOOTER)
+	@echo ' ' $@
+	@cat $^ > $@
+
+$(JS_TEST_FILE): $(JS_FILES)
 	@echo ' ' $@
 	@cat $^ > $@
 
@@ -54,9 +67,37 @@ modules:
 		npm i;\
 	fi
 
+bower:
+	@if [ ! -d $(BC) ]; then\
+		$(BOWER) i;\
+	fi
+
 clean:
+	@if [ -d $(NM) ]; then\
+		rm -r $(NM);\
+	fi
+
+	@if [ -d $(BC) ]; then\
+		rm -r $(BC);\
+	fi
+
 	@if [ -d $(DEST) ]; then\
 		rm -r $(DEST);\
 	fi
+
+test: bower build-test
+	@zuul -- test/*.js
+
+test-local: bower build-test
+	@zuul --local 8080 -- test/*.js
+
+release:
+	git checkout release
+	-git merge master
+	make
+	git add .
+	git commit -am 'release 0.0.'$(DATE)
+	git tag -a '0.0.'$(DATE) -m '0.0.'$(DATE)': '$<
+	git checkout master
 
 .PHONY: build clean test

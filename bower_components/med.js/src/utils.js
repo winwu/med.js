@@ -48,29 +48,7 @@ utils.split = function (separator, limit) {
 };
 
 utils.clone = function (obj) {
-  if (null === obj || 'object' !== typeof obj) {
-    return obj;
-  }
-
-  if (obj instanceof Date) {
-    var copy = new Date();
-    copy.setTime(obj.getTime());
-    return copy;
-  }
-
-  if (obj instanceof Array) {
-    return obj.slice();
-  }
-
-  var copy = {};
-
-  for (var attr in obj) {
-    if (obj.hasOwnProperty(attr)) {
-      copy[attr] = utils.clone(obj[attr]);
-    }
-  }
-
-  return copy;
+  return JSON.parse(JSON.stringify(obj));
 };
 
 utils.equal = function (a, b) {
@@ -85,7 +63,7 @@ utils.equal = function (a, b) {
       b = b.slice().sort();
       return a.join() === b.join();
     } else {
-      return;
+      return false;
     }
   }
 
@@ -94,14 +72,16 @@ utils.equal = function (a, b) {
       var prop;
 
       for (prop in a) {
-        if (a.hasOwnProperty(prop) && b.hasOwnProperty(prop) && a[prop] !== b[prop]) {
+        if (a.hasOwnProperty(prop) && b.hasOwnProperty(prop) && !utils.equal(a[prop], b[prop])) {
           return false;
         }
       }
 
       return true;
-    } else {
-      return false;
     }
+
+    return false;
   }
+
+  return false;
 };

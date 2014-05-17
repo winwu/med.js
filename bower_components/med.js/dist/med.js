@@ -66,29 +66,7 @@ utils.split = function (separator, limit) {
 };
 
 utils.clone = function (obj) {
-  if (null === obj || 'object' !== typeof obj) {
-    return obj;
-  }
-
-  if (obj instanceof Date) {
-    var copy = new Date();
-    copy.setTime(obj.getTime());
-    return copy;
-  }
-
-  if (obj instanceof Array) {
-    return obj.slice();
-  }
-
-  var copy = {};
-
-  for (var attr in obj) {
-    if (obj.hasOwnProperty(attr)) {
-      copy[attr] = utils.clone(obj[attr]);
-    }
-  }
-
-  return copy;
+  return JSON.parse(JSON.stringify(obj));
 };
 
 utils.equal = function (a, b) {
@@ -103,7 +81,7 @@ utils.equal = function (a, b) {
       b = b.slice().sort();
       return a.join() === b.join();
     } else {
-      return;
+      return false;
     }
   }
 
@@ -112,16 +90,18 @@ utils.equal = function (a, b) {
       var prop;
 
       for (prop in a) {
-        if (a.hasOwnProperty(prop) && b.hasOwnProperty(prop) && a[prop] !== b[prop]) {
+        if (a.hasOwnProperty(prop) && b.hasOwnProperty(prop) && !utils.equal(a[prop], b[prop])) {
           return false;
         }
       }
 
       return true;
-    } else {
-      return false;
     }
+
+    return false;
   }
+
+  return false;
 };
 var keyboard = {};
 
@@ -158,12 +138,9 @@ middlewares.init = function () {
     var code = e.keyCode || e.which;
     var mod = keyboard.modifiers[code];
 
-    if (mod) {
-      return;
-    }
-
     var editor = this.editor;
 
+    this.modifier = mod;
     this.ctrl = e.ctrlKey;
     this.option = this.alt = e.altKey;
     this.shift = e.shiftKey;
@@ -171,16 +148,13 @@ middlewares.init = function () {
     this.code = code;
     this.key = keyboard.map[code];
     this.super = this[keyboard.super];
+    this.node = editor.caret.focusNode();
     this.element = editor.caret.focusElement();
+    this.nextElement = editor.caret.nextElement();
     this.section = editor.caret.focusSection();
     this.paragraph = editor.caret.focusParagraph();
     this.paragraphs = editor.caret.focusParagraphs();
     this.detail = editor.caret.focusDetail();
-    
-    if (this.key === 'backspace' && this.editor.isEmpty()) {
-      this.prevent();
-      return;
-    }
 
     var els = editor.el.querySelectorAll('br[type="_med_placeholder"]');
 
@@ -192,12 +166,31 @@ middlewares.init = function () {
   };
 };
 
-middlewares.p = function (editor) {
+middlewares.prevent = function () {
+  return function (next) {
+    if (this.key === 'backspace' && this.editor.isEmpty()) {
+      this.prevent();
+      return;
+    }
 
+    if (this.element === document.body) {
+      utils.preventEvent(e);
+      return;
+    }
+
+    next();
+  };
+};
+
+middlewares.p = function (editor) {
   return function (next) {
     var el = this.element;
 
-    if (el.tagName === 'SECTION') {
+    if (this.modifier) {
+      return next();
+    }
+
+    if (el === el.section) {
       return this.prevent();
     }
 
@@ -294,6 +287,25 @@ middlewares.handleEmptyParagraph = function (editor) {
       el.innerHTML = '<br class="_med_placeholder" />';
     }
   });
+};
+
+middlewares.createNewParagraph = function () {
+  return function (next) {
+    var shouldHandleThisEvent = this.key === 'enter'
+      && this.section === this.editor.caret.focusSection()
+      && !this.shift
+      && this.element === this.paragraph
+      && !this.editor.caret.textAfter(this.element);
+
+    if (shouldHandleThisEvent) {
+      this.prevent();
+      var el = document.createElement('p');
+      this.element.parentElement.insertBefore(el, this.element.nextSibling);
+      this.editor.caret.focusTo(el);
+    }
+
+    next();
+  };
 };
 var schema = {
   section: {
@@ -432,9 +444,9 @@ Emitter.prototype.off = function (event, handler) {
   var list = this.events[event];
   var len = list.length;
 
-  while (len -= 1) {
+  while (len--) {
     if (handler === list[len]) {
-      list.split(len, 1);
+      list.splice(len, 1);
     }
   }
 
@@ -445,16 +457,26 @@ Emitter.prototype.emit = function () {
   var args = Array.prototype.slice.call(arguments);
   var event = args.shift();
   var list = this.events[event] || [];
+  var len = list.length;
+  var handler;
 
-  list.forEach(function (handler) {
+  while (len--) {
+    handler = list[len];
     handler.apply(this, args);
-  }.bind(this));
+    if (handler._once) {
+      list.splice(len, 1);
+    }
+  }
 
   return this;
 };
 function Caret(editor) {
   this.editor = editor;
 }
+
+Caret.prototype.focusNode = function () {
+  return document.getSelection().focusNode;
+};
 
 Caret.prototype.focusElement = function (tagName) {
   var node;
@@ -514,6 +536,24 @@ Caret.prototype.focusType = function (type) {
     }
 
     node = node.parentElement;
+  }
+
+  return null;
+};
+
+Caret.prototype.nextElement = function (node) {
+  if (node) {
+    node = node.nextSibling;
+  } else {
+    node = this.focusNode().nextSibling;
+  }
+
+  while (node) {
+    if (node.nodeType === document.ELEMENT_NODE) {
+      return node;
+    }
+
+    node = node.nextSibling;
   }
 
   return null;
@@ -628,6 +668,11 @@ Caret.prototype.insertElement = function (el) {
   range.deleteContents();
 
   range.insertNode(el);
+};
+
+Caret.prototype.closestElement = function () {
+  var node = this.focusNode();
+  return this.nextElement(node);
 };
 function Middleware() {
   this.middleware = [];
@@ -762,7 +807,9 @@ Observe.prototype.sync = function () {
     shouldBeDelete[name] = 1;
   });
 
-  this._scan(this.el, structure, shouldBeDelete);
+  utils.each(this.el.children, function (el) {
+    Observe.scan.call(this, el, structure, shouldBeDelete);
+  }.bind(this));
 
   Object.keys(shouldBeDelete).forEach(function (name) {
     delete data[name];
@@ -771,18 +818,18 @@ Observe.prototype.sync = function () {
   this.structure = structure;
 };
 
-Observe.prototype._scan = function (el, structure, shouldBeDelete) {
+Observe.scan = function (el, structure, shouldBeDelete) {
   var tagName = el.tagName.toLowerCase();
   var name = el.getAttribute('name');
   var data = this.data[name];
   var schema = this.schema[tagName];
   
   if (!schema) {
-    utils.each(el.children, function (el) {
-      this._scan(el, structure, shouldBeDelete);
-    }.bind(this));
+    el.parentElement.removeChild(el);
     return;
   }
+
+  Observe.checkAndRemoveStrangeElement.call(this, el);
 
   if (name) {
     delete shouldBeDelete[name];
@@ -830,7 +877,7 @@ Observe.section = function (el, data, structure, shouldBeDelete) {
     }
 
     if (/^paragraph/.test(schema.type)) {
-      p.push(this._scan(child, structure, shouldBeDelete).id);
+      p.push(Observe.scan.call(this, child, structure, shouldBeDelete).id);
     }
 
   }.bind(this));
@@ -851,7 +898,7 @@ Observe.paragraphs = function (el, data, structure, shouldBeDelete) {
     }
 
     if (schema.type === 'paragraph') {
-      p.push(this._scan(child, structure, shouldBeDelete).id);
+      p.push(Observe.scan.call(this, child, structure, shouldBeDelete).id);
     }
   }.bind(this));
 
@@ -871,7 +918,7 @@ Observe.paragraph = function (el, data, structure, shouldBeDelete) {
     }
 
     if (schema.type === 'detail') {
-      detail.push(this._scan(child, structure, shouldBeDelete).id);
+      detail.push(Observe.scan.call(this, child, structure, shouldBeDelete).id);
     }
   }.bind(this));
 
@@ -976,108 +1023,205 @@ Observe.prototype.toJSON = function () {
 
   return json;
 };
+
+Observe.rules = {
+  section: {
+    paragraph: 1,
+    paragraphs: 1
+  },
+
+  paragraphs: {
+    paragraph: 1
+  },
+
+  paragraph: {
+    detail: 1
+  },
+
+  detail: {}
+};
+
+Observe.checkAndRemoveStrangeElement = function (el) {
+  var type = (schema[el.tagName.toLowerCase()] || {}).type;
+  var parentType = (schema[el.parentElement.tagName.toLowerCase()] || {}).type;
+  var shouldRemove = true;
+
+  if (type && parentType) {
+    if (Observe.rules[parentType][type]) {
+      shouldRemove = false;
+    }
+  } else if (el.parentElement === this.el) {
+    if (type === 'section') {
+      shouldRemove = false;
+    }
+  }
+
+  if (shouldRemove) {
+    el.parentElement.removeChild(el);
+  }
+};
 function HtmlBuilder() {
 }
 
 HtmlBuilder.prototype.fromJSON = function (json) {
-  var el = this.el;
-  var sections = json.sections;
-  var paragraphs = json.paragraphs;
-  
-  sections.forEach(function (section, i) {
-    var $section = el.querySelector('[name="' + section.name + '"]');
-    var prev = sections[i - 1];
-    var $prev = prev && el.querySelector('[name="' + prev.name + '"]');
-    var i, paragraph, $paragraph;
-
-    if (!$section) {
-      $section = document.createElement(section.tag);
-      $section.setAttribute('name', section.name);
-    }
-
-    for (i = section.start; i < section.end; i += 1) {
-      paragraph = paragraphs[i];
-      $paragraph = $section.querySelector('[name="' + paragraph.name + '"]');
-
-      if (!$paragraph) {
-        $paragraph = document.createElement(paragraph.tag);
-        $paragraph.setAttribute('name', paragraph.name);
-      }
-
-      HtmlBuilder.initElement.call(this, $paragraph, paragraph);
-      HtmlBuilder.createDetail.call(this, $paragraph, paragraph);
-
-      if (!$paragraph.parentElement) {
-        $section.appendChild($paragraph);
-      }
-    }
-
-    if (!$section.parentElement) {
-      if ($prev) {
-        $prev.parentElement.insertBefore($section, $prev.nextSibling);
-      } else {
-        this.el.appendChild($section);
-      }
-    }
-  }.bind(this));
-
-  this.handleEmpty();
+  HtmlBuilder.importData.call(this, json);
+  HtmlBuilder.buildHTML.call(this);
 };
 
-HtmlBuilder.createDetail = function (el, data) {
-  var text = el.textContent || el.innerText;
-  var detail = data.detail || [];
+HtmlBuilder.importData = function (json) {
+  json = utils.clone(json);
+
+  var data = this.data = {};
+  var structure = this.structure = {};
+  var sections = structure.sections = [];
+  var paragraphs = structure.paragraphs = [];
+
+  (json.sections || []).forEach(function (section) {
+    var name = section.name;
+    var d = data[name] = new Data(name);
+
+    delete section.name;
+    d.data = section;
+    d.update();
+
+    sections.push(name);
+  });
+
+  (json.paragraphs || []).forEach(function (paragraph) {
+    var name = paragraph.name;
+    var d = data[name] = new Data(name);
+
+    delete paragraph.name;
+
+    d.data = paragraph;
+    paragraph.detail = (paragraph.detail || []).map(detail);
+    d.update();
+
+    paragraphs.push(name);
+  });
+
+  function detail(detail) {
+    var name = detail.name;
+    var d = data[name] = new Data(name);
+
+    delete detail.name;
+    d.data = detail;
+    d.update();
+
+    return name;
+  }
+
+  return this;
+};
+
+HtmlBuilder.buildHTML = function () {
+  var docfrag = document.createDocumentFragment();
+  var el = this.el;
   var html = '';
-  var cursor = 0;
 
-  detail.forEach(function (data) {
-    var $detail = el.querySelector('[name="' + data.name + '"]');
+  HtmlBuilder.createElements(docfrag, this.structure, this.data);
 
-    if (!$detail) {
-      $detail = document.createElement(data.tag);
-      $detail.setAttribute('name', data.name);
-    }
-
-    HtmlBuilder.initElement.call(this, $detail, data);
-
-    if ($detail.textContent === undefined) {
-      $detail.innerText = text.substr(data.start, data.end - data.start);
-    } else {
-      $detail.textContent = text.substr(data.start, data.end - data.start);
-    }
-
-    html += text.substr(cursor, data.start - cursor)
-      + $detail.outerHTML;
-
-    cursor = data.end;
-  }.bind(this));
-
-  html += text.substr(cursor, text.length - cursor);
+  utils.each(docfrag.childNodes, function (child) {
+    html += child.outerHTML;
+  });
 
   el.innerHTML = html;
 };
 
-HtmlBuilder.initElement = function (el, data) {
-  var schema = this.schema[data.tag];
+HtmlBuilder.createElements = function (container, structure, data) {
+  HtmlBuilder.createSections(container, structure, data);
+};
 
-  schema.attrs.forEach(function (attr) {
+HtmlBuilder.createSections = function (container, structure, data) {
+  structure.sections.forEach(function (name) {
+    var section = data[name];
+    var el = HtmlBuilder.createElement(section);
+
+    HtmlBuilder.createParagraphs(section, el, structure, data);
+
+    container.appendChild(el);
+  });
+};
+
+HtmlBuilder.createParagraphs = function (section, container, structure, data) {
+  structure
+    .paragraphs
+    .slice(section.get('start'), section.get('end'))
+    .forEach(function (name) {
+      var paragraph = data[name];
+      var el = HtmlBuilder.createElement(paragraph);
+
+      var s = schema[paragraph.get('tag')];
+
+      if (s.type === 'paragraphs') {
+        HtmlBuilder.createParagraphs(paragraph, el, structure, data);
+      } else if (!paragraph.get('in-paragraphs')) {
+        HtmlBuilder.createDetails(paragraph, el, structure, data);
+      }
+
+      container.appendChild(el);
+    });
+};
+
+HtmlBuilder.createDetails = function (paragraph, container, structure, data) {
+  var detail = paragraph.get('detail');
+  var text = paragraph.get('text');
+  var pointer = 0;
+
+  container.innerHTML = '';
+
+  detail.forEach(function (name) {
+    var d = data[name];
+    var el = HtmlBuilder.createElement(d);
+    var start = d.get('start');
+    var end = d.get('end');
+
+    if (pointer !== start) {
+      container.appendChild(document.createTextNode(text.slice(pointer, start)));
+    }
+
+    el.innerHTML = text.slice(start, end);
+    container.appendChild(el);
+
+    pointer = end;
+  });
+
+  if (pointer !== text.length) {
+    container.appendChild(document.createTextNode(text.slice(pointer, text.length)));
+  }
+};
+
+HtmlBuilder.createElement = function (data) {
+  var tagName = data.get('tag');
+  var el = document.createElement(tagName);
+
+  el.setAttribute('name', data.id);
+  HtmlBuilder.initElement(el, data);
+
+  return el;
+};
+
+HtmlBuilder.initElement = function (el, data) {
+  var s = schema[data.get('tag')];
+
+  s.attrs.forEach(function (attr) {
     HtmlBuilder[attr.type].call(this, el, data, attr);
   });
 };
 
 HtmlBuilder.attribute = function (el, data, attr) {
-  el.setAttribute(attr.name, data[attr.name]);
+  el.setAttribute(attr.name, data.get(attr.name));
 };
 
 HtmlBuilder.dataset = function (el, data, attr) {
-  el.setAttribute('data-' + attr.name, data[attr.name]);
+  el.setAttribute('data-' + attr.name, data.get(attr.name));
 };
 
 HtmlBuilder.content = function (el, data, attr) {
   if (el.textContent === undefined) {
-    el.innerText = data[attr.name];
+    el.innerText = data.get(attr.name);
   } else {
-    el.textContent = data[attr.name];
+    el.textContent = data.get(attr.name);
   }
 };
 var defaultOptions = {
@@ -1099,7 +1243,7 @@ function Editor(options) {
   Observe.call(this);
   HtmlBuilder.call(this);
 
-  this.options = utils.mixin(Object.create(defaultOptions), options);
+  this.options = utils.mixin(Object.create(defaultOptions), options || {});
   this.context = {};
   this.context.editor = this;
 
@@ -1122,12 +1266,15 @@ function Editor(options) {
 }
 
 Editor.prototype.default = function () {
+  middlewares.removeExtraNodes(this);
+  middlewares.renameElements(this);
+  middlewares.removeInlineStyle(this);
+  middlewares.handleEmptyParagraph(this);
+
   return this.compose([
+    middlewares.prevent(),
     middlewares.p(this),
-    middlewares.removeExtraNodes(this),
-    middlewares.renameElements(this),
-    middlewares.removeInlineStyle(this),
-    middlewares.handleEmptyParagraph(this)
+    middlewares.createNewParagraph()
   ]);
 };
 
@@ -1144,13 +1291,7 @@ Editor.prototype.bindEvents = function () {
 };
 
 Editor.prototype.onKeydown = function (e) {
-  var focus = this.caret.focusElement();
   var ctx;
-
-  if (focus === this.el || focus === document.body) {
-    utils.preventEvent(e);
-    return;
-  }
 
   this.handleEmpty();
   
@@ -1159,8 +1300,8 @@ Editor.prototype.onKeydown = function (e) {
   ctx.prevent = utils.preventEvent.bind(null, e);
 
   setTimeout(function () {
-    this.walk();
     this.sync();
+    this.walk();
   }.bind(this));
 
   this.exec(ctx, function (e) {

@@ -6,12 +6,9 @@ middlewares.init = function () {
     var code = e.keyCode || e.which;
     var mod = keyboard.modifiers[code];
 
-    if (mod) {
-      return;
-    }
-
     var editor = this.editor;
 
+    this.modifier = mod;
     this.ctrl = e.ctrlKey;
     this.option = this.alt = e.altKey;
     this.shift = e.shiftKey;
@@ -19,16 +16,13 @@ middlewares.init = function () {
     this.code = code;
     this.key = keyboard.map[code];
     this.super = this[keyboard.super];
+    this.node = editor.caret.focusNode();
     this.element = editor.caret.focusElement();
+    this.nextElement = editor.caret.nextElement();
     this.section = editor.caret.focusSection();
     this.paragraph = editor.caret.focusParagraph();
     this.paragraphs = editor.caret.focusParagraphs();
     this.detail = editor.caret.focusDetail();
-    
-    if (this.key === 'backspace' && this.editor.isEmpty()) {
-      this.prevent();
-      return;
-    }
 
     var els = editor.el.querySelectorAll('br[type="_med_placeholder"]');
 
@@ -40,12 +34,31 @@ middlewares.init = function () {
   };
 };
 
-middlewares.p = function (editor) {
+middlewares.prevent = function () {
+  return function (next) {
+    if (this.key === 'backspace' && this.editor.isEmpty()) {
+      this.prevent();
+      return;
+    }
 
+    if (this.element === document.body) {
+      utils.preventEvent(e);
+      return;
+    }
+
+    next();
+  };
+};
+
+middlewares.p = function (editor) {
   return function (next) {
     var el = this.element;
 
-    if (el.tagName === 'SECTION') {
+    if (this.modifier) {
+      return next();
+    }
+
+    if (el === el.section) {
       return this.prevent();
     }
 
@@ -142,4 +155,23 @@ middlewares.handleEmptyParagraph = function (editor) {
       el.innerHTML = '<br class="_med_placeholder" />';
     }
   });
+};
+
+middlewares.createNewParagraph = function () {
+  return function (next) {
+    var shouldHandleThisEvent = this.key === 'enter'
+      && this.section === this.editor.caret.focusSection()
+      && !this.shift
+      && this.element === this.paragraph
+      && !this.editor.caret.textAfter(this.element);
+
+    if (shouldHandleThisEvent) {
+      this.prevent();
+      var el = document.createElement('p');
+      this.element.parentElement.insertBefore(el, this.element.nextSibling);
+      this.editor.caret.focusTo(el);
+    }
+
+    next();
+  };
 };
