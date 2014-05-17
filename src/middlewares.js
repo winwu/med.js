@@ -98,8 +98,13 @@ middlewares.p = function (editor) {
         // 在行頭
         // 需要把 section 分段
         editor.caret.split(this.section);
+
         setTimeout(function () {
-          editor.caret.moveToStart(this.section);
+          // 預設行為好像會建立一個新 <p>
+          // 所以把清除空 element 的動作移到事件結束後
+          // （需要確認）
+          utils.removeEmptyElements(this.section);
+          utils.removeEmptyElements(this.section.previousElementSibling);
         }.bind(this))
 
         next();
@@ -171,13 +176,13 @@ middlewares.handleEmptyParagraph = function (editor) {
 
 middlewares.createNewParagraph = function () {
   return function (next) {
-    var shouldHandleThisEvent = this.key === 'enter'
+    var needToCreateElement = this.key === 'enter'
       && this.section === this.editor.caret.focusSection()
       && !this.shift
       && this.element === this.paragraph
       && !this.editor.caret.textAfter(this.element);
 
-    if (shouldHandleThisEvent) {
+    if (needToCreateElement) {
       this.prevent();
       var el = document.createElement('p');
       this.element.parentElement.insertBefore(el, this.element.nextSibling);

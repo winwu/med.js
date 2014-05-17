@@ -101,3 +101,13 @@ utils.isNotEmpty = function (el) {
 utils.isTag = function (tagName, el) {
   return el.tagName === tagName.toUpperCase();
 };
+
+utils.removeEmptyElements = function (el) {
+  utils.each(el.children, function (child) {
+    if (utils.isEmpty(child)) {
+      el.removeChild(child);
+    } else {
+      utils.removeEmptyElements(child);
+    }
+  });
+};
