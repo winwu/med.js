@@ -205,7 +205,7 @@ middlewares.delete = function (editor) {
       if (!(selection + '') && utils.isType(['paragraph', 'paragraphs'], this.element) && !editor.caret.textBefore(this.element)) {
         this.prevent();
         var previous = this.element.previousElementSibling;
-        var needToRemove;
+        var needToRemove, offset;
 
         if (previous) {
           needToRemove = this.element;
@@ -216,7 +216,7 @@ middlewares.delete = function (editor) {
         previous = needToRemove.previousElementSibling;
 
         if (needToRemove && previous) {
-          var offset = utils.getTextContent(previous).length;
+          offset = utils.getTextContent(previous).length;
 
           utils.each(needToRemove.childNodes, function (child) {
             previous.appendChild(child);
@@ -225,6 +225,14 @@ middlewares.delete = function (editor) {
           needToRemove.parentElement.removeChild(needToRemove);
 
           editor.caret.moveToStart(previous.firstChild, offset);
+        } else {
+          previous = this.node.previousSibling;
+          
+          if (previous && previous.nodeType === document.ELEMENT_NODE && utils.isTag('br', previous)) {
+            offset = utils.getTextContent(previous.previousSibling).length;
+            previous.parentElement.removeChild(previous);
+            editor.caret.moveToStart(this.node.previousSibling, offset);
+          }
         }
       }
     }
