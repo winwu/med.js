@@ -102,7 +102,12 @@ middlewares.p = function (editor) {
         editor.caret.split(this.section);
 
         utils.removeEmptyElements(this.section);
-        utils.removeEmptyElements(this.section.previousElementSibling);
+
+        // 如果 <section> 是空的就不能把 <p> 移除
+        // 移除會造成使用者直接輸入文字在 section 內
+        if (utils.isNotEmpty(this.section.previousElementSibling)) {
+          utils.removeEmptyElements(this.section.previousElementSibling);
+        }
 
         next();
       }
@@ -135,7 +140,7 @@ middlewares.removeInlineStyle = function () {
 
 middlewares.removeExtraNodes = function () {
   var removeExtraNode = function (el) {
-    var nodes = el.children;
+    var nodes = el.childNodes;
     var len = nodes.length;
     var curr, prev;
     
@@ -184,6 +189,43 @@ middlewares.createNewParagraph = function () {
       var el = document.createElement('p');
       this.element.parentElement.insertBefore(el, this.element.nextSibling);
       this.editor.caret.focusTo(el);
+    }
+
+    next();
+  };
+};
+
+middlewares.delete = function (editor) {
+  return function (next) {
+    if (this.key === 'backspace') {
+      var selection = document.getSelection();
+
+      // 段落前面已經沒有文字
+      // 需要刪除 element
+      if (!(selection + '') && !editor.caret.textBefore(this.element)) {
+        this.prevent();
+        var previous = this.element.previousElementSibling;
+        var needToRemove;
+
+        if (previous) {
+          needToRemove = this.element;
+        } else {
+          needToRemove = this.section;
+        }
+
+        previous = needToRemove.previousElementSibling;
+
+        if (needToRemove && previous) {
+
+          utils.each(function (child) {
+            previous.appendChild(child);
+          });
+
+          needToRemove.parentElement.removeChild(needToRemove);
+
+          editor.caret.moveToEnd(previous.lastChild);
+        }
+      }
     }
 
     next();

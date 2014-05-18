@@ -40,6 +40,7 @@ Editor.prototype.default = function () {
   return this.compose([
     middlewares.prevent(),
     middlewares.p(this),
+    middlewares.delete(this),
     middlewares.createNewParagraph()
   ]);
 };
