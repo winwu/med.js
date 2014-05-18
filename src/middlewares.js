@@ -95,17 +95,14 @@ middlewares.p = function (editor) {
           next();
         }
       } else if (!editor.caret.textBefore(el)) {
+        this.prevent();
+
         // 在行頭
         // 需要把 section 分段
         editor.caret.split(this.section);
 
-        setTimeout(function () {
-          // 預設行為好像會建立一個新 <p>
-          // 所以把清除空 element 的動作移到事件結束後
-          // （需要確認）
-          utils.removeEmptyElements(this.section);
-          utils.removeEmptyElements(this.section.previousElementSibling);
-        }.bind(this))
+        utils.removeEmptyElements(this.section);
+        utils.removeEmptyElements(this.section.previousElementSibling);
 
         next();
       }
