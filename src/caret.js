@@ -121,18 +121,56 @@ Caret.prototype.textAfter = function () {
   return node.substringData(offset, node.length - 1); 
 };
 
-Caret.prototype.moveToStart = function (el) {
-  el.focus();
-  document.getSelection().collapse(el, true);
-};
-
-Caret.prototype.moveToEnd = function (el) {
+Caret.prototype.moveToStart = function (el, offset) {
+  var selection = document.getSelection();
   var range = document.createRange();
-  var selection = window.getSelection();
-  range.selectNodeContents(el);
-  range.collapse(false);
+  var len;
+
+  if (el.nodeType === document.TEXT_NODE) {
+    len = utils.getTextContent(el).length;
+  } else {
+    len = el.childNodes.length;
+  }
+
+  offset = offset | 0;
+
+  if (offset < 0) {
+    offset = 0;
+  } else if (offset >= len) {
+    offset = len;
+  }
+
+  range.setStart(el, offset);
+  range.setEnd(el, offset);
+
   selection.removeAllRanges();
   selection.addRange(range);
+  selection.collapseToStart();
+};
+
+Caret.prototype.moveToEnd = function (el, offset) {
+  var range = document.createRange();
+  var selection = window.getSelection();
+  var len;
+
+  if (el.nodeType === document.TEXT_NODE) {
+    len = utils.getTextContent(el).length;
+  } else {
+    len = el.childNodes.length;
+  }
+
+  offset = len - (offset | 0);
+
+  if (offset < 0) {
+    offset = 0;
+  }
+
+  range.setStart(el, offset);
+  range.setEnd(el, offset);
+
+  selection.removeAllRanges();
+  selection.addRange(range);
+  selection.collapseToEnd();
 };
 
 Caret.prototype.split = function (el) {

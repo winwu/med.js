@@ -202,7 +202,7 @@ middlewares.delete = function (editor) {
 
       // 段落前面已經沒有文字
       // 需要刪除 element
-      if (!(selection + '') && !editor.caret.textBefore(this.element)) {
+      if (!(selection + '') && utils.isType(['paragraph', 'paragraphs'], this.element) && !editor.caret.textBefore(this.element)) {
         this.prevent();
         var previous = this.element.previousElementSibling;
         var needToRemove;
@@ -216,14 +216,15 @@ middlewares.delete = function (editor) {
         previous = needToRemove.previousElementSibling;
 
         if (needToRemove && previous) {
+          var offset = utils.getTextContent(previous).length;
 
-          utils.each(function (child) {
+          utils.each(needToRemove.childNodes, function (child) {
             previous.appendChild(child);
           });
 
           needToRemove.parentElement.removeChild(needToRemove);
 
-          editor.caret.moveToEnd(previous.lastChild);
+          editor.caret.moveToStart(previous.firstChild, offset);
         }
       }
     }

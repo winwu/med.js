@@ -111,3 +111,13 @@ utils.removeEmptyElements = function (el) {
     }
   });
 };
+
+utils.isType = function (types, el) {
+  var s = schema[el.tagName.toLowerCase()];
+
+  if (typeof types === 'string') {
+    types = [types];
+  }
+
+  return s && !!~types.indexOf(s.type);
+};
