@@ -210,8 +210,9 @@ middlewares.delete = function (editor) {
       // 需要刪除 element
       if (atTheBeginningOfTheElement(this.element)) {
         this.prevent();
+
         var previous = this.element.previousElementSibling;
-        var needToRemove, offset;
+        var needToRemove, offset, childNodes, firstChild;
 
         if (previous) {
           needToRemove = this.element;
@@ -222,11 +223,13 @@ middlewares.delete = function (editor) {
         previous = needToRemove.previousElementSibling;
 
         if (needToRemove && previous) {
+          childNodes = Array.prototype.slice.call(needToRemove.childNodes);
+          firstChild = needToRemove.firstChild;
           offset = utils.getTextContent(previous).length;
 
           utils.removeEmptyElements(previous);
 
-          utils.each(needToRemove.childNodes, function (child) {
+          utils.each(childNodes, function (child) {
             previous.appendChild(child);
           });
 
@@ -234,7 +237,7 @@ middlewares.delete = function (editor) {
 
           if (utils.isType('section', needToRemove)) {
             // section 的情況是要讓游標在畫面上跟著目前 element 移動
-            editor.caret.moveToStart(previous.lastChild.firstChild);
+            editor.caret.moveToStart(firstChild);
           } else {
             // 段落的情況是要讓兩個 element 接起來後，游標移動到合併的位置
             editor.caret.moveToStart(previous.firstChild, offset);
