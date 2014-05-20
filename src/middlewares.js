@@ -224,7 +224,11 @@ middlewares.delete = function (editor) {
 
           needToRemove.parentElement.removeChild(needToRemove);
 
-          editor.caret.moveToStart(previous.firstChild, offset);
+          if (utils.isType('section', needToRemove)) {
+            editor.caret.moveToStart(previous.lastChild.firstChild);
+          } else {
+            editor.caret.moveToStart(previous.firstChild, offset);
+          }
         } else {
           previous = this.node.previousSibling;
           
