@@ -200,9 +200,15 @@ middlewares.delete = function (editor) {
     if (this.key === 'backspace') {
       var selection = document.getSelection();
 
+      var atTheBeginningOfTheElement = function (el) {
+        return !(selection + '')
+          && utils.isType(['paragraph', 'paragraphs', 'section'], el)
+          && !editor.caret.textBefore(el);
+      };
+
       // 段落前面已經沒有文字
       // 需要刪除 element
-      if (!(selection + '') && utils.isType(['paragraph', 'paragraphs'], this.element) && !editor.caret.textBefore(this.element)) {
+      if (atTheBeginningOfTheElement(this.element)) {
         this.prevent();
         var previous = this.element.previousElementSibling;
         var needToRemove, offset;
@@ -218,6 +224,8 @@ middlewares.delete = function (editor) {
         if (needToRemove && previous) {
           offset = utils.getTextContent(previous).length;
 
+          utils.removeEmptyElements(previous);
+
           utils.each(needToRemove.childNodes, function (child) {
             previous.appendChild(child);
           });
@@ -225,8 +233,10 @@ middlewares.delete = function (editor) {
           needToRemove.parentElement.removeChild(needToRemove);
 
           if (utils.isType('section', needToRemove)) {
+            // section 的情況是要讓游標在畫面上跟著目前 element 移動
             editor.caret.moveToStart(previous.lastChild.firstChild);
           } else {
+            // 段落的情況是要讓兩個 element 接起來後，游標移動到合併的位置
             editor.caret.moveToStart(previous.firstChild, offset);
           }
         } else {
