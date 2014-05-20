@@ -91,6 +91,9 @@ utils.getTextContent = function (el) {
 };
 
 utils.isEmpty = function (el) {
+  if (utils.isTag('br', el)) {
+    return false;
+  }
   return !utils.getTextContent(el).trim();
 };
 
