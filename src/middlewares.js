@@ -70,18 +70,27 @@ middlewares.p = function (editor) {
       if (utils.isEmpty(el)) {
         this.prevent();
 
+        var section = this.section;
+
         // 目前這一行是空的
         // 需要建立一個新的 <section>
 
-        if (this.section) {
-          if (utils.isNotEmpty(this.section)) {
-            utils.removeEmptyElements(this.section);
-            editor.caret.split(this.section);
-            editor.caret.moveToStart(this.section);
+        if (section) {
+          if (utils.isNotEmpty(section)) {
+            var p;
+
+            utils.removeEmptyElements(section);
+            editor.caret.split(section);
+            section.innerHTML = '<p><br /></p>';
+
+            p = section.querySelector('p');
+
+            editor.caret.moveToStart(p);
+
             next();
           }
         } else {
-          var section = document.createElement('section');
+          section = document.createElement('section');
 
           section.appendChild(el);
           editor.el.appendChild(section);
@@ -165,7 +174,7 @@ middlewares.removeExtraNodes = function () {
 middlewares.handleEmptyParagraph = function (editor) {
   editor.on('walk', function (ctx) {
     var el = ctx.element;
-    if (el.tagName === 'P' && !(el.textContent || el.innerText || '').trim()) {
+    if (utils.isType('paragraph', el) && utils.isEmpty(el)) {
       el.innerHTML = '<br class="_med_placeholder" />';
     }
   });
