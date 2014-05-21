@@ -13,17 +13,21 @@ Observe.prototype.sync = function () {
 
   var shouldBeDelete = {};
 
-  Object.keys(data).forEach(function (name) {
-    shouldBeDelete[name] = 1;
-  });
+  Object
+    .keys(data)
+    .forEach(function (name) {
+      shouldBeDelete[name] = 1;
+    });
 
   utils.each(this.el.children, function (el) {
     Observe.scan.call(this, el, structure, shouldBeDelete);
   }.bind(this));
 
-  Object.keys(shouldBeDelete).forEach(function (name) {
-    delete data[name];
-  });
+  Object
+    .keys(shouldBeDelete)
+    .forEach(function (name) {
+      delete data[name];
+    });
 
   this.structure = structure;
 };
@@ -75,7 +79,7 @@ Observe.section = function (el, data, structure, shouldBeDelete) {
   var p = [];
 
   utils.each(el.children, function (child) {
-    var schema = this.schema[child.tagName.toLowerCase()];
+    var schema = utils.getElementSchema(child);
 
     if (!schema) {
       Observe.handleUnknownElement(child);
@@ -100,7 +104,7 @@ Observe.paragraphs = function (el, data, structure, shouldBeDelete) {
   var p = [];
 
   utils.each(el.children, function (child) {
-    var schema = this.schema[child.tagName.toLowerCase()];
+    var schema = utils.getElementSchema(child);
 
     if (!schema) {
       Observe.handleUnknownElement(child);
@@ -120,7 +124,7 @@ Observe.paragraph = function (el, data, structure, shouldBeDelete) {
   var detail = [];
 
   utils.each(el.children, function (child) {
-    var schema = this.schema[child.tagName.toLowerCase()];
+    var schema = utils.getElementSchema(child);
 
     if (!schema) {
       Observe.handleUnknownElement(child);
@@ -172,7 +176,7 @@ Observe.getOffset = function (el) {
 
   var check = function () {
     return parentElement
-      && parentElement.nodeType === document.ELEMENT_NODE
+      && utils.isElementNode(parentElement)
       && !parentElement.getAttribute('name');
   };
 
@@ -185,9 +189,9 @@ Observe.getOffset = function (el) {
     offset.start = parentElement.innerHTML.indexOf(el.outerHTML);
     beforeHTML = parentElement.innerHTML.substr(0, offset.start);
     tmp.innerHTML = beforeHTML;
-    beforeText = tmp.textContent || tmp.innerText || '';
+    beforeText = utils.getTextContent(tmp);
     offset.start -= beforeHTML.length - beforeText.length;
-    offset.end = offset.start + (el.textContent || el.innerText || '').length;
+    offset.end = offset.start + utils.getTextContent(el).length;
   }
 
   return offset;
@@ -207,7 +211,9 @@ Observe.prototype.toJSON = function () {
   sections.forEach(function (name) {
     var section = data[name];
     var d = section && section.toJSON() || {};
+
     d.name = name;
+
     json.sections.push(d);
   });
 
@@ -252,8 +258,8 @@ Observe.rules = {
 };
 
 Observe.checkAndRemoveStrangeElement = function (el) {
-  var type = (schema[el.tagName.toLowerCase()] || {}).type;
-  var parentType = (schema[el.parentElement.tagName.toLowerCase()] || {}).type;
+  var type = utils.getType(el);
+  var parentType = utils.getType(el.parentElement);
   var shouldRemove = true;
 
   if (type && parentType) {

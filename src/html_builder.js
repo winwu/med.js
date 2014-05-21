@@ -104,6 +104,7 @@ HtmlBuilder.createParagraphs = function (section, container, structure, data) {
 HtmlBuilder.createDetails = function (paragraph, container, structure, data) {
   var detail = paragraph.get('detail');
   var text = paragraph.get('text');
+  var content, node;
   var pointer = 0;
 
   container.innerHTML = '';
@@ -115,7 +116,9 @@ HtmlBuilder.createDetails = function (paragraph, container, structure, data) {
     var end = d.get('end');
 
     if (pointer !== start) {
-      container.appendChild(document.createTextNode(text.slice(pointer, start)));
+      content = text.slice(pointer, start);
+      node = document.createTextNode(content);
+      container.appendChild(node);
     }
 
     el.innerHTML = text.slice(start, end);
@@ -125,7 +128,9 @@ HtmlBuilder.createDetails = function (paragraph, container, structure, data) {
   });
 
   if (pointer !== text.length) {
-    container.appendChild(document.createTextNode(text.slice(pointer, text.length)));
+    content = text.slice(pointer, text.length);
+    node = document.createTextNode(content);
+    container.appendChild(node);
   }
 };
 

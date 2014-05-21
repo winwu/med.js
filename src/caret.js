@@ -24,7 +24,7 @@ Caret.prototype.focusElement = function (tagName) {
   } else {
     node = document.getSelection().focusNode;
 
-    while (node && node.nodeType !== document.ELEMENT_NODE) {
+    while (node && !utils.isElementNode(node)) {
       node = node.parentNode;
     }
 
@@ -50,16 +50,16 @@ Caret.prototype.focusDetail = function () {
 
 Caret.prototype.focusType = function (type) {
   var node = this.focusElement();
-  var s;
+  var elType;
 
   while (true) {
     if (!node) {
       break;
     }
 
-    s = node && schema[node.tagName.toLowerCase()];
+    elType = utils.getType(node);
 
-    if (s && s.type === type) {
+    if (elType === type) {
       return node;
     }
 
@@ -77,7 +77,7 @@ Caret.prototype.nextElement = function (node) {
   }
 
   while (node) {
-    if (node.nodeType === document.ELEMENT_NODE) {
+    if (utils.isElementNode(node)) {
       return node;
     }
 
@@ -102,7 +102,7 @@ Caret.prototype.textBefore = function () {
   var node = selection.focusNode;
   var offset = selection.focusOffset;
   
-  if (node.nodeType === document.ELEMENT_NODE){
+  if (utils.isElementNode(node)){
     return '';
   }
   
@@ -114,7 +114,7 @@ Caret.prototype.textAfter = function () {
   var node = selection.focusNode;
   var offset = selection.focusOffset;
   
-  if (node.nodeType === document.ELEMENT_NODE){
+  if (utils.isElementNode(node)){
     return '';
   }
   
@@ -126,7 +126,7 @@ Caret.prototype.moveToStart = function (el, offset) {
   var range = document.createRange();
   var len;
 
-  if (el.nodeType === document.TEXT_NODE) {
+  if (utils.isTextNode(el)) {
     len = utils.getTextContent(el).length;
   } else {
     len = el.childNodes.length;
@@ -153,7 +153,7 @@ Caret.prototype.moveToEnd = function (el, offset) {
   var selection = window.getSelection();
   var len;
 
-  if (el.nodeType === document.TEXT_NODE) {
+  if (utils.isTextNode(el)) {
     len = utils.getTextContent(el).length;
   } else {
     len = el.childNodes.length;

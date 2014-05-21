@@ -133,20 +133,20 @@ middlewares.list = function (editor) {
     // 所以必須自己處理換行動作
     if (this.key === 'enter' && !this.shift) {
 
-      // 行尾換行預設動作會自動插入 <p>
-      if (!editor.caret.textAfter().trim()) {
+      if (utils.isEmpty(el)) {
+        // 空行，要讓使用者跳離 ul/ol
+        this.prevent();
+        var p = document.createElement('p');
+        this.section.insertBefore(p, this.paragraphs.nextSibling);
+        utils.removeElement(el);
+        setTimeout(function () {
+          editor.caret.moveToStart(p);
+        });
+      } else if (!editor.caret.textAfter().trim()) {
+        // 行尾換行預設動作會自動插入 <p>
         this.prevent();
         editor.caret.split(el);
         editor.caret.moveToStart(el);
-      }
-
-      // 空行，要讓使用者跳離 ul/ol
-      if (utils.isEmpty(el)) {
-        this.prevent();
-        var p = document.createElement('p');
-        this.paragraphs.insertBefore(p, el.nextSibling);
-        utils.removeElement(el);
-        editor.caret.moveToStart(p);
       }
     }
 
@@ -186,9 +186,9 @@ middlewares.removeExtraNodes = function () {
       prev = nodes[len - 1];
 
       if (prev && prev.nodeType === curr.nodeType) {
-        if (prev.nodeType === document.TEXT_NODE) {
+        if (utils.isTextNode(prev)) {
           prev.appendData(curr.data);
-        } else if (prev.nodeType === document.ELEMENT_NODE) {
+        } else if (utils.isElementNode(prev)) {
           prev.innerHTML += curr.textContent || curr.innerHTML || '';
         }
         curr.parentNode.removeChild(curr);
@@ -197,9 +197,8 @@ middlewares.removeExtraNodes = function () {
   };
 
   editor.on('walk', function (ctx) {
-    var s = schema[ctx.el.tagName.toLowerCase()];
-    if (s.type === 'paragraph') {
-      removeExtraNode(ctx.el);
+    if (utils.isType('paragraph', ctx.element)) {
+      removeExtraNode(ctx.element);
     }
   });
 };
@@ -282,8 +281,14 @@ middlewares.delete = function (editor) {
           }
         } else {
           previous = this.node.previousSibling;
+
+          var previousIsBrTag = function () {
+            return previous
+              && utils.isElementNode(previous)
+              && utils.isTag('br', previous);
+          };
           
-          if (previous && previous.nodeType === document.ELEMENT_NODE && utils.isTag('br', previous)) {
+          if (previousIsBrTag()) {
             offset = utils.getTextContent(previous.previousSibling).length;
             previous.parentElement.removeChild(previous);
             editor.caret.moveToStart(this.node.previousSibling, offset);

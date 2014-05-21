@@ -31,14 +31,21 @@ utils.os = function () {
 };
 
 utils.each = function (ctx, fn) {
-  if (typeof ctx === 'object' && typeof ctx.length === 'number') {
+  if (utils.isArrayLike(ctx)) {
     Array.prototype.forEach.call(ctx, fn);
   }
+
   return ctx;
+};
+
+utils.isArrayLike = function (obj) {
+  return typeof obj === 'object'
+    && typeof obj.length === 'number';
 };
 
 utils.split = function (separator, limit) {
   var re = new RegExp('\\\\' + limit, 'g');
+
   return separator
     .replace(re, '\uffff')
     .split(limit)
@@ -69,10 +76,14 @@ utils.equal = function (a, b) {
 
   if (typeof a === 'object') {
     if (typeof b === 'object') {
-      var prop;
+      var prop, notEqual;
 
       for (prop in a) {
-        if (a.hasOwnProperty(prop) && b.hasOwnProperty(prop) && !utils.equal(a[prop], b[prop])) {
+        notEqual = a.hasOwnProperty(prop)
+          && b.hasOwnProperty(prop)
+          && !utils.equal(a[prop], b[prop]);
+
+        if (notEqual) {
           return false;
         }
       }
@@ -87,7 +98,10 @@ utils.equal = function (a, b) {
 };
 
 utils.getTextContent = function (el) {
-  return el.textContent || el.innerText || '';
+  return el
+    && el.textContent
+    || el.innerText
+    || '';
 };
 
 utils.isEmpty = function (el) {
@@ -136,11 +150,30 @@ utils.removeElement = function (el) {
 };
 
 utils.isType = function (types, el) {
-  var s = schema[el.tagName.toLowerCase()];
+  var s = utils.getElementSchema(el);
 
   if (typeof types === 'string') {
     types = [types];
   }
 
   return s && !!~types.indexOf(s.type);
+};
+
+utils.getType = function (el) {
+  var s = utils.getElementSchema(el);
+  return s ? s.type : null;
+};
+
+utils.getElementSchema = function (el) {
+  return el
+    && schema[el.tagName.toLowerCase()]
+    || null;
+};
+
+utils.isElementNode = function (node) {
+  return node.nodeType === document.ELEMENT_NODE;
+};
+
+utils.isTextNode = function (node) {
+  return node.nodeType === document.TEXT_NODE;
 };
