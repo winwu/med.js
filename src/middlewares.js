@@ -72,22 +72,17 @@ middlewares.p = function (editor) {
 
         // 目前這一行是空的
         // 需要建立一個新的 <section>
-        var section = document.createElement('section');
 
         if (this.section) {
           if (utils.isNotEmpty(this.section)) {
-            section.appendChild(el);
-            this.section
-              .parentElement
-              .insertBefore(section, this.section.nextSibling);
-            
-            setTimeout(function () {
-              editor.caret.moveToStart(el);
-            });
-
+            utils.removeEmptyElements(this.section);
+            editor.caret.split(this.section);
+            editor.caret.moveToStart(this.section);
             next();
           }
         } else {
+          var section = document.createElement('section');
+
           section.appendChild(el);
           editor.el.appendChild(section);
           editor.caret.moveToStart(el);
@@ -182,6 +177,7 @@ middlewares.createNewParagraph = function () {
       && this.section === this.editor.caret.focusSection()
       && !this.shift
       && this.element === this.paragraph
+      && this.element.parentElement
       && !this.editor.caret.textAfter(this.element);
 
     if (needToCreateElement) {
