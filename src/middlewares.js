@@ -62,7 +62,7 @@ middlewares.p = function (editor) {
       return this.prevent();
     }
 
-    if (el.tagName !== 'P') {
+    if (!utils.isTag('p', el)) {
       return next();
     }
 
@@ -118,6 +118,39 @@ middlewares.p = function (editor) {
     } else {
       next();
     }
+  };
+};
+
+middlewares.list = function (editor) {
+  return function (next) {
+    var el = this.element;
+
+    if (!utils.isTag('li', el)) {
+      return next();
+    }
+
+    // li 上換行有可能自動插入 <p>
+    // 所以必須自己處理換行動作
+    if (this.key === 'enter' && !this.shift) {
+
+      // 行尾換行預設動作會自動插入 <p>
+      if (!editor.caret.textAfter().trim()) {
+        this.prevent();
+        editor.caret.split(el);
+        editor.caret.moveToStart(el);
+      }
+
+      // 空行，要讓使用者跳離 ul/ol
+      if (utils.isEmpty(el)) {
+        this.prevent();
+        var p = document.createElement('p');
+        this.paragraphs.insertBefore(p, el.nextSibling);
+        utils.removeElement(el);
+        editor.caret.moveToStart(p);
+      }
+    }
+
+    next();
   };
 };
 
@@ -185,7 +218,7 @@ middlewares.createNewParagraph = function () {
     var needToCreateElement = this.key === 'enter'
       && this.section === this.editor.caret.focusSection()
       && !this.shift
-      && this.element === this.paragraph
+      && utils.isTag('p', this.element)
       && this.element.parentElement
       && !this.editor.caret.textAfter(this.element);
 

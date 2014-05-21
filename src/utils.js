@@ -102,7 +102,21 @@ utils.isNotEmpty = function (el) {
 };
 
 utils.isTag = function (tagName, el) {
-  return el.tagName === tagName.toUpperCase();
+  if (typeof tagName === 'string') {
+    tagName = [tagName];
+  }
+
+  var toUpperCase = function (str) {
+    return str.toUpperCase();
+  };
+
+  return !!~tagName
+    .map(toUpperCase)
+    .indexOf(el.tagName);
+};
+
+utils.isLastChild = function (el) {
+  return el.parentELement.lastChild === el;
 };
 
 utils.removeEmptyElements = function (el) {
@@ -113,6 +127,12 @@ utils.removeEmptyElements = function (el) {
       utils.removeEmptyElements(child);
     }
   });
+};
+
+utils.removeElement = function (el) {
+  if (el.parentElement) {
+    el.parentElement.removeChild(el);
+  }
 };
 
 utils.isType = function (types, el) {
