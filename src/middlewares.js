@@ -132,7 +132,6 @@ middlewares.list = function (editor) {
     // li 上換行有可能自動插入 <p>
     // 所以必須自己處理換行動作
     if (this.key === 'enter' && !this.shift) {
-
       if (utils.isEmpty(el)) {
         // 空行，要讓使用者跳離 ul/ol
         this.prevent();
@@ -236,16 +235,19 @@ middlewares.delete = function (editor) {
   return function (next) {
     if (this.key === 'backspace') {
       var selection = document.getSelection();
+      var el = this.element;
 
-      var atTheBeginningOfTheElement = function (el) {
+      var shouldHandleBackspace = function () {
         return !(selection + '')
           && utils.isType(['paragraph', 'paragraphs', 'section'], el)
+          // li 的預設刪除行為在這裡沒有問題
+          && !utils.isTag('li', el)
           && !editor.caret.textBefore(el);
       };
 
       // 段落前面已經沒有文字
       // 需要刪除 element
-      if (atTheBeginningOfTheElement(this.element)) {
+      if (shouldHandleBackspace()) {
         this.prevent();
 
         var previous = this.element.previousElementSibling;
