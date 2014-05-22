@@ -83,7 +83,7 @@ Editor.prototype.isEmpty = function () {
   var children = this.el.children;
   var first = children[0];
   return children.length <= 1
-    && !(first.textContent || first.innerText || '').trim();
+    && !utils.textContent(first).trim();
 };
 
 Editor.prototype.handleEmpty = function () {
