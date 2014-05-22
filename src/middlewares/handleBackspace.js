@@ -38,11 +38,22 @@ var handleBackspace = function (editor) {
       if (needToRemove && previous) {
         if (utils.isType('paragraphs', previous)) {
           // ul/ol 要特別處理
+          // 如果使用跟其他地方相同方式的作法
+          // 會造成 ul/ol 多出一個 br
           
           if(previous.lastChild && utils.isTag('li', previous.lastChild)) {
-            previous.lastChild.innerHTML += el.innerHTML;
+            var focus = previous.lastChild.lastChild;
+
+            utils.moveChildNodes(el, previous.lastChild);
             utils.removeElement(el);
-            editor.caret.moveToStart(previous.lastChild);
+
+            if (focus) {
+              editor.caret.moveToEnd(focus);
+            } else {
+              // 原本的 li 是空的
+              // 所以直接把指標移到 li 最前面就可以了
+              editor.caret.moveToStart(previous.lastChild);
+            }
           } else {
             // 忽略動作
           }

@@ -149,6 +149,22 @@ utils.removeElement = function (el) {
   }
 };
 
+utils.moveChildren = function (src, dest) {
+  var children = Array.prototype.slice.call(src.children);
+
+  utils.each(children, function (child) {
+    dest.appendChild(child);
+  });
+};
+
+utils.moveChildNodes = function (src, dest) {
+  var nodes = Array.prototype.slice.call(src.childNodes);
+
+  utils.each(nodes, function (node) {
+    dest.appendChild(node);
+  });
+};
+
 utils.isType = function (types, el) {
   var s = utils.getElementSchema(el);
 
