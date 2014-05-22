@@ -10,6 +10,10 @@ var preventDefault = function () {
       return;
     }
 
+    if (el === el.section) {
+      return this.prevent();
+    }
+
     next();
   };
 };
