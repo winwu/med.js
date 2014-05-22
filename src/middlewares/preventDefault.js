@@ -6,7 +6,7 @@ var preventDefault = function () {
     }
 
     if (this.element === document.body) {
-      utils.preventEvent(e);
+      utils.preventDefault(e);
       return;
     }
 

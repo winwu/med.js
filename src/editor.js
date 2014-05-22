@@ -65,7 +65,7 @@ Editor.prototype.onKeydown = function (e) {
   
   ctx = Object.create(this.context);
   ctx.event = e;
-  ctx.prevent = utils.preventEvent.bind(null, e);
+  ctx.prevent = utils.preventDefault.bind(null, e);
 
   setTimeout(function () {
     this.sync();

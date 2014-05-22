@@ -10,7 +10,7 @@ utils.mixin = function (o1, o2) {
   return o1;
 };
 
-utils.preventEvent = function (e) {
+utils.preventDefault = function (e) {
   return e.preventDefault
     ? e.preventDefault()
     : e.returnValue = false;
