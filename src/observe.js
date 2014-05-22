@@ -156,12 +156,12 @@ Observe.dataset = function (el, data, attr) {
 };
 
 Observe.content = function (el, data, attr) {
-  var text = utils.textContent(el);
+  var text = utils.getTextContent(el);
   data.set(attr.name, text);
 };
 
 Observe.handleUnknownElement = function (el) {
-  var text = utils.textContent(el);
+  var text = utils.getTextContent(el);
   var node = document.createTextNode(text);
   el.parentElement.replaceChild(node, el);
 };
