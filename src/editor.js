@@ -28,21 +28,21 @@ function Editor(options) {
   this.bindEvents();
   this.handleEmpty();
 
-  this.use(middlewares.init());
+  this.use(initContext());
 }
 
 Editor.prototype.default = function () {
-  middlewares.removeExtraNodes(this);
-  middlewares.renameElements(this);
-  middlewares.removeInlineStyle(this);
-  middlewares.handleEmptyParagraph(this);
+  removeExtraNodes(this);
+  renameElements(this);
+  removeInlineStyle(this);
+  handleEmptyParagraph(this);
 
   return this.compose([
-    middlewares.prevent(),
-    middlewares.p(this),
-    middlewares.list(this),
-    middlewares.delete(this),
-    middlewares.createNewParagraph()
+    preventDefault(),
+    handleParagraph(this),
+    handleList(this),
+    handleBackspace(this),
+    createNewParagraph()
   ]);
 };
 

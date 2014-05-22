@@ -13,7 +13,8 @@ DATE = `date +'%Y%m%d'`
 JS_FILES := $(SOURCE)/exports.js\
 	$(SOURCE)/utils.js\
 	$(SOURCE)/keyboard.js\
-	$(SOURCE)/middlewares.js\
+	$(shell find $(SOURCE)/middlewares/*.js)\
+	$(shell find $(SOURCE)/plugins/*.js)\
 	$(SOURCE)/schema.js\
 	$(SOURCE)/emitter.js\
 	$(SOURCE)/caret.js\
