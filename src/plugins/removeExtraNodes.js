@@ -12,7 +12,7 @@ var removeExtraNodes = function () {
         if (utils.isTextNode(prev)) {
           prev.appendData(curr.data);
         } else if (utils.isElementNode(prev)) {
-          prev.innerHTML += curr.textContent || curr.innerHTML || '';
+          prev.innerHTML += utils.getTextContent(el);
         }
         curr.parentNode.removeChild(curr);
       }
