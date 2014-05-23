@@ -28,9 +28,11 @@ var handleParagraph = (function () {
 
           utils.removeEmptyElements(section);
           editor.caret.split(section);
-          section.innerHTML = '<p><br /></p>';
 
-          p = section.querySelector('p');
+          p = document.createElement('p');
+          p.innerHTML = '<br />';
+
+          section.insertBefore(p, section.firstChild);
 
           editor.caret.moveToStart(p);
 
