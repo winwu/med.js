@@ -102,21 +102,13 @@ Caret.prototype.textBefore = function () {
   var node = selection.focusNode;
   var offset = selection.focusOffset;
   
-  if (utils.isElementNode(node)){
-    return '';
-  }
-  
-  return node.substringData(0, offset); 
+  return node.substringData(0, offset);
 };
 
 Caret.prototype.textAfter = function () {
   var selection = document.getSelection();
   var node = selection.focusNode;
   var offset = selection.focusOffset;
-  
-  if (utils.isElementNode(node)){
-    return '';
-  }
   
   return node.substringData(offset, node.length - 1); 
 };
