@@ -232,3 +232,28 @@ Caret.prototype.closestElement = function () {
   var node = this.focusNode();
   return this.nextElement(node);
 };
+
+Caret.prototype.atElementStart = function (el) {
+  var selection = document.getSelection();
+  var focusNode = selection.focusNode;
+  var offset = selection.focusOffset;
+  var range = document.createRange();
+
+  range.setStart(el.childNodes[0], 0);
+  range.setEnd(focusNode, offset);
+
+  return !!range.toString().trim();
+};
+
+Caret.prototype.atElementEnd = function (el) {
+  var selection = document.getSelection();
+  var focusNode = selection.focusNode;
+  var offset = selection.focusOffset;
+  var range = document.createRange();
+  var lastNode = el.childNodes[el.childNodes.length - 1];
+
+  range.setStart(focusNode, offset);
+  range.setEnd(lastNode, lastNode.length - 1);
+
+  return !!range.toString().trim();
+};

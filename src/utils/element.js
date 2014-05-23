@@ -1,8 +1,24 @@
-utils.getTextContent = function (el) {
-  return el
-    && el.textContent
-    || el.innerText
-    || '';
+utils.getTextContent = function (node) {
+  var text;
+
+  if (!node) {
+    return '';
+  }
+
+  switch (node.nodeType) {
+  case document.ELEMENT_NODE:
+    text = node.textContent
+      || node.innerText
+      || '';
+    break;
+  case document.TEXT_NODE:
+    text = node.data;
+    break;
+  default:
+    text = '';
+  }
+
+  return text;
 };
 
 utils.isEmpty = function (el) {
@@ -82,4 +98,21 @@ utils.isElementNode = function (node) {
 
 utils.isTextNode = function (node) {
   return node.nodeType === document.TEXT_NODE;
+};
+
+utils.isAncestorOf = function (node, ancestor) {
+  var childNodes = Array.prototype.slice.call(ancestor.chlidNodes);
+  var child;
+
+  if (!~childNodes.indexOf(child)) {
+    while (child = childNodes.shift()) {
+      if (utils.isAncestorOf(child)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  return true;
 };
