@@ -113,6 +113,8 @@ Editor.prototype.walk = function () {
   var els = editor.el.querySelectorAll('[name]');
   var context = {};
 
+  context.editor = this;
+
   this.emit('walkStart', context);
 
   Array.prototype.forEach.call(els, function (el) {

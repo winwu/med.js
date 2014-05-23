@@ -227,6 +227,58 @@ Caret.prototype.selectAllText = function (el) {
   selection.addRange(range);
 };
 
+// Example:
+//   caret.select(node)
+//   caret.select(node, offset)
+//   caret.select(startNode, endNode)
+//   caret.select(node, startOffset, endOffset)
+//   caret.select(startNode, startOffset, endNode, endOffset)
+Caret.prototype.select = function () {
+  var selection = window.getSelection();
+  var startNode, startOffset, endNode, endOffset;
+  var range;
+
+  switch (arguments.length) {
+  case 1:
+    startNode = endNode = arguments[0];
+    startOffset = 0;
+    endOffset = utils.getTextContent(startNode).length;
+    break;
+  case 2:
+    if (typeof arguments[1] === 'number') {
+      startNode = endNode = arguments[0];
+      startOffset = endOffset = arguments[1];
+    } else {
+      startNode = arguments[0];
+      startOffset = 0;
+      endNode = arguments[1];
+      endOffset = utils.getTextContent(startNode).length;
+    }
+    break;
+  case 3:
+    startNode = arguments[0];
+    endNode = arguments[1];
+    startOffset = 0;
+    endOffset = utils.getTextContent(startNode).length;
+    break;
+  case 4:
+    startNode = arguments[0];
+    startOffset = arguments[1];
+    endNode = arguments[2];
+    endOffset = arguments[3];
+    break;
+  }
+
+  startOffset = startOffset | 0;
+  endOffset = endOffset | 0;
+
+  range.setStart(startNode, startOffset);
+  range.setEnd(endNode, endOffset);
+
+  selection.removeAllRanges();
+  selection.addRange(range);
+};
+
 Caret.prototype.insertElement = function (el) {
   var selection = document.getSelection();
   var range = selection.getRangeAt(0);

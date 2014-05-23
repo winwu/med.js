@@ -101,7 +101,7 @@ utils.isTextNode = function (node) {
 };
 
 utils.isAncestorOf = function (node, ancestor) {
-  var childNodes = Array.prototype.slice.call(ancestor.chlidNodes);
+  var childNodes = Array.prototype.slice.call(ancestor.chlidNodes || []);
   var child;
 
   if (!~childNodes.indexOf(child)) {
@@ -115,4 +115,8 @@ utils.isAncestorOf = function (node, ancestor) {
   }
 
   return true;
+};
+
+utils.nodeContentLength = function (node) {
+  return utils.getTextContent(node).length;
 };
