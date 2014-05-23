@@ -5,7 +5,7 @@ var createNewParagraph = function () {
       && !this.shift
       && utils.isTag('p', this.element)
       && this.element.parentElement
-      && !this.editor.caret.textAfter(this.element);
+      && this.editor.caret.atElementEnd(this.element);
 
     if (needToCreateElement) {
       this.prevent();

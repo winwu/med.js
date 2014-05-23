@@ -22,14 +22,14 @@ var handleList = function (editor) {
         setTimeout(function () {
           editor.caret.moveToStart(p);
         });
-      } else if (!editor.caret.atElementEnd(el)) {
+      } else if (editor.caret.atElementEnd(el)) {
         // 行尾換行預設動作會自動插入 <p>
 
         this.prevent();
 
         editor.caret.split(el);
         editor.caret.moveToStart(el);
-      } else if (!editor.caret.atElementStart(el)) {
+      } else if (editor.caret.atElementStart(el)) {
         // 行首換行跳離 <ul>/<ol>
 
         this.prevent();

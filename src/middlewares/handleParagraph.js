@@ -45,7 +45,7 @@ var handleParagraph = (function () {
 
         next();
       }
-    } else if (!editor.caret.textBefore(el)) {
+    } else if (editor.caret.atElementStart(el)) {
       ctx.prevent();
 
       // 在行頭

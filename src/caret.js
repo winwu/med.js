@@ -101,6 +101,10 @@ Caret.prototype.textBefore = function () {
   var selection = document.getSelection();
   var node = selection.focusNode;
   var offset = selection.focusOffset;
+
+  if (utils.isElementNode(node)) {
+    return '';
+  }
   
   return node.substringData(0, offset);
 };
@@ -109,6 +113,10 @@ Caret.prototype.textAfter = function () {
   var selection = document.getSelection();
   var node = selection.focusNode;
   var offset = selection.focusOffset;
+
+  if (utils.isElementNode(node)) {
+    return '';
+  }
   
   return node.substringData(offset, node.length - 1); 
 };
@@ -242,7 +250,7 @@ Caret.prototype.atElementStart = function (el) {
   range.setStart(el.childNodes[0], 0);
   range.setEnd(focusNode, offset);
 
-  return !!range.toString().trim();
+  return !range.toString().trim();
 };
 
 Caret.prototype.atElementEnd = function (el) {
@@ -255,5 +263,5 @@ Caret.prototype.atElementEnd = function (el) {
   range.setStart(focusNode, offset);
   range.setEnd(lastNode, lastNode.length - 1);
 
-  return !!range.toString().trim();
+  return !range.toString().trim();
 };

@@ -9,7 +9,7 @@ var handleBackspace = function (editor) {
       // 但 li 的預設刪除行為在這裡沒有問題
       // 所以把他忽略掉
       && !utils.isTag('li', el)
-      && !editor.caret.textBefore(el);
+      && editor.caret.atElementStart(el);
   };
 
   return function (next) {
