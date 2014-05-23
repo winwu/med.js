@@ -25,7 +25,7 @@ var handleBackspace = function (editor) {
       this.prevent();
 
       var previous = this.element.previousElementSibling;
-      var needToRemove, offset, childNodes, firstChild;
+      var needToRemove, offset, firstChild;
 
       if (previous) {
         needToRemove = this.element;
@@ -58,15 +58,12 @@ var handleBackspace = function (editor) {
             // 忽略動作
           }
         } else {
-          childNodes = Array.prototype.slice.call(needToRemove.childNodes);
           firstChild = needToRemove.firstChild;
           offset = utils.getTextContent(previous).length;
 
           utils.removeEmptyElements(previous);
 
-          utils.each(childNodes, function (child) {
-            previous.appendChild(child);
-          });
+          utils.moveChildNodes(needToRemove, previous);
 
           needToRemove.parentElement.removeChild(needToRemove);
 
