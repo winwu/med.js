@@ -122,42 +122,11 @@ Caret.prototype.textAfter = function () {
 };
 
 Caret.prototype.moveToStart = function (el, offset) {
-  var selection = document.getSelection();
-  var range = document.createRange();
-  var len;
-
-  if (utils.isTextNode(el)) {
-    len = utils.getTextContent(el).length;
-  } else {
-    len = el.childNodes.length;
-  }
-
-  offset = offset | 0;
-
-  if (offset < 0) {
-    offset = 0;
-  } else if (offset >= len) {
-    offset = len;
-  }
-
-  range.setStart(el, offset);
-  range.setEnd(el, offset);
-
-  selection.removeAllRanges();
-  selection.addRange(range);
-  selection.collapseToStart();
+  this.select(el, offset | 0);
 };
 
 Caret.prototype.moveToEnd = function (el, offset) {
-  var range = document.createRange();
-  var selection = window.getSelection();
-  var len;
-
-  if (utils.isTextNode(el)) {
-    len = utils.getTextContent(el).length;
-  } else {
-    len = el.childNodes.length;
-  }
+  var len = utils.nodeContentLength(el);
 
   offset = len - (offset | 0);
 
@@ -165,12 +134,7 @@ Caret.prototype.moveToEnd = function (el, offset) {
     offset = 0;
   }
 
-  range.setStart(el, offset);
-  range.setEnd(el, offset);
-
-  selection.removeAllRanges();
-  selection.addRange(range);
-  selection.collapseToEnd();
+  this.select(el, offset);
 };
 
 Caret.prototype.split = function (el) {
@@ -272,6 +236,7 @@ Caret.prototype.select = function () {
   startOffset = startOffset | 0;
   endOffset = endOffset | 0;
 
+  range = document.createRange();
   range.setStart(startNode, startOffset);
   range.setEnd(endNode, endOffset);
 
