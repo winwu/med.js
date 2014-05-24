@@ -131,3 +131,32 @@ utils.lastTextNode = function (node) {
   }
   return utils.lastTextNode(utils.lastNode(node));
 };
+
+utils.lastElement = function (node) {
+  return node.children[node.children.length - 1];
+};
+
+utils.firstNode = function (node) {
+  return node.childNodes[0];
+};
+
+utils.firstTextNode = function (node) {
+  if (utils.isTextNode(node)) {
+    return node;
+  }
+  return utils.firstTextNode(utils.firstNode(node));
+};
+
+utils.firstElement = function (node) {
+  return node.children[0];
+};
+
+utils.isLastElementOf = function (container, el) {
+  var lastElement = utils.lastElement(container);
+  return lastElement === el;
+};
+
+utils.isFirstElementOf = function (container, el) {
+  var firstElement = utils.firstElement(container);
+  return firstElement === el;
+};
