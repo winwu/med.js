@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
   <link rel="stylesheet" href="theme/style.css"></link>
-  <link rel="stylesheet" href="bower_components/github-markdown-css/github-markdown.css"></link>
   <style>
     body {
       padding: 0;
@@ -17,8 +16,16 @@
   </style>
 </head>
 <body>
-  <div class="editor"></div>
-  <script src="bower_components/polyfills/element.js"></script>
+  <div class="editor">
+    <section>
+      <p>line 1</p>
+      <ul>
+        <li><i>item</i> 1
+        <li>item <b>2</b>
+      </ul>
+      <p>line 2</p>
+    </section>
+  </div>
   <script src="dist/med.js"></script>
   <script>
     var el = document.querySelector('.editor');

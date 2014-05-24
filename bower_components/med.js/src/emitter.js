@@ -43,6 +43,10 @@ Emitter.prototype.emit = function () {
   var len = list.length;
   var handler;
 
+  if (event === 'error' && !len) {
+    throw args[0];
+  }
+
   while (len--) {
     handler = list[len];
     handler.apply(this, args);

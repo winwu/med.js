@@ -17,7 +17,128 @@ if (typeof module !== 'undefined') {
   window.Med = Editor;
 }
 var utils = {};
+utils.getTextContent = function (node) {
+  var text;
 
+  if (!node) {
+    return '';
+  }
+
+  switch (node.nodeType) {
+  case document.ELEMENT_NODE:
+    text = node.textContent
+      || node.innerText
+      || '';
+    break;
+  case document.TEXT_NODE:
+    text = node.data;
+    break;
+  default:
+    text = '';
+  }
+
+  return text;
+};
+
+utils.isEmpty = function (el) {
+  if (utils.isTag('br', el)) {
+    return false;
+  }
+  return !utils.getTextContent(el).trim();
+};
+
+utils.isNotEmpty = function (el) {
+  return !utils.isEmpty(el);
+};
+
+utils.isTag = function (tagName, el) {
+  if (typeof tagName === 'string') {
+    tagName = [tagName];
+  }
+
+  var toUpperCase = function (str) {
+    return str.toUpperCase();
+  };
+
+  return !!~tagName
+    .map(toUpperCase)
+    .indexOf(el.tagName);
+};
+
+utils.isLastChild = function (el) {
+  return el.parentELement.lastChild === el;
+};
+
+utils.removeEmptyElements = function (el) {
+  utils.each(el.children, function (child) {
+    if (utils.isEmpty(child)) {
+      el.removeChild(child);
+    } else {
+      utils.removeEmptyElements(child);
+    }
+  });
+};
+
+utils.removeElement = function (el) {
+  if (el.parentElement) {
+    el.parentElement.removeChild(el);
+  }
+};
+
+utils.moveChildren = function (src, dest) {
+  var children = Array.prototype.slice.call(src.children);
+
+  utils.each(children, function (child) {
+    dest.appendChild(child);
+  });
+};
+
+utils.moveChildNodes = function (src, dest) {
+  var nodes = Array.prototype.slice.call(src.childNodes);
+
+  utils.each(nodes, function (node) {
+    dest.appendChild(node);
+  });
+};
+
+utils.isType = function (types, el) {
+  var s = utils.getElementSchema(el);
+
+  if (typeof types === 'string') {
+    types = [types];
+  }
+
+  return s && !!~types.indexOf(s.type);
+};
+
+utils.isElementNode = function (node) {
+  return node.nodeType === document.ELEMENT_NODE;
+};
+
+utils.isTextNode = function (node) {
+  return node.nodeType === document.TEXT_NODE;
+};
+
+utils.isAncestorOf = function (node, ancestor) {
+  var childNodes = Array.prototype.slice.call(ancestor.chlidNodes || []);
+  var child;
+
+  if (!~childNodes.indexOf(child)) {
+    while (child = childNodes.shift()) {
+      if (utils.isAncestorOf(child)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  return true;
+};
+
+utils.nodeContentLength = function (node) {
+  return utils.getTextContent(node).length;
+};
 utils.mixin = function (o1, o2) {
   Object
     .getOwnPropertyNames(o2)
@@ -28,7 +149,7 @@ utils.mixin = function (o1, o2) {
   return o1;
 };
 
-utils.preventEvent = function (e) {
+utils.preventDefault = function (e) {
   return e.preventDefault
     ? e.preventDefault()
     : e.returnValue = false;
@@ -49,14 +170,21 @@ utils.os = function () {
 };
 
 utils.each = function (ctx, fn) {
-  if (typeof ctx === 'object' && typeof ctx.length === 'number') {
+  if (utils.isArrayLike(ctx)) {
     Array.prototype.forEach.call(ctx, fn);
   }
+
   return ctx;
+};
+
+utils.isArrayLike = function (obj) {
+  return typeof obj === 'object'
+    && typeof obj.length === 'number';
 };
 
 utils.split = function (separator, limit) {
   var re = new RegExp('\\\\' + limit, 'g');
+
   return separator
     .replace(re, '\uffff')
     .split(limit)
@@ -87,10 +215,14 @@ utils.equal = function (a, b) {
 
   if (typeof a === 'object') {
     if (typeof b === 'object') {
-      var prop;
+      var prop, notEqual;
 
       for (prop in a) {
-        if (a.hasOwnProperty(prop) && b.hasOwnProperty(prop) && !utils.equal(a[prop], b[prop])) {
+        notEqual = a.hasOwnProperty(prop)
+          && b.hasOwnProperty(prop)
+          && !utils.equal(a[prop], b[prop]);
+
+        if (notEqual) {
           return false;
         }
       }
@@ -102,6 +234,16 @@ utils.equal = function (a, b) {
   }
 
   return false;
+};
+utils.getType = function (el) {
+  var s = utils.getElementSchema(el);
+  return s ? s.type : null;
+};
+
+utils.getElementSchema = function (el) {
+  return el
+    && schema[el.tagName.toLowerCase()]
+    || null;
 };
 var keyboard = {};
 
@@ -130,9 +272,253 @@ keyboard.map = {
 keyboard.super = utils.os() === 'mac'
   ? 'command'
   : 'ctrl';
-var middlewares = {};
+var createNewParagraph = function () {
+  return function (next) {
+    var needToCreateElement = this.key === 'enter'
+      && this.section === this.editor.caret.focusSection()
+      && !this.shift
+      && utils.isTag('p', this.element)
+      && this.element.parentElement
+      && this.editor.caret.atElementEnd(this.element);
 
-middlewares.init = function () {
+    if (needToCreateElement) {
+      this.prevent();
+      var el = document.createElement('p');
+      this.element.parentElement.insertBefore(el, this.element.nextSibling);
+      this.editor.caret.focusTo(el);
+    }
+
+    next();
+  };
+};
+var handleBackspace = function (editor) {
+  var shouldHandleBackspace = function (ctx) {
+    var selection = document.getSelection();
+    var el = ctx.element;
+
+    return !(selection + '')
+      && utils.isType(['paragraph', 'paragraphs', 'section'], el)
+      // li 是一個 paragraph
+      // 但 li 的預設刪除行為在這裡沒有問題
+      // 所以把他忽略掉
+      && !utils.isTag('li', el)
+      && editor.caret.atElementStart(el);
+  };
+
+  return function (next) {
+    if (this.key !== 'backspace') {
+      return next();
+    }
+
+    var el = this.element;
+
+    // 段落前面已經沒有文字
+    // 需要刪除 element
+    if (shouldHandleBackspace(this)) {
+      this.prevent();
+
+      var previous = this.element.previousElementSibling;
+      var needToRemove, offset, firstChild;
+
+      if (previous) {
+        needToRemove = this.element;
+      } else {
+        needToRemove = this.section;
+      }
+
+      previous = needToRemove.previousElementSibling;
+
+      if (needToRemove && previous) {
+        if (utils.isType('paragraphs', previous)) {
+
+          // ul/ol 要特別處理
+          // 如果使用跟其他地方相同方式的作法
+          // 會造成 ul/ol 多出一個 br
+          if(previous.lastChild && utils.isTag('li', previous.lastChild)) {
+            var focus = previous.lastChild.lastChild;
+
+            utils.moveChildNodes(el, previous.lastChild);
+            utils.removeElement(el);
+
+            if (focus) {
+              editor.caret.moveToEnd(focus);
+            } else {
+
+              // 原本的 li 是空的
+              // 所以直接把指標移到 li 最前面就可以了
+              editor.caret.moveToStart(previous.lastChild);
+            }
+          } else {
+            // 忽略動作
+          }
+        } else {
+          firstChild = needToRemove.firstChild;
+          offset = utils.getTextContent(previous).length;
+
+          utils.removeEmptyElements(previous);
+
+          utils.moveChildNodes(needToRemove, previous);
+
+          needToRemove.parentElement.removeChild(needToRemove);
+
+          if (utils.isType('section', needToRemove)) {
+            // section 的情況是要讓游標在畫面上跟著目前 element 移動
+            editor.caret.moveToStart(firstChild);
+          } else {
+            // 段落的情況是要讓兩個 element 接起來後，游標移動到合併的位置
+            editor.caret.moveToStart(previous.firstChild, offset);
+          }
+        }
+      } else {
+        previous = this.node.previousSibling;
+
+        var previousIsBrTag = function () {
+          return previous
+            && utils.isElementNode(previous)
+            && utils.isTag('br', previous);
+        };
+        
+        if (previousIsBrTag()) {
+          offset = utils.getTextContent(previous.previousSibling).length;
+          previous.parentElement.removeChild(previous);
+          editor.caret.moveToStart(this.node.previousSibling, offset);
+        }
+      }
+    }
+
+    next();
+  };
+};
+var handleList = function (editor) {
+  return function (next) {
+    var el = this.element;
+
+    if (!utils.isTag('li', el)) {
+      return next();
+    }
+
+    // li 上換行有可能自動插入 <p>
+    // 所以必須自己處理換行動作
+    if (this.key === 'enter' && !this.shift) {
+      if (utils.isEmpty(el)) {
+        // 空行，要讓使用者跳離 ul/ol
+
+        this.prevent();
+
+        var p = document.createElement('p');
+
+        this.section.insertBefore(p, this.paragraphs.nextSibling);
+        utils.removeElement(el);
+
+        setTimeout(function () {
+          editor.caret.moveToStart(p);
+        });
+      } else if (editor.caret.atElementEnd(el)) {
+        // 行尾換行預設動作會自動插入 <p>
+
+        this.prevent();
+
+        editor.caret.split(el);
+        editor.caret.moveToStart(el);
+      } else if (editor.caret.atElementStart(el)) {
+        // 行首換行跳離 <ul>/<ol>
+
+        this.prevent();
+
+        var p = document.createElement('p');
+
+        p.innerHTML = el.innerHTML;
+        utils.removeElement(el);
+
+        this.section.insertBefore(p, this.paragraphs.nextSibling);
+
+        editor.caret.moveToStart(p);
+      }
+    }
+
+    next();
+  };
+};
+var handleParagraph = (function () {
+  var shouldHandleThis = function (ctx) {
+    return !ctx.modifier
+      && utils.isTag('p', ctx.element)
+      && isCreateNewLineAction(ctx);
+  };
+
+  var isCreateNewLineAction = function (ctx) {
+    return ctx.key === 'enter'
+      && !ctx.shift;
+  };
+
+  var createNewLine = function (ctx, next) {
+    var editor = ctx.editor;
+    var el = ctx.element;
+
+    if (utils.isEmpty(el)) {
+      ctx.prevent();
+
+      var section = ctx.section;
+
+      // 目前這一行是空的
+      // 需要建立一個新的 <section>
+
+      if (section) {
+        if (utils.isNotEmpty(section)) {
+          var p;
+
+          utils.removeEmptyElements(section);
+          editor.caret.split(section);
+
+          p = document.createElement('p');
+          p.innerHTML = '<br />';
+
+          section.insertBefore(p, section.firstChild);
+
+          editor.caret.moveToStart(p);
+
+          next();
+        }
+      } else {
+        section = document.createElement('section');
+
+        section.appendChild(el);
+        editor.el.appendChild(section);
+        editor.caret.moveToStart(el);
+
+        next();
+      }
+    } else if (editor.caret.atElementStart(el)) {
+      ctx.prevent();
+
+      // 在行頭
+      // 需要把 section 分段
+      editor.caret.split(ctx.section);
+
+      utils.removeEmptyElements(ctx.section);
+
+      // 如果 <section> 是空的就不能把 <p> 移除
+      // 移除會造成使用者直接輸入文字在 section 內
+      if (utils.isNotEmpty(ctx.section.previousElementSibling)) {
+        utils.removeEmptyElements(ctx.section.previousElementSibling);
+      }
+
+      next();
+    }
+  };
+
+  // middleware
+  return function () {
+    return function (next) {
+      if (!shouldHandleThis(this)) {
+        return next();
+      }
+
+      createNewLine(this, next);
+    };
+  };
+})();
+var initContext = function () {
   return function (next) {
     var e = this.event;
     var code = e.keyCode || e.which;
@@ -165,8 +551,7 @@ middlewares.init = function () {
     next();
   };
 };
-
-middlewares.prevent = function () {
+var preventDefault = function () {
   return function (next) {
     if (this.key === 'backspace' && this.editor.isEmpty()) {
       this.prevent();
@@ -174,63 +559,59 @@ middlewares.prevent = function () {
     }
 
     if (this.element === document.body) {
-      utils.preventEvent(e);
+      utils.preventDefault(e);
       return;
-    }
-
-    next();
-  };
-};
-
-middlewares.p = function (editor) {
-  return function (next) {
-    var el = this.element;
-
-    if (this.modifier) {
-      return next();
     }
 
     if (el === el.section) {
       return this.prevent();
     }
 
-    if (el.tagName !== 'P') {
-      return next();
-    }
-
-    if (this.key === 'enter' && !this.shift) {
-      if (!(el.textContent || el.innerText || '').trim()) {
-        this.prevent();
-
-        // 目前這一行是空的
-        // 需要建立一個新的 <section>
-        var section = document.createElement('section');
-        var currentSection = editor.caret.focusElement('section');
-
-        if (currentSection) {
-          if ((currentSection.textContent || currentSection.innerText || '').trim()) {
-            section.appendChild(el);
-            currentSection
-              .parentElement
-              .insertBefore(section, currentSection.nextSibling);
-            editor.caret.moveToStart(el);
-          } else {
-            // 目前是在一個 <section> 下，而且 <section> 的內容是空的，
-            // 就忽略這個動作
-          }
-        } else {
-          section.appendChild(el);
-          editor.el.appendChild(section);
-          editor.caret.moveToStart(el);
-        }
-      }
-    }
-
     next();
   };
 };
+var handleEmptyParagraph = function (editor) {
+  editor.on('walk', function (ctx) {
+    var el = ctx.element;
+    if (utils.isType('paragraph', el) && utils.isEmpty(el)) {
+      el.innerHTML = '<br class="_med_placeholder" />';
+    }
+  });
+};
+var removeExtraNodes = function () {
+  var removeExtraNode = function (el) {
+    var nodes = el.childNodes;
+    var len = nodes.length;
+    var curr, prev;
+    
+    while (len--) {
+      curr = nodes[len];
+      prev = nodes[len - 1];
 
-middlewares.renameElements = function (editor) {
+      if (prev && prev.nodeType === curr.nodeType) {
+        if (utils.isTextNode(prev)) {
+          prev.appendData(curr.data);
+        } else if (utils.isElementNode(prev)) {
+          prev.innerHTML += utils.getTextContent(curr);
+        }
+        curr.parentNode.removeChild(curr);
+      }
+    }
+  };
+
+  editor.on('walk', function (ctx) {
+    if (utils.isType('paragraph', ctx.element)) {
+      removeExtraNode(ctx.element);
+    }
+  });
+};
+var removeInlineStyle = function () {
+  editor.on('walk', function (ctx) {
+    // chrome
+    ctx.el.setAttribute('style', '');
+  });
+};
+var renameElements = function (editor) {
   editor.on('walkStart', function (ctx) {
     ctx.names = {};
   });
@@ -242,70 +623,6 @@ middlewares.renameElements = function (editor) {
       ctx.names[ctx.name] = 1;
     }
   });
-};
-
-middlewares.removeInlineStyle = function () {
-  editor.on('walk', function (ctx) {
-    // chrome
-    ctx.el.setAttribute('style', '');
-  });
-};
-
-middlewares.removeExtraNodes = function () {
-  var removeExtraNode = function (el) {
-    var nodes = el.children;
-    var len = nodes.length;
-    var curr, prev;
-    
-    while (len--) {
-      curr = nodes[len];
-      prev = nodes[len - 1];
-
-      if (prev && prev.nodeType === curr.nodeType) {
-        if (prev.nodeType === document.TEXT_NODE) {
-          prev.appendData(curr.data);
-        } else if (prev.nodeType === document.ELEMENT_NODE) {
-          prev.innerHTML += curr.textContent || curr.innerHTML || '';
-        }
-        curr.parentNode.removeChild(curr);
-      }
-    }
-  };
-
-  editor.on('walk', function (ctx) {
-    var s = schema[ctx.el.tagName.toLowerCase()];
-    if (s.type === 'paragraph') {
-      removeExtraNode(ctx.el);
-    }
-  });
-};
-
-middlewares.handleEmptyParagraph = function (editor) {
-  editor.on('walk', function (ctx) {
-    var el = ctx.el;
-    if (el.tagName === 'P' && !(el.textContent || el.innerText || '').trim()) {
-      el.innerHTML = '<br class="_med_placeholder" />';
-    }
-  });
-};
-
-middlewares.createNewParagraph = function () {
-  return function (next) {
-    var shouldHandleThisEvent = this.key === 'enter'
-      && this.section === this.editor.caret.focusSection()
-      && !this.shift
-      && this.element === this.paragraph
-      && !this.editor.caret.textAfter(this.element);
-
-    if (shouldHandleThisEvent) {
-      this.prevent();
-      var el = document.createElement('p');
-      this.element.parentElement.insertBefore(el, this.element.nextSibling);
-      this.editor.caret.focusTo(el);
-    }
-
-    next();
-  };
 };
 var schema = {
   section: {
@@ -460,6 +777,10 @@ Emitter.prototype.emit = function () {
   var len = list.length;
   var handler;
 
+  if (event === 'error' && !len) {
+    throw args[0];
+  }
+
   while (len--) {
     handler = list[len];
     handler.apply(this, args);
@@ -496,7 +817,7 @@ Caret.prototype.focusElement = function (tagName) {
   } else {
     node = document.getSelection().focusNode;
 
-    while (node && node.nodeType !== document.ELEMENT_NODE) {
+    while (node && !utils.isElementNode(node)) {
       node = node.parentNode;
     }
 
@@ -522,16 +843,16 @@ Caret.prototype.focusDetail = function () {
 
 Caret.prototype.focusType = function (type) {
   var node = this.focusElement();
-  var s;
+  var elType;
 
   while (true) {
     if (!node) {
       break;
     }
 
-    s = node && schema[node.tagName.toLowerCase()];
+    elType = utils.getType(node);
 
-    if (s && s.type === type) {
+    if (elType === type) {
       return node;
     }
 
@@ -549,7 +870,7 @@ Caret.prototype.nextElement = function (node) {
   }
 
   while (node) {
-    if (node.nodeType === document.ELEMENT_NODE) {
+    if (utils.isElementNode(node)) {
       return node;
     }
 
@@ -573,38 +894,40 @@ Caret.prototype.textBefore = function () {
   var selection = document.getSelection();
   var node = selection.focusNode;
   var offset = selection.focusOffset;
-  
-  if (node.nodeType === document.ELEMENT_NODE){
+
+  if (utils.isElementNode(node)) {
     return '';
   }
   
-  return node.substringData(0, offset); 
+  return node.substringData(0, offset);
 };
 
 Caret.prototype.textAfter = function () {
   var selection = document.getSelection();
   var node = selection.focusNode;
   var offset = selection.focusOffset;
-  
-  if (node.nodeType === document.ELEMENT_NODE){
+
+  if (utils.isElementNode(node)) {
     return '';
   }
   
   return node.substringData(offset, node.length - 1); 
 };
 
-Caret.prototype.moveToStart = function (el) {
-  el.focus();
-  document.getSelection().collapse(el, true);
+Caret.prototype.moveToStart = function (el, offset) {
+  this.select(el, offset | 0);
 };
 
-Caret.prototype.moveToEnd = function (el) {
-  var range = document.createRange();
-  var selection = window.getSelection();
-  range.selectNodeContents(el);
-  range.collapse(false);
-  selection.removeAllRanges();
-  selection.addRange(range);
+Caret.prototype.moveToEnd = function (el, offset) {
+  var len = utils.nodeContentLength(el);
+
+  offset = len - (offset | 0);
+
+  if (offset < 0) {
+    offset = 0;
+  }
+
+  this.select(el, offset);
 };
 
 Caret.prototype.split = function (el) {
@@ -661,6 +984,59 @@ Caret.prototype.selectAllText = function (el) {
   selection.addRange(range);
 };
 
+// Example:
+//   caret.select(node)
+//   caret.select(node, offset)
+//   caret.select(startNode, endNode)
+//   caret.select(node, startOffset, endOffset)
+//   caret.select(startNode, startOffset, endNode, endOffset)
+Caret.prototype.select = function () {
+  var selection = window.getSelection();
+  var startNode, startOffset, endNode, endOffset;
+  var range;
+
+  switch (arguments.length) {
+  case 1:
+    startNode = endNode = arguments[0];
+    startOffset = 0;
+    endOffset = utils.getTextContent(startNode).length;
+    break;
+  case 2:
+    if (typeof arguments[1] === 'number') {
+      startNode = endNode = arguments[0];
+      startOffset = endOffset = arguments[1];
+    } else {
+      startNode = arguments[0];
+      startOffset = 0;
+      endNode = arguments[1];
+      endOffset = utils.getTextContent(startNode).length;
+    }
+    break;
+  case 3:
+    startNode = arguments[0];
+    endNode = arguments[1];
+    startOffset = 0;
+    endOffset = utils.getTextContent(startNode).length;
+    break;
+  case 4:
+    startNode = arguments[0];
+    startOffset = arguments[1];
+    endNode = arguments[2];
+    endOffset = arguments[3];
+    break;
+  }
+
+  startOffset = startOffset | 0;
+  endOffset = endOffset | 0;
+
+  range = document.createRange();
+  range.setStart(startNode, startOffset);
+  range.setEnd(endNode, endOffset);
+
+  selection.removeAllRanges();
+  selection.addRange(range);
+};
+
 Caret.prototype.insertElement = function (el) {
   var selection = document.getSelection();
   var range = selection.getRangeAt(0);
@@ -673,6 +1049,31 @@ Caret.prototype.insertElement = function (el) {
 Caret.prototype.closestElement = function () {
   var node = this.focusNode();
   return this.nextElement(node);
+};
+
+Caret.prototype.atElementStart = function (el) {
+  var selection = document.getSelection();
+  var focusNode = selection.focusNode;
+  var offset = selection.focusOffset;
+  var range = document.createRange();
+
+  range.setStart(el.childNodes[0], 0);
+  range.setEnd(focusNode, offset);
+
+  return !range.toString().trim();
+};
+
+Caret.prototype.atElementEnd = function (el) {
+  var selection = document.getSelection();
+  var focusNode = selection.focusNode;
+  var offset = selection.focusOffset;
+  var range = document.createRange();
+  var lastNode = el.childNodes[el.childNodes.length - 1];
+
+  range.setStart(focusNode, offset);
+  range.setEnd(lastNode, lastNode.length - 1);
+
+  return !range.toString().trim();
 };
 function Middleware() {
   this.middleware = [];
@@ -803,17 +1204,21 @@ Observe.prototype.sync = function () {
 
   var shouldBeDelete = {};
 
-  Object.keys(data).forEach(function (name) {
-    shouldBeDelete[name] = 1;
-  });
+  Object
+    .keys(data)
+    .forEach(function (name) {
+      shouldBeDelete[name] = 1;
+    });
 
   utils.each(this.el.children, function (el) {
     Observe.scan.call(this, el, structure, shouldBeDelete);
   }.bind(this));
 
-  Object.keys(shouldBeDelete).forEach(function (name) {
-    delete data[name];
-  });
+  Object
+    .keys(shouldBeDelete)
+    .forEach(function (name) {
+      delete data[name];
+    });
 
   this.structure = structure;
 };
@@ -865,7 +1270,7 @@ Observe.section = function (el, data, structure, shouldBeDelete) {
   var p = [];
 
   utils.each(el.children, function (child) {
-    var schema = this.schema[child.tagName.toLowerCase()];
+    var schema = utils.getElementSchema(child);
 
     if (!schema) {
       Observe.handleUnknownElement(child);
@@ -890,7 +1295,7 @@ Observe.paragraphs = function (el, data, structure, shouldBeDelete) {
   var p = [];
 
   utils.each(el.children, function (child) {
-    var schema = this.schema[child.tagName.toLowerCase()];
+    var schema = utils.getElementSchema(child);
 
     if (!schema) {
       Observe.handleUnknownElement(child);
@@ -910,7 +1315,7 @@ Observe.paragraph = function (el, data, structure, shouldBeDelete) {
   var detail = [];
 
   utils.each(el.children, function (child) {
-    var schema = this.schema[child.tagName.toLowerCase()];
+    var schema = utils.getElementSchema(child);
 
     if (!schema) {
       Observe.handleUnknownElement(child);
@@ -942,12 +1347,12 @@ Observe.dataset = function (el, data, attr) {
 };
 
 Observe.content = function (el, data, attr) {
-  var text = el.textContent || el.innerText;
+  var text = utils.getTextContent(el);
   data.set(attr.name, text);
 };
 
 Observe.handleUnknownElement = function (el) {
-  var text = el.textContent || el.innerText;
+  var text = utils.getTextContent(el);
   var node = document.createTextNode(text);
   el.parentElement.replaceChild(node, el);
 };
@@ -962,7 +1367,7 @@ Observe.getOffset = function (el) {
 
   var check = function () {
     return parentElement
-      && parentElement.nodeType === document.ELEMENT_NODE
+      && utils.isElementNode(parentElement)
       && !parentElement.getAttribute('name');
   };
 
@@ -975,9 +1380,9 @@ Observe.getOffset = function (el) {
     offset.start = parentElement.innerHTML.indexOf(el.outerHTML);
     beforeHTML = parentElement.innerHTML.substr(0, offset.start);
     tmp.innerHTML = beforeHTML;
-    beforeText = tmp.textContent || tmp.innerText || '';
+    beforeText = utils.getTextContent(tmp);
     offset.start -= beforeHTML.length - beforeText.length;
-    offset.end = offset.start + (el.textContent || el.innerText || '').length;
+    offset.end = offset.start + utils.getTextContent(el).length;
   }
 
   return offset;
@@ -997,7 +1402,9 @@ Observe.prototype.toJSON = function () {
   sections.forEach(function (name) {
     var section = data[name];
     var d = section && section.toJSON() || {};
+
     d.name = name;
+
     json.sections.push(d);
   });
 
@@ -1042,8 +1449,8 @@ Observe.rules = {
 };
 
 Observe.checkAndRemoveStrangeElement = function (el) {
-  var type = (schema[el.tagName.toLowerCase()] || {}).type;
-  var parentType = (schema[el.parentElement.tagName.toLowerCase()] || {}).type;
+  var type = utils.getType(el);
+  var parentType = utils.getType(el.parentElement);
   var shouldRemove = true;
 
   if (type && parentType) {
@@ -1166,6 +1573,7 @@ HtmlBuilder.createParagraphs = function (section, container, structure, data) {
 HtmlBuilder.createDetails = function (paragraph, container, structure, data) {
   var detail = paragraph.get('detail');
   var text = paragraph.get('text');
+  var content, node;
   var pointer = 0;
 
   container.innerHTML = '';
@@ -1177,7 +1585,9 @@ HtmlBuilder.createDetails = function (paragraph, container, structure, data) {
     var end = d.get('end');
 
     if (pointer !== start) {
-      container.appendChild(document.createTextNode(text.slice(pointer, start)));
+      content = text.slice(pointer, start);
+      node = document.createTextNode(content);
+      container.appendChild(node);
     }
 
     el.innerHTML = text.slice(start, end);
@@ -1187,7 +1597,9 @@ HtmlBuilder.createDetails = function (paragraph, container, structure, data) {
   });
 
   if (pointer !== text.length) {
-    container.appendChild(document.createTextNode(text.slice(pointer, text.length)));
+    content = text.slice(pointer, text.length);
+    node = document.createTextNode(content);
+    container.appendChild(node);
   }
 };
 
@@ -1226,7 +1638,8 @@ HtmlBuilder.content = function (el, data, attr) {
 };
 var defaultOptions = {
   genName: function () {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    var format = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
+    return format.replace(/[xy]/g, function (c) {
       var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);
     });
@@ -1262,19 +1675,21 @@ function Editor(options) {
   this.bindEvents();
   this.handleEmpty();
 
-  this.use(middlewares.init());
+  this.use(initContext());
 }
 
 Editor.prototype.default = function () {
-  middlewares.removeExtraNodes(this);
-  middlewares.renameElements(this);
-  middlewares.removeInlineStyle(this);
-  middlewares.handleEmptyParagraph(this);
+  removeExtraNodes(this);
+  renameElements(this);
+  removeInlineStyle(this);
+  handleEmptyParagraph(this);
 
   return this.compose([
-    middlewares.prevent(),
-    middlewares.p(this),
-    middlewares.createNewParagraph()
+    preventDefault(),
+    handleParagraph(this),
+    handleList(this),
+    handleBackspace(this),
+    createNewParagraph()
   ]);
 };
 
@@ -1297,7 +1712,7 @@ Editor.prototype.onKeydown = function (e) {
   
   ctx = Object.create(this.context);
   ctx.event = e;
-  ctx.prevent = utils.preventEvent.bind(null, e);
+  ctx.prevent = utils.preventDefault.bind(null, e);
 
   setTimeout(function () {
     this.sync();
@@ -1315,7 +1730,7 @@ Editor.prototype.isEmpty = function () {
   var children = this.el.children;
   var first = children[0];
   return children.length <= 1
-    && !(first.textContent || first.innerText || '').trim();
+    && !utils.getTextContent(first).trim();
 };
 
 Editor.prototype.handleEmpty = function () {
@@ -1328,7 +1743,10 @@ Editor.prototype.handleEmpty = function () {
     first.appendChild(p);
     this.el.appendChild(first);
     this.sync(this.el);
-    this.caret.focusTo(p);
+
+    setTimeout(function () {
+      this.caret.focusTo(p);
+    }.bind(this));
   }
 
   if (this.isEmpty()) {
@@ -1342,11 +1760,14 @@ Editor.prototype.walk = function () {
   var els = editor.el.querySelectorAll('[name]');
   var context = {};
 
+  context.editor = this;
+
   this.emit('walkStart', context);
 
   Array.prototype.forEach.call(els, function (el) {
     var childContext = Object.create(context);
     childContext.el = el;
+    childContext.element = el;
     childContext.name = el.getAttribute('name');
     childContext.data = this.data[childContext.name];
     this.emit('walk', childContext);

@@ -24,7 +24,7 @@ Caret.prototype.focusElement = function (tagName) {
   } else {
     node = document.getSelection().focusNode;
 
-    while (node && node.nodeType !== document.ELEMENT_NODE) {
+    while (node && !utils.isElementNode(node)) {
       node = node.parentNode;
     }
 
@@ -50,16 +50,16 @@ Caret.prototype.focusDetail = function () {
 
 Caret.prototype.focusType = function (type) {
   var node = this.focusElement();
-  var s;
+  var elType;
 
   while (true) {
     if (!node) {
       break;
     }
 
-    s = node && schema[node.tagName.toLowerCase()];
+    elType = utils.getType(node);
 
-    if (s && s.type === type) {
+    if (elType === type) {
       return node;
     }
 
@@ -77,7 +77,7 @@ Caret.prototype.nextElement = function (node) {
   }
 
   while (node) {
-    if (node.nodeType === document.ELEMENT_NODE) {
+    if (utils.isElementNode(node)) {
       return node;
     }
 
@@ -101,38 +101,40 @@ Caret.prototype.textBefore = function () {
   var selection = document.getSelection();
   var node = selection.focusNode;
   var offset = selection.focusOffset;
-  
-  if (node.nodeType === document.ELEMENT_NODE){
+
+  if (utils.isElementNode(node)) {
     return '';
   }
   
-  return node.substringData(0, offset); 
+  return node.substringData(0, offset);
 };
 
 Caret.prototype.textAfter = function () {
   var selection = document.getSelection();
   var node = selection.focusNode;
   var offset = selection.focusOffset;
-  
-  if (node.nodeType === document.ELEMENT_NODE){
+
+  if (utils.isElementNode(node)) {
     return '';
   }
   
   return node.substringData(offset, node.length - 1); 
 };
 
-Caret.prototype.moveToStart = function (el) {
-  el.focus();
-  document.getSelection().collapse(el, true);
+Caret.prototype.moveToStart = function (el, offset) {
+  this.select(el, offset | 0);
 };
 
-Caret.prototype.moveToEnd = function (el) {
-  var range = document.createRange();
-  var selection = window.getSelection();
-  range.selectNodeContents(el);
-  range.collapse(false);
-  selection.removeAllRanges();
-  selection.addRange(range);
+Caret.prototype.moveToEnd = function (el, offset) {
+  var len = utils.nodeContentLength(el);
+
+  offset = len - (offset | 0);
+
+  if (offset < 0) {
+    offset = 0;
+  }
+
+  this.select(el, offset);
 };
 
 Caret.prototype.split = function (el) {
@@ -189,6 +191,59 @@ Caret.prototype.selectAllText = function (el) {
   selection.addRange(range);
 };
 
+// Example:
+//   caret.select(node)
+//   caret.select(node, offset)
+//   caret.select(startNode, endNode)
+//   caret.select(node, startOffset, endOffset)
+//   caret.select(startNode, startOffset, endNode, endOffset)
+Caret.prototype.select = function () {
+  var selection = window.getSelection();
+  var startNode, startOffset, endNode, endOffset;
+  var range;
+
+  switch (arguments.length) {
+  case 1:
+    startNode = endNode = arguments[0];
+    startOffset = 0;
+    endOffset = utils.getTextContent(startNode).length;
+    break;
+  case 2:
+    if (typeof arguments[1] === 'number') {
+      startNode = endNode = arguments[0];
+      startOffset = endOffset = arguments[1];
+    } else {
+      startNode = arguments[0];
+      startOffset = 0;
+      endNode = arguments[1];
+      endOffset = utils.getTextContent(startNode).length;
+    }
+    break;
+  case 3:
+    startNode = arguments[0];
+    endNode = arguments[1];
+    startOffset = 0;
+    endOffset = utils.getTextContent(startNode).length;
+    break;
+  case 4:
+    startNode = arguments[0];
+    startOffset = arguments[1];
+    endNode = arguments[2];
+    endOffset = arguments[3];
+    break;
+  }
+
+  startOffset = startOffset | 0;
+  endOffset = endOffset | 0;
+
+  range = document.createRange();
+  range.setStart(startNode, startOffset);
+  range.setEnd(endNode, endOffset);
+
+  selection.removeAllRanges();
+  selection.addRange(range);
+};
+
 Caret.prototype.insertElement = function (el) {
   var selection = document.getSelection();
   var range = selection.getRangeAt(0);
@@ -201,4 +256,29 @@ Caret.prototype.insertElement = function (el) {
 Caret.prototype.closestElement = function () {
   var node = this.focusNode();
   return this.nextElement(node);
+};
+
+Caret.prototype.atElementStart = function (el) {
+  var selection = document.getSelection();
+  var focusNode = selection.focusNode;
+  var offset = selection.focusOffset;
+  var range = document.createRange();
+
+  range.setStart(el.childNodes[0], 0);
+  range.setEnd(focusNode, offset);
+
+  return !range.toString().trim();
+};
+
+Caret.prototype.atElementEnd = function (el) {
+  var selection = document.getSelection();
+  var focusNode = selection.focusNode;
+  var offset = selection.focusOffset;
+  var range = document.createRange();
+  var lastNode = el.childNodes[el.childNodes.length - 1];
+
+  range.setStart(focusNode, offset);
+  range.setEnd(lastNode, lastNode.length - 1);
+
+  return !range.toString().trim();
 };

@@ -1,6 +1,6 @@
 {
   "name": "med.js",
-  "version": "0.0.20140517",
+  "version": "0.0.20140524",
   "homepage": "https://github.com/poying/med.js",
   "authors": [
     "Po-Ying Chen <poying.me@gmail.com>"
@@ -13,10 +13,7 @@
     "test",
     "tests"
   ],
-  "dependencies": {
-    "polyfills": "poying/polyfills",
-    "github-markdown-css": "~0.1.0"
-  },
+  "dependencies": {},
   "moduleType": [
     "amd",
     "globals"
@@ -24,11 +21,11 @@
   "keywords": [
     "editor"
   ],
-  "_release": "0.0.20140517",
+  "_release": "0.0.20140524",
   "_resolution": {
     "type": "version",
-    "tag": "0.0.20140517",
-    "commit": "5db4b72ecd2fe6e6bba27b33028c0382e3bdfbe9"
+    "tag": "0.0.20140524",
+    "commit": "cb104cfb68d52ceda62b3663523adf0cf381eba0"
   },
   "_source": "git://github.com/poying/med.js.git",
   "_target": "*",
