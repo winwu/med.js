@@ -8,7 +8,7 @@ var handleBackspace = function (editor) {
       && editor.caret.atElementStart(el);
   };
 
-  var handleList = function (ctx, next) {
+  var handleList = function (ctx) {
     var el = ctx.paragraph;
     var paragraphs = ctx.paragraphs;
 
@@ -30,7 +30,7 @@ var handleBackspace = function (editor) {
     }
   };
 
-  var handleOthers = function (ctx, next) {
+  var handleOthers = function (ctx) {
     ctx.prevent();
 
     var el = this.paragraph;
