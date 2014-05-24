@@ -122,11 +122,42 @@ Caret.prototype.textAfter = function () {
 };
 
 Caret.prototype.moveToStart = function (el, offset) {
-  this.select(el, offset | 0);
+  var selection = document.getSelection();
+  var range = document.createRange();
+  var len;
+
+  if (utils.isTextNode(el)) {
+    len = utils.getTextContent(el).length;
+  } else {
+    len = el.childNodes.length;
+  }
+
+  offset = offset | 0;
+
+  if (offset < 0) {
+    offset = 0;
+  } else if (offset >= len) {
+    offset = len;
+  }
+
+  range.setStart(el, offset);
+  range.setEnd(el, offset);
+
+  selection.removeAllRanges();
+  selection.addRange(range);
+  selection.collapseToStart();
 };
 
 Caret.prototype.moveToEnd = function (el, offset) {
-  var len = utils.nodeContentLength(el);
+  var range = document.createRange();
+  var selection = window.getSelection();
+  var len;
+
+  if (utils.isTextNode(el)) {
+    len = utils.getTextContent(el).length;
+  } else {
+    len = el.childNodes.length;
+  }
 
   offset = len - (offset | 0);
 
@@ -134,7 +165,12 @@ Caret.prototype.moveToEnd = function (el, offset) {
     offset = 0;
   }
 
-  this.select(el, offset);
+  range.setStart(el, offset);
+  range.setEnd(el, offset);
+
+  selection.removeAllRanges();
+  selection.addRange(range);
+  selection.collapseToEnd();
 };
 
 Caret.prototype.split = function (el) {
