@@ -28,19 +28,21 @@ function Editor(options) {
   this.bindEvents();
   this.handleEmpty();
 
-  this.use(middlewares.init());
+  this.use(initContext());
 }
 
 Editor.prototype.default = function () {
-  middlewares.removeExtraNodes(this);
-  middlewares.renameElements(this);
-  middlewares.removeInlineStyle(this);
-  middlewares.handleEmptyParagraph(this);
+  removeExtraNodes(this);
+  renameElements(this);
+  removeInlineStyle(this);
+  handleEmptyParagraph(this);
 
   return this.compose([
-    middlewares.prevent(),
-    middlewares.p(this),
-    middlewares.createNewParagraph()
+    preventDefault(),
+    handleParagraph(this),
+    handleList(this),
+    handleBackspace(this),
+    createNewParagraph()
   ]);
 };
 
@@ -63,7 +65,7 @@ Editor.prototype.onKeydown = function (e) {
   
   ctx = Object.create(this.context);
   ctx.event = e;
-  ctx.prevent = utils.preventEvent.bind(null, e);
+  ctx.prevent = utils.preventDefault.bind(null, e);
 
   setTimeout(function () {
     this.sync();
@@ -81,7 +83,7 @@ Editor.prototype.isEmpty = function () {
   var children = this.el.children;
   var first = children[0];
   return children.length <= 1
-    && !(first.textContent || first.innerText || '').trim();
+    && !utils.getTextContent(first).trim();
 };
 
 Editor.prototype.handleEmpty = function () {
@@ -94,7 +96,10 @@ Editor.prototype.handleEmpty = function () {
     first.appendChild(p);
     this.el.appendChild(first);
     this.sync(this.el);
-    this.caret.focusTo(p);
+
+    setTimeout(function () {
+      this.caret.focusTo(p);
+    }.bind(this));
   }
 
   if (this.isEmpty()) {
@@ -108,11 +113,14 @@ Editor.prototype.walk = function () {
   var els = editor.el.querySelectorAll('[name]');
   var context = {};
 
+  context.editor = this;
+
   this.emit('walkStart', context);
 
   Array.prototype.forEach.call(els, function (el) {
     var childContext = Object.create(context);
     childContext.el = el;
+    childContext.element = el;
     childContext.name = el.getAttribute('name');
     childContext.data = this.data[childContext.name];
     this.emit('walk', childContext);

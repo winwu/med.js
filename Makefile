@@ -12,8 +12,10 @@ DATE = `date +'%Y%m%d'`
 # js
 JS_FILES := $(SOURCE)/exports.js\
 	$(SOURCE)/utils.js\
+	$(shell find $(SOURCE)/utils/*.js)\
 	$(SOURCE)/keyboard.js\
-	$(SOURCE)/middlewares.js\
+	$(shell find $(SOURCE)/middlewares/*.js)\
+	$(shell find $(SOURCE)/plugins/*.js)\
 	$(SOURCE)/schema.js\
 	$(SOURCE)/emitter.js\
 	$(SOURCE)/caret.js\
@@ -86,10 +88,10 @@ clean:
 	fi
 
 test: bower build-test
-	@zuul -- test/*.js
+	@$(ZUUL) -- test/*.js
 
 test-local: bower build-test
-	@zuul --local 8080 -- test/*.js
+	@$(ZUUL) --local 8080 -- test/*.js
 
 release:
 	git checkout release

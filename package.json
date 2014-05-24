@@ -2,7 +2,8 @@
   "name": "med",
   "version": "0.0.0",
   "scripts": {
-    "test": "make test"
+    "test": "make test",
+    "test-local": "make test-local"
   },
   "author": "Po-Ying Chen <poying.me@gmail.com> (陳柏穎)",
   "license": "MIT",
