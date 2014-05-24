@@ -41,6 +41,7 @@ Editor.prototype.default = function () {
     preventDefault(),
     handleParagraph(this),
     handleList(this),
+    handleBlockquote(this),
     handleBackspace(this),
     createNewParagraph()
   ]);

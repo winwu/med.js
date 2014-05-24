@@ -25,7 +25,7 @@ var handleBackspace = function (editor) {
       this.prevent();
 
       var previous = this.element.previousElementSibling;
-      var needToRemove, offset, firstChild;
+      var needToRemove, offset, firstChild, lastNode;
 
       if (previous) {
         needToRemove = this.element;
@@ -60,7 +60,8 @@ var handleBackspace = function (editor) {
           }
         } else {
           firstChild = needToRemove.firstChild;
-          offset = utils.getTextContent(previous).length;
+          lastNode = previous.childNodes[previous.childNodes.length - 1];
+          offset = utils.getTextContent(lastNode).length - 1;
 
           utils.removeEmptyElements(previous);
 
@@ -73,7 +74,7 @@ var handleBackspace = function (editor) {
             editor.caret.moveToStart(firstChild);
           } else {
             // 段落的情況是要讓兩個 element 接起來後，游標移動到合併的位置
-            editor.caret.moveToStart(previous.firstChild, offset);
+            editor.caret.moveToStart(lastNode, offset);
           }
         }
       } else {

@@ -120,3 +120,14 @@ utils.isAncestorOf = function (node, ancestor) {
 utils.nodeContentLength = function (node) {
   return utils.getTextContent(node).length;
 };
+
+utils.lastNode = function (node) {
+  return node.childNodes[node.childNodes.length - 1];
+};
+
+utils.lastTextNode = function (node) {
+  if (utils.isTextNode(node)) {
+    return node;
+  }
+  return utils.lastTextNode(utils.lastNode(node));
+};

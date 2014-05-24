@@ -311,7 +311,7 @@ Caret.prototype.atElementEnd = function (el) {
   var focusNode = selection.focusNode;
   var offset = selection.focusOffset;
   var range = document.createRange();
-  var lastNode = el.childNodes[el.childNodes.length - 1];
+  var lastNode = utils.lastTextNode(el);
 
   range.setStart(focusNode, offset);
   range.setEnd(lastNode, lastNode.length - 1);
