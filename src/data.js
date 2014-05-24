@@ -5,6 +5,12 @@ function Data(id) {
   this.tmp = {};
 }
 
+/**
+ * @param {String} key
+ * @param {Mixed} key
+ * @return {Data}
+ * @api public
+ */
 Data.prototype.set = function (key, val) {
   if (!utils.equal(this.get(key), val)) {
     this.modified = true;
@@ -15,6 +21,12 @@ Data.prototype.set = function (key, val) {
   return this;
 };
 
+/**
+ * @param {String} key
+ * @param {Mixed} key
+ * @return {Data}
+ * @api private
+ */
 Data.prototype._set = function (key, val) {
   var keys = utils.split(key, '.');
   var last = keys.pop();
@@ -33,6 +45,11 @@ Data.prototype._set = function (key, val) {
   return this;
 };
 
+/**
+ * @param {String} key
+ * @return {Mixed}
+ * @api public
+ */
 Data.prototype.get = function (key) {
   if (this.tmp[key]) {
     return this.tmp[key];
@@ -52,6 +69,10 @@ Data.prototype.get = function (key) {
   return data;
 };
 
+/**
+ * @return {Data}
+ * @api public
+ */
 Data.prototype.update = function () {
   var tmp = this.tmp;
 
@@ -65,6 +86,10 @@ Data.prototype.update = function () {
   return this;
 };
 
+/**
+ * @return {Object}
+ * @api public
+ */
 Data.prototype.toJSON = function () {
   return utils.clone(this.data);
 };

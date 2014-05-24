@@ -2,10 +2,19 @@ function Caret(editor) {
   this.editor = editor;
 }
 
+/**
+ * @return {Node}
+ * @api public
+ */
 Caret.prototype.focusNode = function () {
   return document.getSelection().focusNode;
 };
 
+/**
+ * @param {String} tagName
+ * @return {Element}
+ * @api public
+ */
 Caret.prototype.focusElement = function (tagName) {
   var node;
 
@@ -32,22 +41,43 @@ Caret.prototype.focusElement = function (tagName) {
   }
 };
 
+/**
+ * @return {Element}
+ * @api public
+ */
 Caret.prototype.focusSection = function () {
   return this.focusType('section');
 };
 
+/**
+ * @return {Element}
+ * @api public
+ */
 Caret.prototype.focusParagraph = function () {
   return this.focusType('paragraph');
 };
 
+/**
+ * @return {Element}
+ * @api public
+ */
 Caret.prototype.focusParagraphs = function () {
   return this.focusType('paragraphs');
 };
 
+/**
+ * @return {Element}
+ * @api public
+ */
 Caret.prototype.focusDetail = function () {
   return this.focusType('detail');
 };
 
+/**
+ * @param {String} type
+ * @return {Element}
+ * @api public
+ */
 Caret.prototype.focusType = function (type) {
   var node = this.focusElement();
   var elType;
@@ -69,6 +99,11 @@ Caret.prototype.focusType = function (type) {
   return null;
 };
 
+/**
+ * @param {Node} node
+ * @return {Element}
+ * @api public
+ */
 Caret.prototype.nextElement = function (node) {
   if (node) {
     node = node.nextSibling;
@@ -87,6 +122,10 @@ Caret.prototype.nextElement = function (node) {
   return null;
 };
 
+/**
+ * @param {Element} el
+ * @api public
+ */
 Caret.prototype.focusTo = function (el) {
   if (el.innerHTML.trim()) {
     this.moveToStart(el);
@@ -97,6 +136,10 @@ Caret.prototype.focusTo = function (el) {
   };
 };
 
+/**
+ * @return {String}
+ * @api public
+ */
 Caret.prototype.textBefore = function () {
   var selection = document.getSelection();
   var node = selection.focusNode;
@@ -109,6 +152,10 @@ Caret.prototype.textBefore = function () {
   return node.substringData(0, offset);
 };
 
+/**
+ * @return {String}
+ * @api public
+ */
 Caret.prototype.textAfter = function () {
   var selection = document.getSelection();
   var node = selection.focusNode;
@@ -121,6 +168,11 @@ Caret.prototype.textAfter = function () {
   return node.substringData(offset, node.length - 1); 
 };
 
+/**
+ * @param {Element} el
+ * @param {Number} offset
+ * @api public
+ */
 Caret.prototype.moveToStart = function (el, offset) {
   var selection = document.getSelection();
   var range = document.createRange();
@@ -148,6 +200,11 @@ Caret.prototype.moveToStart = function (el, offset) {
   selection.collapseToStart();
 };
 
+/**
+ * @param {Element} el
+ * @param {Number} offset
+ * @api public
+ */
 Caret.prototype.moveToEnd = function (el, offset) {
   var range = document.createRange();
   var selection = window.getSelection();
@@ -173,6 +230,11 @@ Caret.prototype.moveToEnd = function (el, offset) {
   selection.collapseToEnd();
 };
 
+/**
+ * @param {Element} el
+ * @return {Element}
+ * @api public
+ */
 Caret.prototype.split = function (el) {
   var selection = document.getSelection();
   var node = selection.focusNode;
@@ -190,6 +252,9 @@ Caret.prototype.split = function (el) {
   return el;
 };
 
+/**
+ * @api public
+ */
 Caret.prototype.save = function () {
   var selection = document.getSelection();
   var range;
@@ -205,6 +270,9 @@ Caret.prototype.save = function () {
   this._range = range;
 };
 
+/**
+ * @api public
+ */
 Caret.prototype.restore = function () {
   var range = this._range;
 
@@ -219,6 +287,10 @@ Caret.prototype.restore = function () {
   }
 };
 
+/**
+ * @param {Element} el
+ * @api public
+ */
 Caret.prototype.selectAllText = function (el) {
   var selection = window.getSelection();        
   var range = document.createRange();
@@ -227,12 +299,15 @@ Caret.prototype.selectAllText = function (el) {
   selection.addRange(range);
 };
 
-// Example:
-//   caret.select(node)
-//   caret.select(node, offset)
-//   caret.select(startNode, endNode)
-//   caret.select(node, startOffset, endOffset)
-//   caret.select(startNode, startOffset, endNode, endOffset)
+/**
+ *     caret.select(node)
+ *     caret.select(node, offset)
+ *     caret.select(startNode, endNode)
+ *     caret.select(node, startOffset, endOffset)
+ *     caret.select(startNode, startOffset, endNode, endOffset)
+ *
+ * @api public
+ */
 Caret.prototype.select = function () {
   var selection = window.getSelection();
   var startNode, startOffset, endNode, endOffset;
@@ -280,6 +355,10 @@ Caret.prototype.select = function () {
   selection.addRange(range);
 };
 
+/**
+ * @param {Element} el
+ * @api public
+ */
 Caret.prototype.insertElement = function (el) {
   var selection = document.getSelection();
   var range = selection.getRangeAt(0);
@@ -289,11 +368,19 @@ Caret.prototype.insertElement = function (el) {
   range.insertNode(el);
 };
 
+/**
+ * @api public
+ */
 Caret.prototype.closestElement = function () {
   var node = this.focusNode();
   return this.nextElement(node);
 };
 
+/**
+ * @param {Element} el
+ * @return {Boolean}
+ * @api public
+ */
 Caret.prototype.atElementStart = function (el) {
   var selection = document.getSelection();
   var focusNode = selection.focusNode;
@@ -306,6 +393,11 @@ Caret.prototype.atElementStart = function (el) {
   return !range.toString().trim();
 };
 
+/**
+ * @param {Element} el
+ * @return {Boolean}
+ * @api public
+ */
 Caret.prototype.atElementEnd = function (el) {
   var selection = document.getSelection();
   var focusNode = selection.focusNode;

@@ -2,6 +2,11 @@ function Emitter() {
   this.events = {};
 }
 
+/**
+ * @param {String} event
+ * @param {Function} handler
+ * @api public
+ */
 Emitter.prototype.on = function (event, handler) {
   var list = this.events[event] || [];
   list.push(handler);
@@ -9,12 +14,22 @@ Emitter.prototype.on = function (event, handler) {
   return this;
 };
 
+/**
+ * @param {String} event
+ * @param {Function} handler
+ * @api public
+ */
 Emitter.prototype.once = function (event, handler) {
   handler._once = true;
   this.on(event, handler);
   return this;
 };
 
+/**
+ * @param {String} event
+ * @param {Function} handler
+ * @api public
+ */
 Emitter.prototype.off = function (event, handler) {
   if (typeof event === 'function') {
     handler = event;
@@ -36,6 +51,11 @@ Emitter.prototype.off = function (event, handler) {
   return this;
 };
 
+/**
+ * @param {String} event
+ * @param {...Mixed} args
+ * @api public
+ */
 Emitter.prototype.emit = function () {
   var args = Array.prototype.slice.call(arguments);
   var event = args.shift();

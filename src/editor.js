@@ -31,6 +31,9 @@ function Editor(options) {
   this.use(initContext());
 }
 
+/**
+ * @api public
+ */
 Editor.prototype.default = function () {
   removeExtraNodes(this);
   renameElements(this);
@@ -49,6 +52,9 @@ Editor.prototype.default = function () {
 
 Editor.prototype.schema = schema;
 
+/**
+ * @api private
+ */
 Editor.prototype.bindEvents = function () {
   var el = this.el;
   var bind = el.addEventListener.bind(el);
@@ -59,6 +65,10 @@ Editor.prototype.bindEvents = function () {
   bind('focus', this.handleEmpty.bind(this));
 };
 
+/**
+ * @param {KeyboardEvent} e
+ * @api private
+ */
 Editor.prototype.onKeydown = function (e) {
   var ctx;
 
@@ -80,6 +90,10 @@ Editor.prototype.onKeydown = function (e) {
   }.bind(this));
 };
 
+/**
+ * @return {Boolean}
+ * @api public
+ */
 Editor.prototype.isEmpty = function () {
   var children = this.el.children;
   var first = children[0];
@@ -87,6 +101,9 @@ Editor.prototype.isEmpty = function () {
     && !utils.getTextContent(first).trim();
 };
 
+/**
+ * @api private
+ */
 Editor.prototype.handleEmpty = function () {
   var first = this.el.children[0];
 
@@ -110,6 +127,9 @@ Editor.prototype.handleEmpty = function () {
   }
 };
 
+/**
+ * @api private
+ */
 Editor.prototype.walk = function () {
   var els = editor.el.querySelectorAll('[name]');
   var context = {};
