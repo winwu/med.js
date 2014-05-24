@@ -33,8 +33,8 @@ var handleBackspace = function (editor) {
   var handleOthers = function (ctx) {
     ctx.prevent();
 
-    var el = this.paragraph;
-    var previous = this.element.previousElementSibling;
+    var el = ctx.paragraph;
+    var previous = ctx.element.previousElementSibling;
     var needToRemove, offset, firstChild, lastNode;
 
     if (previous) {
