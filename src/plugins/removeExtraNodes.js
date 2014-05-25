@@ -20,7 +20,7 @@ var removeExtraNodes = function () {
         if (utils.isTextNode(prev)) {
           prev.appendData(curr.data);
         } else if (utils.isElementNode(prev)) {
-          prev.innerHTML += utils.getTextContent(curr);
+          utils.moveChildNodes(curr, prev);
         }
 
         curr.parentNode.removeChild(curr);
@@ -35,11 +35,11 @@ var removeExtraNodes = function () {
   });
 
   editor.on('walkEnd', function (ctx) {
-    var el = ctx.__removeExtraNode__focus;
+    var node = ctx.__removeExtraNode__focus;
     var offset = ctx.__removeExtraNode__offset;
 
-    if (el) {
-      ctx.editor.caret.select(el, offset, el, offset);
+    if (node) {
+      ctx.editor.caret.select(node, offset, node, offset);
     }
   });
 };

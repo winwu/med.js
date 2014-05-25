@@ -1,6 +1,6 @@
 var handleList = function (editor) {
   return function (next) {
-    var el = this.element;
+    var el = this.paragraph;
 
     if (!utils.isTag('li', el)) {
       return next();
