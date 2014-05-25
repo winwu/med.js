@@ -3,6 +3,9 @@ function Observe() {
   this.data = {};
 }
 
+/**
+ * @api public
+ */
 Observe.prototype.sync = function () {
   var structure = {
     paragraphs: [],
@@ -32,6 +35,13 @@ Observe.prototype.sync = function () {
   this.structure = structure;
 };
 
+/**
+ * @param {Element} el
+ * @param {Object} structure
+ * @param {Object} shouldBeDelete
+ * @return {Data}
+ * @api private
+ */
 Observe.scan = function (el, structure, shouldBeDelete) {
   var tagName = el.tagName.toLowerCase();
   var name = el.getAttribute('name');
@@ -75,6 +85,13 @@ Observe.scan = function (el, structure, shouldBeDelete) {
   return data;
 };
 
+/**
+ * @param {Element} el
+ * @param {Data} data
+ * @param {Object} structure
+ * @param {Object} shouldBeDelete
+ * @api private
+ */
 Observe.section = function (el, data, structure, shouldBeDelete) {
   var p = [];
 
@@ -100,6 +117,13 @@ Observe.section = function (el, data, structure, shouldBeDelete) {
   data.set('end', Array.prototype.push.apply(structure.paragraphs, p));
 };
 
+/**
+ * @param {Element} el
+ * @param {Data} data
+ * @param {Object} structure
+ * @param {Object} shouldBeDelete
+ * @api private
+ */
 Observe.paragraphs = function (el, data, structure, shouldBeDelete) {
   var p = [];
 
@@ -120,6 +144,13 @@ Observe.paragraphs = function (el, data, structure, shouldBeDelete) {
   data.set('end', Array.prototype.push.apply(structure.paragraphs, p));
 };
 
+/**
+ * @param {Element} el
+ * @param {Data} data
+ * @param {Object} structure
+ * @param {Object} shouldBeDelete
+ * @api private
+ */
 Observe.paragraph = function (el, data, structure, shouldBeDelete) {
   var detail = [];
 
@@ -139,33 +170,65 @@ Observe.paragraph = function (el, data, structure, shouldBeDelete) {
   data.set('detail', detail);
 };
 
+/**
+ * @param {Element} el
+ * @param {Data} data
+ * @api private
+ */
 Observe.detail = function (el, data) {
   var offset = Observe.getOffset(el);
   data.set('start', offset.start);
   data.set('end', offset.end);
 };
 
+/**
+ * @param {Element} el
+ * @param {Data} data
+ * @param {Object} attr
+ * @api private
+ */
 Observe.attribute = function (el, data, attr) {
   var val = el.getAttribute(attr.name);
   data.set(attr.name, val);
 };
 
+/**
+ * @param {Element} el
+ * @param {Data} data
+ * @param {Object} attr
+ * @api private
+ */
 Observe.dataset = function (el, data, attr) {
   var val = el.getAttribute('data-' + attr.name);
   data.set(attr.name, val);
 };
 
+/**
+ * @param {Element} el
+ * @param {Data} data
+ * @param {Object} attr
+ * @api private
+ */
 Observe.content = function (el, data, attr) {
   var text = utils.getTextContent(el);
   data.set(attr.name, text);
 };
 
+/**
+ * @param {Element} el
+ * @api private
+ */
 Observe.handleUnknownElement = function (el) {
   var text = utils.getTextContent(el);
   var node = document.createTextNode(text);
   el.parentElement.replaceChild(node, el);
 };
 
+/**
+ * @param {Element} el
+ * @return {Number}
+ * @api private
+ */
 Observe.getOffset = function (el) {
   var parentElement = el.parentNode;
   var beforeHTML, beforeText, tmp;
@@ -197,6 +260,10 @@ Observe.getOffset = function (el) {
   return offset;
 };
 
+/**
+ * @return {Object}
+ * @api public
+ */
 Observe.prototype.toJSON = function () {
   var structure = this.structure;
   var sections = structure.sections;
@@ -257,6 +324,10 @@ Observe.rules = {
   detail: {}
 };
 
+/**
+ * @param {Element} el
+ * @api private
+ */
 Observe.checkAndRemoveStrangeElement = function (el) {
   var type = utils.getType(el);
   var parentType = utils.getType(el.parentElement);

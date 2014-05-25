@@ -17,6 +17,11 @@ if (typeof module !== 'undefined') {
   window.Med = Editor;
 }
 var utils = {};
+/**
+ * @param {Node} node
+ * @return {String}
+ * @api public
+ */
 utils.getTextContent = function (node) {
   var text;
 
@@ -40,6 +45,11 @@ utils.getTextContent = function (node) {
   return text;
 };
 
+/**
+ * @param {Element} el
+ * @return {Boolean}
+ * @api public
+ */
 utils.isEmpty = function (el) {
   if (utils.isTag('br', el)) {
     return false;
@@ -47,10 +57,21 @@ utils.isEmpty = function (el) {
   return !utils.getTextContent(el).trim();
 };
 
+/**
+ * @param {Element} el
+ * @return {Boolean}
+ * @api public
+ */
 utils.isNotEmpty = function (el) {
   return !utils.isEmpty(el);
 };
 
+/**
+ * @param {String} tagName
+ * @param {Element} el
+ * @return {Boolean}
+ * @api public
+ */
 utils.isTag = function (tagName, el) {
   if (typeof tagName === 'string') {
     tagName = [tagName];
@@ -65,10 +86,19 @@ utils.isTag = function (tagName, el) {
     .indexOf(el.tagName);
 };
 
+/**
+ * @param {Element} el
+ * @return {Boolean}
+ * @api public
+ */
 utils.isLastChild = function (el) {
   return el.parentELement.lastChild === el;
 };
 
+/**
+ * @param {Element} el
+ * @api public
+ */
 utils.removeEmptyElements = function (el) {
   utils.each(el.children, function (child) {
     if (utils.isEmpty(child)) {
@@ -79,12 +109,21 @@ utils.removeEmptyElements = function (el) {
   });
 };
 
+/**
+ * @param {Element} el
+ * @api public
+ */
 utils.removeElement = function (el) {
   if (el.parentElement) {
     el.parentElement.removeChild(el);
   }
 };
 
+/**
+ * @param {Element} src
+ * @param {Element} dest
+ * @api public
+ */
 utils.moveChildren = function (src, dest) {
   var children = Array.prototype.slice.call(src.children);
 
@@ -93,6 +132,11 @@ utils.moveChildren = function (src, dest) {
   });
 };
 
+/**
+ * @param {Element} src
+ * @param {Element} dest
+ * @api public
+ */
 utils.moveChildNodes = function (src, dest) {
   var nodes = Array.prototype.slice.call(src.childNodes);
 
@@ -101,6 +145,12 @@ utils.moveChildNodes = function (src, dest) {
   });
 };
 
+/**
+ * @param {String|String[]} types
+ * @param {Element} el
+ * @return {Boolean}
+ * @api public
+ */
 utils.isType = function (types, el) {
   var s = utils.getElementSchema(el);
 
@@ -111,14 +161,30 @@ utils.isType = function (types, el) {
   return s && !!~types.indexOf(s.type);
 };
 
+/**
+ * @param {Node} node
+ * @return {Boolean}
+ * @api public
+ */
 utils.isElementNode = function (node) {
   return node.nodeType === document.ELEMENT_NODE;
 };
 
+/**
+ * @param {Node} node
+ * @return {Boolean}
+ * @api public
+ */
 utils.isTextNode = function (node) {
   return node.nodeType === document.TEXT_NODE;
 };
 
+/**
+ * @param {Node} node
+ * @param {Node} ancestor
+ * @return {Boolean}
+ * @api public
+ */
 utils.isAncestorOf = function (node, ancestor) {
   var childNodes = Array.prototype.slice.call(ancestor.chlidNodes || []);
   var child;
@@ -136,8 +202,95 @@ utils.isAncestorOf = function (node, ancestor) {
   return true;
 };
 
+/**
+ * @param {Node} node
+ * @return {Number}
+ * @api public
+ */
 utils.nodeContentLength = function (node) {
   return utils.getTextContent(node).length;
+};
+
+/**
+ * @param {Node} node
+ * @return {Node}
+ * @api public
+ */
+utils.lastNode = function (node) {
+  return node.childNodes[node.childNodes.length - 1];
+};
+
+/**
+ * @param {Node} node
+ * @return {Text}
+ * @api public
+ */
+utils.lastTextNode = function (node) {
+  if (utils.isTextNode(node)) {
+    return node;
+  }
+  return utils.lastTextNode(utils.lastNode(node));
+};
+
+/**
+ * @param {Node} node
+ * @return {Element}
+ * @api public
+ */
+utils.lastElement = function (node) {
+  return node.children[node.children.length - 1];
+};
+
+/**
+ * @param {Node} node
+ * @return {Node}
+ * @api public
+ */
+utils.firstNode = function (node) {
+  return node.childNodes[0];
+};
+
+/**
+ * @param {Node} node
+ * @return {Text}
+ * @api public
+ */
+utils.firstTextNode = function (node) {
+  if (utils.isTextNode(node)) {
+    return node;
+  }
+  return utils.firstTextNode(utils.firstNode(node));
+};
+
+/**
+ * @param {Node} node
+ * @return {Element}
+ * @api public
+ */
+utils.firstElement = function (node) {
+  return node.children[0];
+};
+
+/**
+ * @param {Element} container
+ * @param {Element} el
+ * @return {Boolean}
+ * @api public
+ */
+utils.isLastElementOf = function (container, el) {
+  var lastElement = utils.lastElement(container);
+  return lastElement === el;
+};
+
+/**
+ * @param {Element} container
+ * @param {Element} el
+ * @return {Boolean}
+ * @api public
+ */
+utils.isFirstElementOf = function (container, el) {
+  var firstElement = utils.firstElement(container);
+  return firstElement === el;
 };
 utils.mixin = function (o1, o2) {
   Object
@@ -294,15 +447,107 @@ var createNewParagraph = function () {
 var handleBackspace = function (editor) {
   var shouldHandleBackspace = function (ctx) {
     var selection = document.getSelection();
-    var el = ctx.element;
+    var el = ctx.paragraph;
 
     return !(selection + '')
       && utils.isType(['paragraph', 'paragraphs', 'section'], el)
-      // li 是一個 paragraph
-      // 但 li 的預設刪除行為在這裡沒有問題
-      // 所以把他忽略掉
-      && !utils.isTag('li', el)
       && editor.caret.atElementStart(el);
+  };
+
+  var handleList = function (ctx) {
+    var el = ctx.paragraph;
+    var paragraphs = ctx.paragraphs;
+
+    if (paragraphs && utils.isFirstElementOf(paragraphs, el)) {
+      ctx.prevent();
+
+      var p = document.createElement('p');
+
+      utils.moveChildNodes(el, p);
+      utils.removeElement(el);
+
+      ctx.section.insertBefore(p, paragraphs);
+
+      if (utils.isEmpty(paragraphs)) {
+        utils.removeElement(paragraphs);
+      }
+
+      editor.caret.moveToStart(p);
+    }
+  };
+
+  var handleOthers = function (ctx) {
+    ctx.prevent();
+
+    var el = ctx.paragraph;
+    var previous = el.previousElementSibling;
+    var needToRemove, offset, firstChild, lastNode;
+
+    if (previous) {
+      needToRemove = el;
+    } else {
+      needToRemove = ctx.section;
+    }
+
+    previous = needToRemove.previousElementSibling;
+
+    if (needToRemove && previous) {
+      if (utils.isType('paragraphs', previous)) {
+
+        // ul/ol 要特別處理
+        // 如果使用跟其他地方相同方式的作法
+        // 會造成 ul/ol 多出一個 br
+        if(previous.lastChild && utils.isTag('li', previous.lastChild)) {
+          var focus = previous.lastChild.lastChild;
+
+          utils.moveChildNodes(el, previous.lastChild);
+          utils.removeElement(el);
+
+          if (focus) {
+            editor.caret.moveToEnd(focus);
+          } else {
+
+            // 原本的 li 是空的
+            // 所以直接把指標移到 li 最前面就可以了
+            editor.caret.moveToStart(previous.lastChild);
+          }
+        } else {
+          // 忽略動作
+        }
+      } else {
+        firstChild = needToRemove.firstChild;
+        lastNode = previous.childNodes[previous.childNodes.length - 1];
+        offset = utils.getTextContent(lastNode).length;
+
+        utils.removeEmptyElements(previous);
+
+        utils.moveChildNodes(needToRemove, previous);
+
+        needToRemove.parentElement.removeChild(needToRemove);
+
+        if (utils.isType('section', needToRemove)) {
+          // section 的情況是要讓游標在畫面上跟著目前 element 移動
+          editor.caret.moveToStart(firstChild);
+        } else {
+          // 段落的情況是要讓兩個 element 接起來後，游標移動到合併的位置
+          editor.caret.moveToStart(lastNode, offset);
+        }
+      }
+    } else {
+      previous = ctx.node.previousSibling;
+
+      var previousIsBrTag = function () {
+        return previous
+          && utils.isElementNode(previous)
+          && utils.isTag('br', previous);
+      };
+      
+      if (previousIsBrTag()) {
+        offset = utils.getTextContent(previous.previousSibling).length;
+        previous.parentElement.removeChild(previous);
+        editor.caret.moveToStart(ctx.node.previousSibling, offset);
+      }
+    }
   };
 
   return function (next) {
@@ -310,80 +555,53 @@ var handleBackspace = function (editor) {
       return next();
     }
 
-    var el = this.element;
+    var el = this.paragraph;
 
     // 段落前面已經沒有文字
     // 需要刪除 element
     if (shouldHandleBackspace(this)) {
+      if (utils.isTag('li', el)) {
+        handleList(this, next);
+      } else {
+        handleOthers(this, next);
+      }
+    }
+
+    next();
+  };
+};
+var handleBlockquote = function (editor) {
+  return function (next) {
+    var el = this.paragraph;
+
+    if (!utils.isTag('blockquote', el)) {
+      return next();
+    }
+
+    // 目前只處理換段落的情況
+    if (!(this.key === 'enter' && !this.shift)) {
+      return next();
+    }
+
+    if (editor.caret.atElementEnd(el)) {
+      // 所有行尾換行都要建立新 <p>
+      // 沒有例外
+
       this.prevent();
 
-      var previous = this.element.previousElementSibling;
-      var needToRemove, offset, firstChild;
+      var p = document.createElement('p');
 
-      if (previous) {
-        needToRemove = this.element;
-      } else {
-        needToRemove = this.section;
-      }
+      p.innerHTML = '<br />';
 
-      previous = needToRemove.previousElementSibling;
+      this.section.insertBefore(p, el.nextSibling);
 
-      if (needToRemove && previous) {
-        if (utils.isType('paragraphs', previous)) {
+      editor.caret.moveToStart(p);
+    } else {
+      // 其他情況下都將現有的 blockquote 分割
 
-          // ul/ol 要特別處理
-          // 如果使用跟其他地方相同方式的作法
-          // 會造成 ul/ol 多出一個 br
-          if(previous.lastChild && utils.isTag('li', previous.lastChild)) {
-            var focus = previous.lastChild.lastChild;
+      this.prevent();
 
-            utils.moveChildNodes(el, previous.lastChild);
-            utils.removeElement(el);
-
-            if (focus) {
-              editor.caret.moveToEnd(focus);
-            } else {
-
-              // 原本的 li 是空的
-              // 所以直接把指標移到 li 最前面就可以了
-              editor.caret.moveToStart(previous.lastChild);
-            }
-          } else {
-            // 忽略動作
-          }
-        } else {
-          firstChild = needToRemove.firstChild;
-          offset = utils.getTextContent(previous).length;
-
-          utils.removeEmptyElements(previous);
-
-          utils.moveChildNodes(needToRemove, previous);
-
-          needToRemove.parentElement.removeChild(needToRemove);
-
-          if (utils.isType('section', needToRemove)) {
-            // section 的情況是要讓游標在畫面上跟著目前 element 移動
-            editor.caret.moveToStart(firstChild);
-          } else {
-            // 段落的情況是要讓兩個 element 接起來後，游標移動到合併的位置
-            editor.caret.moveToStart(previous.firstChild, offset);
-          }
-        }
-      } else {
-        previous = this.node.previousSibling;
-
-        var previousIsBrTag = function () {
-          return previous
-            && utils.isElementNode(previous)
-            && utils.isTag('br', previous);
-        };
-        
-        if (previousIsBrTag()) {
-          offset = utils.getTextContent(previous.previousSibling).length;
-          previous.parentElement.removeChild(previous);
-          editor.caret.moveToStart(this.node.previousSibling, offset);
-        }
-      }
+      editor.caret.split(el);
     }
 
     next();
@@ -391,7 +609,7 @@ var handleBackspace = function (editor) {
 };
 var handleList = function (editor) {
   return function (next) {
-    var el = this.element;
+    var el = this.paragraph;
 
     if (!utils.isTag('li', el)) {
       return next();
@@ -442,7 +660,7 @@ var handleList = function (editor) {
 var handleParagraph = (function () {
   var shouldHandleThis = function (ctx) {
     return !ctx.modifier
-      && utils.isTag('p', ctx.element)
+      && utils.isTag('p', ctx.paragraph)
       && isCreateNewLineAction(ctx);
   };
 
@@ -453,7 +671,7 @@ var handleParagraph = (function () {
 
   var createNewLine = function (ctx, next) {
     var editor = ctx.editor;
-    var el = ctx.element;
+    var el = ctx.paragraph;
 
     if (utils.isEmpty(el)) {
       ctx.prevent();
@@ -579,21 +797,30 @@ var handleEmptyParagraph = function (editor) {
   });
 };
 var removeExtraNodes = function () {
-  var removeExtraNode = function (el) {
+  var removeExtraNode = function (ctx) {
+    var el = ctx.element;
+    var focus = ctx.editor.caret.focusElement();
     var nodes = el.childNodes;
     var len = nodes.length;
-    var curr, prev;
+    var curr, prev, lastNode;
     
     while (len--) {
       curr = nodes[len];
       prev = nodes[len - 1];
 
       if (prev && prev.nodeType === curr.nodeType) {
+        if (prev === focus) {
+          lastNode = utils.lastNode(focus);
+          ctx.__removeExtraNode__focus = lastNode;
+          ctx.__removeExtraNode__offset = lastNode.length;
+        }
+        
         if (utils.isTextNode(prev)) {
           prev.appendData(curr.data);
         } else if (utils.isElementNode(prev)) {
-          prev.innerHTML += utils.getTextContent(curr);
+          utils.moveChildNodes(curr, prev);
         }
+
         curr.parentNode.removeChild(curr);
       }
     }
@@ -601,7 +828,16 @@ var removeExtraNodes = function () {
 
   editor.on('walk', function (ctx) {
     if (utils.isType('paragraph', ctx.element)) {
-      removeExtraNode(ctx.element);
+      removeExtraNode(ctx);
+    }
+  });
+
+  editor.on('walkEnd', function (ctx) {
+    var node = ctx.__removeExtraNode__focus;
+    var offset = ctx.__removeExtraNode__offset;
+
+    if (node) {
+      ctx.editor.caret.select(node, offset, node, offset);
     }
   });
 };
@@ -736,6 +972,11 @@ function Emitter() {
   this.events = {};
 }
 
+/**
+ * @param {String} event
+ * @param {Function} handler
+ * @api public
+ */
 Emitter.prototype.on = function (event, handler) {
   var list = this.events[event] || [];
   list.push(handler);
@@ -743,12 +984,22 @@ Emitter.prototype.on = function (event, handler) {
   return this;
 };
 
+/**
+ * @param {String} event
+ * @param {Function} handler
+ * @api public
+ */
 Emitter.prototype.once = function (event, handler) {
   handler._once = true;
   this.on(event, handler);
   return this;
 };
 
+/**
+ * @param {String} event
+ * @param {Function} handler
+ * @api public
+ */
 Emitter.prototype.off = function (event, handler) {
   if (typeof event === 'function') {
     handler = event;
@@ -770,6 +1021,11 @@ Emitter.prototype.off = function (event, handler) {
   return this;
 };
 
+/**
+ * @param {String} event
+ * @param {...Mixed} args
+ * @api public
+ */
 Emitter.prototype.emit = function () {
   var args = Array.prototype.slice.call(arguments);
   var event = args.shift();
@@ -795,10 +1051,19 @@ function Caret(editor) {
   this.editor = editor;
 }
 
+/**
+ * @return {Node}
+ * @api public
+ */
 Caret.prototype.focusNode = function () {
   return document.getSelection().focusNode;
 };
 
+/**
+ * @param {String} tagName
+ * @return {Element}
+ * @api public
+ */
 Caret.prototype.focusElement = function (tagName) {
   var node;
 
@@ -825,22 +1090,43 @@ Caret.prototype.focusElement = function (tagName) {
   }
 };
 
+/**
+ * @return {Element}
+ * @api public
+ */
 Caret.prototype.focusSection = function () {
   return this.focusType('section');
 };
 
+/**
+ * @return {Element}
+ * @api public
+ */
 Caret.prototype.focusParagraph = function () {
   return this.focusType('paragraph');
 };
 
+/**
+ * @return {Element}
+ * @api public
+ */
 Caret.prototype.focusParagraphs = function () {
   return this.focusType('paragraphs');
 };
 
+/**
+ * @return {Element}
+ * @api public
+ */
 Caret.prototype.focusDetail = function () {
   return this.focusType('detail');
 };
 
+/**
+ * @param {String} type
+ * @return {Element}
+ * @api public
+ */
 Caret.prototype.focusType = function (type) {
   var node = this.focusElement();
   var elType;
@@ -862,6 +1148,11 @@ Caret.prototype.focusType = function (type) {
   return null;
 };
 
+/**
+ * @param {Node} node
+ * @return {Element}
+ * @api public
+ */
 Caret.prototype.nextElement = function (node) {
   if (node) {
     node = node.nextSibling;
@@ -880,6 +1171,10 @@ Caret.prototype.nextElement = function (node) {
   return null;
 };
 
+/**
+ * @param {Element} el
+ * @api public
+ */
 Caret.prototype.focusTo = function (el) {
   if (el.innerHTML.trim()) {
     this.moveToStart(el);
@@ -890,6 +1185,10 @@ Caret.prototype.focusTo = function (el) {
   };
 };
 
+/**
+ * @return {String}
+ * @api public
+ */
 Caret.prototype.textBefore = function () {
   var selection = document.getSelection();
   var node = selection.focusNode;
@@ -902,6 +1201,10 @@ Caret.prototype.textBefore = function () {
   return node.substringData(0, offset);
 };
 
+/**
+ * @return {String}
+ * @api public
+ */
 Caret.prototype.textAfter = function () {
   var selection = document.getSelection();
   var node = selection.focusNode;
@@ -914,12 +1217,53 @@ Caret.prototype.textAfter = function () {
   return node.substringData(offset, node.length - 1); 
 };
 
+/**
+ * @param {Element} el
+ * @param {Number} offset
+ * @api public
+ */
 Caret.prototype.moveToStart = function (el, offset) {
-  this.select(el, offset | 0);
+  var selection = document.getSelection();
+  var range = document.createRange();
+  var len;
+
+  if (utils.isTextNode(el)) {
+    len = utils.getTextContent(el).length;
+  } else {
+    len = el.childNodes.length;
+  }
+
+  offset = offset | 0;
+
+  if (offset < 0) {
+    offset = 0;
+  } else if (offset >= len) {
+    offset = len;
+  }
+
+  range.setStart(el, offset);
+  range.setEnd(el, offset);
+
+  selection.removeAllRanges();
+  selection.addRange(range);
+  selection.collapseToStart();
 };
 
+/**
+ * @param {Element} el
+ * @param {Number} offset
+ * @api public
+ */
 Caret.prototype.moveToEnd = function (el, offset) {
-  var len = utils.nodeContentLength(el);
+  var range = document.createRange();
+  var selection = window.getSelection();
+  var len;
+
+  if (utils.isTextNode(el)) {
+    len = utils.getTextContent(el).length;
+  } else {
+    len = el.childNodes.length;
+  }
 
   offset = len - (offset | 0);
 
@@ -927,9 +1271,19 @@ Caret.prototype.moveToEnd = function (el, offset) {
     offset = 0;
   }
 
-  this.select(el, offset);
+  range.setStart(el, offset);
+  range.setEnd(el, offset);
+
+  selection.removeAllRanges();
+  selection.addRange(range);
+  selection.collapseToEnd();
 };
 
+/**
+ * @param {Element} el
+ * @return {Element}
+ * @api public
+ */
 Caret.prototype.split = function (el) {
   var selection = document.getSelection();
   var node = selection.focusNode;
@@ -947,6 +1301,9 @@ Caret.prototype.split = function (el) {
   return el;
 };
 
+/**
+ * @api public
+ */
 Caret.prototype.save = function () {
   var selection = document.getSelection();
   var range;
@@ -962,6 +1319,9 @@ Caret.prototype.save = function () {
   this._range = range;
 };
 
+/**
+ * @api public
+ */
 Caret.prototype.restore = function () {
   var range = this._range;
 
@@ -976,6 +1336,10 @@ Caret.prototype.restore = function () {
   }
 };
 
+/**
+ * @param {Element} el
+ * @api public
+ */
 Caret.prototype.selectAllText = function (el) {
   var selection = window.getSelection();        
   var range = document.createRange();
@@ -984,12 +1348,15 @@ Caret.prototype.selectAllText = function (el) {
   selection.addRange(range);
 };
 
-// Example:
-//   caret.select(node)
-//   caret.select(node, offset)
-//   caret.select(startNode, endNode)
-//   caret.select(node, startOffset, endOffset)
-//   caret.select(startNode, startOffset, endNode, endOffset)
+/**
+ *     caret.select(node)
+ *     caret.select(node, offset)
+ *     caret.select(startNode, endNode)
+ *     caret.select(node, startOffset, endOffset)
+ *     caret.select(startNode, startOffset, endNode, endOffset)
+ *
+ * @api public
+ */
 Caret.prototype.select = function () {
   var selection = window.getSelection();
   var startNode, startOffset, endNode, endOffset;
@@ -1037,6 +1404,10 @@ Caret.prototype.select = function () {
   selection.addRange(range);
 };
 
+/**
+ * @param {Element} el
+ * @api public
+ */
 Caret.prototype.insertElement = function (el) {
   var selection = document.getSelection();
   var range = selection.getRangeAt(0);
@@ -1046,11 +1417,19 @@ Caret.prototype.insertElement = function (el) {
   range.insertNode(el);
 };
 
+/**
+ * @api public
+ */
 Caret.prototype.closestElement = function () {
   var node = this.focusNode();
   return this.nextElement(node);
 };
 
+/**
+ * @param {Element} el
+ * @return {Boolean}
+ * @api public
+ */
 Caret.prototype.atElementStart = function (el) {
   var selection = document.getSelection();
   var focusNode = selection.focusNode;
@@ -1063,15 +1442,20 @@ Caret.prototype.atElementStart = function (el) {
   return !range.toString().trim();
 };
 
+/**
+ * @param {Element} el
+ * @return {Boolean}
+ * @api public
+ */
 Caret.prototype.atElementEnd = function (el) {
   var selection = document.getSelection();
   var focusNode = selection.focusNode;
   var offset = selection.focusOffset;
   var range = document.createRange();
-  var lastNode = el.childNodes[el.childNodes.length - 1];
+  var lastNode = utils.lastTextNode(el);
 
   range.setStart(focusNode, offset);
-  range.setEnd(lastNode, lastNode.length - 1);
+  range.setEnd(lastNode, lastNode.length);
 
   return !range.toString().trim();
 };
@@ -1079,6 +1463,11 @@ function Middleware() {
   this.middleware = [];
 }
 
+/**
+ * @param {Function} fn
+ * @return {Editor}
+ * @api public
+ */
 Middleware.prototype.use = function (fn) {
   if (typeof fn !== 'function') {
     throw new Error('The first argument must me a function.');
@@ -1089,11 +1478,21 @@ Middleware.prototype.use = function (fn) {
   return this;
 };
 
+/**
+ * @param {Object} ctx
+ * @param {Function} cb
+ * @api public
+ */
 Middleware.prototype.exec = function (ctx, cb) {
   var fn = this.compose(this.middleware);
   fn.call(ctx, cb);
 };
 
+/**
+ * @param {Function[]} fns
+ * @return {Function}
+ * @api public
+ */
 Middleware.prototype.compose = function (fns) {
   return function (cb) {
     var i = 0;
@@ -1126,6 +1525,12 @@ function Data(id) {
   this.tmp = {};
 }
 
+/**
+ * @param {String} key
+ * @param {Mixed} key
+ * @return {Data}
+ * @api public
+ */
 Data.prototype.set = function (key, val) {
   if (!utils.equal(this.get(key), val)) {
     this.modified = true;
@@ -1136,6 +1541,12 @@ Data.prototype.set = function (key, val) {
   return this;
 };
 
+/**
+ * @param {String} key
+ * @param {Mixed} key
+ * @return {Data}
+ * @api private
+ */
 Data.prototype._set = function (key, val) {
   var keys = utils.split(key, '.');
   var last = keys.pop();
@@ -1154,6 +1565,11 @@ Data.prototype._set = function (key, val) {
   return this;
 };
 
+/**
+ * @param {String} key
+ * @return {Mixed}
+ * @api public
+ */
 Data.prototype.get = function (key) {
   if (this.tmp[key]) {
     return this.tmp[key];
@@ -1173,6 +1589,10 @@ Data.prototype.get = function (key) {
   return data;
 };
 
+/**
+ * @return {Data}
+ * @api public
+ */
 Data.prototype.update = function () {
   var tmp = this.tmp;
 
@@ -1186,6 +1606,10 @@ Data.prototype.update = function () {
   return this;
 };
 
+/**
+ * @return {Object}
+ * @api public
+ */
 Data.prototype.toJSON = function () {
   return utils.clone(this.data);
 };
@@ -1194,6 +1618,9 @@ function Observe() {
   this.data = {};
 }
 
+/**
+ * @api public
+ */
 Observe.prototype.sync = function () {
   var structure = {
     paragraphs: [],
@@ -1223,6 +1650,13 @@ Observe.prototype.sync = function () {
   this.structure = structure;
 };
 
+/**
+ * @param {Element} el
+ * @param {Object} structure
+ * @param {Object} shouldBeDelete
+ * @return {Data}
+ * @api private
+ */
 Observe.scan = function (el, structure, shouldBeDelete) {
   var tagName = el.tagName.toLowerCase();
   var name = el.getAttribute('name');
@@ -1266,6 +1700,13 @@ Observe.scan = function (el, structure, shouldBeDelete) {
   return data;
 };
 
+/**
+ * @param {Element} el
+ * @param {Data} data
+ * @param {Object} structure
+ * @param {Object} shouldBeDelete
+ * @api private
+ */
 Observe.section = function (el, data, structure, shouldBeDelete) {
   var p = [];
 
@@ -1291,6 +1732,13 @@ Observe.section = function (el, data, structure, shouldBeDelete) {
   data.set('end', Array.prototype.push.apply(structure.paragraphs, p));
 };
 
+/**
+ * @param {Element} el
+ * @param {Data} data
+ * @param {Object} structure
+ * @param {Object} shouldBeDelete
+ * @api private
+ */
 Observe.paragraphs = function (el, data, structure, shouldBeDelete) {
   var p = [];
 
@@ -1311,6 +1759,13 @@ Observe.paragraphs = function (el, data, structure, shouldBeDelete) {
   data.set('end', Array.prototype.push.apply(structure.paragraphs, p));
 };
 
+/**
+ * @param {Element} el
+ * @param {Data} data
+ * @param {Object} structure
+ * @param {Object} shouldBeDelete
+ * @api private
+ */
 Observe.paragraph = function (el, data, structure, shouldBeDelete) {
   var detail = [];
 
@@ -1330,33 +1785,65 @@ Observe.paragraph = function (el, data, structure, shouldBeDelete) {
   data.set('detail', detail);
 };
 
+/**
+ * @param {Element} el
+ * @param {Data} data
+ * @api private
+ */
 Observe.detail = function (el, data) {
   var offset = Observe.getOffset(el);
   data.set('start', offset.start);
   data.set('end', offset.end);
 };
 
+/**
+ * @param {Element} el
+ * @param {Data} data
+ * @param {Object} attr
+ * @api private
+ */
 Observe.attribute = function (el, data, attr) {
   var val = el.getAttribute(attr.name);
   data.set(attr.name, val);
 };
 
+/**
+ * @param {Element} el
+ * @param {Data} data
+ * @param {Object} attr
+ * @api private
+ */
 Observe.dataset = function (el, data, attr) {
   var val = el.getAttribute('data-' + attr.name);
   data.set(attr.name, val);
 };
 
+/**
+ * @param {Element} el
+ * @param {Data} data
+ * @param {Object} attr
+ * @api private
+ */
 Observe.content = function (el, data, attr) {
   var text = utils.getTextContent(el);
   data.set(attr.name, text);
 };
 
+/**
+ * @param {Element} el
+ * @api private
+ */
 Observe.handleUnknownElement = function (el) {
   var text = utils.getTextContent(el);
   var node = document.createTextNode(text);
   el.parentElement.replaceChild(node, el);
 };
 
+/**
+ * @param {Element} el
+ * @return {Number}
+ * @api private
+ */
 Observe.getOffset = function (el) {
   var parentElement = el.parentNode;
   var beforeHTML, beforeText, tmp;
@@ -1388,6 +1875,10 @@ Observe.getOffset = function (el) {
   return offset;
 };
 
+/**
+ * @return {Object}
+ * @api public
+ */
 Observe.prototype.toJSON = function () {
   var structure = this.structure;
   var sections = structure.sections;
@@ -1448,6 +1939,10 @@ Observe.rules = {
   detail: {}
 };
 
+/**
+ * @param {Element} el
+ * @api private
+ */
 Observe.checkAndRemoveStrangeElement = function (el) {
   var type = utils.getType(el);
   var parentType = utils.getType(el.parentElement);
@@ -1470,11 +1965,19 @@ Observe.checkAndRemoveStrangeElement = function (el) {
 function HtmlBuilder() {
 }
 
+/**
+ * @param {Object} json
+ * @api public
+ */
 HtmlBuilder.prototype.fromJSON = function (json) {
   HtmlBuilder.importData.call(this, json);
   HtmlBuilder.buildHTML.call(this);
 };
 
+/**
+ * @param {Object} json
+ * @api private
+ */
 HtmlBuilder.importData = function (json) {
   json = utils.clone(json);
 
@@ -1521,6 +2024,9 @@ HtmlBuilder.importData = function (json) {
   return this;
 };
 
+/**
+ * @api private
+ */
 HtmlBuilder.buildHTML = function () {
   var docfrag = document.createDocumentFragment();
   var el = this.el;
@@ -1535,10 +2041,22 @@ HtmlBuilder.buildHTML = function () {
   el.innerHTML = html;
 };
 
+/**
+ * @param {DocumentFragment|Element} container
+ * @param {Object} structure
+ * @param {Object} data
+ * @api private
+ */
 HtmlBuilder.createElements = function (container, structure, data) {
   HtmlBuilder.createSections(container, structure, data);
 };
 
+/**
+ * @param {DocumentFragment|Element} container
+ * @param {Object} structure
+ * @param {Object} data
+ * @api private
+ */
 HtmlBuilder.createSections = function (container, structure, data) {
   structure.sections.forEach(function (name) {
     var section = data[name];
@@ -1550,6 +2068,13 @@ HtmlBuilder.createSections = function (container, structure, data) {
   });
 };
 
+/**
+ * @param {Object} section
+ * @param {DocumentFragment|Element} container
+ * @param {Object} structure
+ * @param {Object} data
+ * @api private
+ */
 HtmlBuilder.createParagraphs = function (section, container, structure, data) {
   structure
     .paragraphs
@@ -1570,6 +2095,13 @@ HtmlBuilder.createParagraphs = function (section, container, structure, data) {
     });
 };
 
+/**
+ * @param {Object} paragraph
+ * @param {DocumentFragment|Element} container
+ * @param {Object} structure
+ * @param {Object} data
+ * @api private
+ */
 HtmlBuilder.createDetails = function (paragraph, container, structure, data) {
   var detail = paragraph.get('detail');
   var text = paragraph.get('text');
@@ -1603,6 +2135,11 @@ HtmlBuilder.createDetails = function (paragraph, container, structure, data) {
   }
 };
 
+/**
+ * @param {Data} data
+ * @return {Element}
+ * @api private
+ */
 HtmlBuilder.createElement = function (data) {
   var tagName = data.get('tag');
   var el = document.createElement(tagName);
@@ -1613,6 +2150,11 @@ HtmlBuilder.createElement = function (data) {
   return el;
 };
 
+/**
+ * @param {Element} el
+ * @param {Data} data
+ * @api private
+ */
 HtmlBuilder.initElement = function (el, data) {
   var s = schema[data.get('tag')];
 
@@ -1621,14 +2163,32 @@ HtmlBuilder.initElement = function (el, data) {
   });
 };
 
+/**
+ * @param {Element} el
+ * @param {Data} data
+ * @param {Object} attr
+ * @api private
+ */
 HtmlBuilder.attribute = function (el, data, attr) {
   el.setAttribute(attr.name, data.get(attr.name));
 };
 
+/**
+ * @param {Element} el
+ * @param {Data} data
+ * @param {Object} attr
+ * @api private
+ */
 HtmlBuilder.dataset = function (el, data, attr) {
   el.setAttribute('data-' + attr.name, data.get(attr.name));
 };
 
+/**
+ * @param {Element} el
+ * @param {Data} data
+ * @param {Object} attr
+ * @api private
+ */
 HtmlBuilder.content = function (el, data, attr) {
   if (el.textContent === undefined) {
     el.innerText = data.get(attr.name);
@@ -1678,6 +2238,9 @@ function Editor(options) {
   this.use(initContext());
 }
 
+/**
+ * @api public
+ */
 Editor.prototype.default = function () {
   removeExtraNodes(this);
   renameElements(this);
@@ -1688,6 +2251,7 @@ Editor.prototype.default = function () {
     preventDefault(),
     handleParagraph(this),
     handleList(this),
+    handleBlockquote(this),
     handleBackspace(this),
     createNewParagraph()
   ]);
@@ -1695,6 +2259,9 @@ Editor.prototype.default = function () {
 
 Editor.prototype.schema = schema;
 
+/**
+ * @api private
+ */
 Editor.prototype.bindEvents = function () {
   var el = this.el;
   var bind = el.addEventListener.bind(el);
@@ -1705,6 +2272,10 @@ Editor.prototype.bindEvents = function () {
   bind('focus', this.handleEmpty.bind(this));
 };
 
+/**
+ * @param {KeyboardEvent} e
+ * @api private
+ */
 Editor.prototype.onKeydown = function (e) {
   var ctx;
 
@@ -1726,6 +2297,10 @@ Editor.prototype.onKeydown = function (e) {
   }.bind(this));
 };
 
+/**
+ * @return {Boolean}
+ * @api public
+ */
 Editor.prototype.isEmpty = function () {
   var children = this.el.children;
   var first = children[0];
@@ -1733,6 +2308,9 @@ Editor.prototype.isEmpty = function () {
     && !utils.getTextContent(first).trim();
 };
 
+/**
+ * @api private
+ */
 Editor.prototype.handleEmpty = function () {
   var first = this.el.children[0];
 
@@ -1756,21 +2334,25 @@ Editor.prototype.handleEmpty = function () {
   }
 };
 
+/**
+ * @api private
+ */
 Editor.prototype.walk = function () {
   var els = editor.el.querySelectorAll('[name]');
-  var context = {};
+  var context = {
+    editor: this
+  };
 
   context.editor = this;
 
   this.emit('walkStart', context);
 
   Array.prototype.forEach.call(els, function (el) {
-    var childContext = Object.create(context);
-    childContext.el = el;
-    childContext.element = el;
-    childContext.name = el.getAttribute('name');
-    childContext.data = this.data[childContext.name];
-    this.emit('walk', childContext);
+    context.el = el;
+    context.element = el;
+    context.name = el.getAttribute('name');
+    context.data = this.data[context.name];
+    this.emit('walk', context);
   }.bind(this));
 
   this.emit('walkEnd', context);

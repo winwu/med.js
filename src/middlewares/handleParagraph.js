@@ -1,7 +1,7 @@
 var handleParagraph = (function () {
   var shouldHandleThis = function (ctx) {
     return !ctx.modifier
-      && utils.isTag('p', ctx.element)
+      && utils.isTag('p', ctx.paragraph)
       && isCreateNewLineAction(ctx);
   };
 
@@ -12,7 +12,7 @@ var handleParagraph = (function () {
 
   var createNewLine = function (ctx, next) {
     var editor = ctx.editor;
-    var el = ctx.element;
+    var el = ctx.paragraph;
 
     if (utils.isEmpty(el)) {
       ctx.prevent();

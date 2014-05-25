@@ -1,11 +1,19 @@
 function HtmlBuilder() {
 }
 
+/**
+ * @param {Object} json
+ * @api public
+ */
 HtmlBuilder.prototype.fromJSON = function (json) {
   HtmlBuilder.importData.call(this, json);
   HtmlBuilder.buildHTML.call(this);
 };
 
+/**
+ * @param {Object} json
+ * @api private
+ */
 HtmlBuilder.importData = function (json) {
   json = utils.clone(json);
 
@@ -52,6 +60,9 @@ HtmlBuilder.importData = function (json) {
   return this;
 };
 
+/**
+ * @api private
+ */
 HtmlBuilder.buildHTML = function () {
   var docfrag = document.createDocumentFragment();
   var el = this.el;
@@ -66,10 +77,22 @@ HtmlBuilder.buildHTML = function () {
   el.innerHTML = html;
 };
 
+/**
+ * @param {DocumentFragment|Element} container
+ * @param {Object} structure
+ * @param {Object} data
+ * @api private
+ */
 HtmlBuilder.createElements = function (container, structure, data) {
   HtmlBuilder.createSections(container, structure, data);
 };
 
+/**
+ * @param {DocumentFragment|Element} container
+ * @param {Object} structure
+ * @param {Object} data
+ * @api private
+ */
 HtmlBuilder.createSections = function (container, structure, data) {
   structure.sections.forEach(function (name) {
     var section = data[name];
@@ -81,6 +104,13 @@ HtmlBuilder.createSections = function (container, structure, data) {
   });
 };
 
+/**
+ * @param {Object} section
+ * @param {DocumentFragment|Element} container
+ * @param {Object} structure
+ * @param {Object} data
+ * @api private
+ */
 HtmlBuilder.createParagraphs = function (section, container, structure, data) {
   structure
     .paragraphs
@@ -101,6 +131,13 @@ HtmlBuilder.createParagraphs = function (section, container, structure, data) {
     });
 };
 
+/**
+ * @param {Object} paragraph
+ * @param {DocumentFragment|Element} container
+ * @param {Object} structure
+ * @param {Object} data
+ * @api private
+ */
 HtmlBuilder.createDetails = function (paragraph, container, structure, data) {
   var detail = paragraph.get('detail');
   var text = paragraph.get('text');
@@ -134,6 +171,11 @@ HtmlBuilder.createDetails = function (paragraph, container, structure, data) {
   }
 };
 
+/**
+ * @param {Data} data
+ * @return {Element}
+ * @api private
+ */
 HtmlBuilder.createElement = function (data) {
   var tagName = data.get('tag');
   var el = document.createElement(tagName);
@@ -144,6 +186,11 @@ HtmlBuilder.createElement = function (data) {
   return el;
 };
 
+/**
+ * @param {Element} el
+ * @param {Data} data
+ * @api private
+ */
 HtmlBuilder.initElement = function (el, data) {
   var s = schema[data.get('tag')];
 
@@ -152,14 +199,32 @@ HtmlBuilder.initElement = function (el, data) {
   });
 };
 
+/**
+ * @param {Element} el
+ * @param {Data} data
+ * @param {Object} attr
+ * @api private
+ */
 HtmlBuilder.attribute = function (el, data, attr) {
   el.setAttribute(attr.name, data.get(attr.name));
 };
 
+/**
+ * @param {Element} el
+ * @param {Data} data
+ * @param {Object} attr
+ * @api private
+ */
 HtmlBuilder.dataset = function (el, data, attr) {
   el.setAttribute('data-' + attr.name, data.get(attr.name));
 };
 
+/**
+ * @param {Element} el
+ * @param {Data} data
+ * @param {Object} attr
+ * @api private
+ */
 HtmlBuilder.content = function (el, data, attr) {
   if (el.textContent === undefined) {
     el.innerText = data.get(attr.name);
