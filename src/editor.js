@@ -132,19 +132,20 @@ Editor.prototype.handleEmpty = function () {
  */
 Editor.prototype.walk = function () {
   var els = editor.el.querySelectorAll('[name]');
-  var context = {};
+  var context = {
+    editor: this
+  };
 
   context.editor = this;
 
   this.emit('walkStart', context);
 
   Array.prototype.forEach.call(els, function (el) {
-    var childContext = Object.create(context);
-    childContext.el = el;
-    childContext.element = el;
-    childContext.name = el.getAttribute('name');
-    childContext.data = this.data[childContext.name];
-    this.emit('walk', childContext);
+    context.el = el;
+    context.element = el;
+    context.name = el.getAttribute('name');
+    context.data = this.data[context.name];
+    this.emit('walk', context);
   }.bind(this));
 
   this.emit('walkEnd', context);
