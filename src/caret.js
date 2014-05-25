@@ -406,7 +406,7 @@ Caret.prototype.atElementEnd = function (el) {
   var lastNode = utils.lastTextNode(el);
 
   range.setStart(focusNode, offset);
-  range.setEnd(lastNode, lastNode.length - 1);
+  range.setEnd(lastNode, lastNode.length);
 
   return !range.toString().trim();
 };
