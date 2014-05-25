@@ -34,11 +34,11 @@ var handleBackspace = function (editor) {
     ctx.prevent();
 
     var el = ctx.paragraph;
-    var previous = ctx.element.previousElementSibling;
+    var previous = el.previousElementSibling;
     var needToRemove, offset, firstChild, lastNode;
 
     if (previous) {
-      needToRemove = ctx.element;
+      needToRemove = el;
     } else {
       needToRemove = ctx.section;
     }
@@ -71,7 +71,7 @@ var handleBackspace = function (editor) {
       } else {
         firstChild = needToRemove.firstChild;
         lastNode = previous.childNodes[previous.childNodes.length - 1];
-        offset = utils.getTextContent(lastNode).length - 1;
+        offset = utils.getTextContent(lastNode).length;
 
         utils.removeEmptyElements(previous);
 
