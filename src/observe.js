@@ -310,7 +310,8 @@ Observe.prototype.toJSON = function () {
 Observe.rules = {
   section: {
     paragraph: 1,
-    paragraphs: 1
+    paragraphs: 1,
+    figure: 1
   },
 
   paragraphs: {

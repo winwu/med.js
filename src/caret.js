@@ -69,6 +69,14 @@ Caret.prototype.focusParagraphs = function () {
  * @return {Element}
  * @api public
  */
+Caret.prototype.focusFigure = function () {
+  return this.focusType('figure');
+};
+
+/**
+ * @return {Element}
+ * @api public
+ */
 Caret.prototype.focusDetail = function () {
   return this.focusType('detail');
 };
