@@ -42,7 +42,8 @@
       el: el
     });
 
-    editor.use(editor.default());
+    editor.use(editor.start());
+    editor.use(editor.end());
 
     editor.on('error', function (e) {
       console.log(e);

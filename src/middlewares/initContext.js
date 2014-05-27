@@ -26,7 +26,7 @@ var initContext = function () {
     var els = editor.el.querySelectorAll('br[type="_med_placeholder"]');
 
     Array.prototype.forEach.call(els, function (el) {
-      el.parentElement.removeChild(el);
+      utils.removeElement(el);
     });
 
     next();

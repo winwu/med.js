@@ -136,6 +136,10 @@ Caret.prototype.nextElement = function (node) {
  * @api public
  */
 Caret.prototype.focusTo = function (el) {
+  if (!el) {
+    return;
+  }
+
   if (el.innerHTML.trim()) {
     this.moveToStart(el);
   } else {
@@ -183,6 +187,10 @@ Caret.prototype.textAfter = function () {
  * @api public
  */
 Caret.prototype.moveToStart = function (el, offset) {
+  if (!el) {
+    return;
+  }
+
   var selection = document.getSelection();
   var range = document.createRange();
   var len;
@@ -215,6 +223,10 @@ Caret.prototype.moveToStart = function (el, offset) {
  * @api public
  */
 Caret.prototype.moveToEnd = function (el, offset) {
+  if (!el) {
+    return;
+  }
+
   var range = document.createRange();
   var selection = window.getSelection();
   var len;
@@ -245,6 +257,10 @@ Caret.prototype.moveToEnd = function (el, offset) {
  * @api public
  */
 Caret.prototype.split = function (el) {
+  if (!el) {
+    return null;
+  }
+
   var selection = document.getSelection();
   var node = selection.focusNode;
   var offset = selection.focusOffset;

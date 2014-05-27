@@ -71,6 +71,13 @@ utils.isTag = function (tagName, el) {
     .indexOf(el.tagName);
 };
 
+utils.isAllowedToHaveContent = function (el) {
+  return !utils.isTag([
+    'br',
+    'input'
+  ], el);
+};
+
 /**
  * @param {Element} el
  * @return {Boolean}
@@ -161,7 +168,7 @@ utils.isElementNode = function (node) {
  * @api public
  */
 utils.isTextNode = function (node) {
-  return node.nodeType === document.TEXT_NODE;
+  return node && node.nodeType === document.TEXT_NODE;
 };
 
 /**

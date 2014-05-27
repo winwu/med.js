@@ -82,9 +82,11 @@ var handleBackspace = function (editor) {
         if (utils.isType('section', needToRemove)) {
           // section 的情況是要讓游標在畫面上跟著目前 element 移動
           editor.caret.moveToStart(firstChild);
-        } else {
+        } else if (lastNode) {
           // 段落的情況是要讓兩個 element 接起來後，游標移動到合併的位置
           editor.caret.moveToStart(lastNode, offset);
+        } else {
+          editor.caret.moveToStart(previous);
         }
       }
     } else {

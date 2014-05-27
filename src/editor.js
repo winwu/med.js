@@ -34,11 +34,12 @@ function Editor(options) {
 /**
  * @api public
  */
-Editor.prototype.default = function () {
+Editor.prototype.start = function () {
   removeExtraNodes(this);
   renameElements(this);
   removeInlineStyle(this);
   handleEmptyParagraph(this);
+  refocus(this);
 
   return this.compose([
     preventDefault(),
@@ -46,7 +47,15 @@ Editor.prototype.default = function () {
     handleList(this),
     handleFigure(this),
     handleBlockquote(this),
-    handleBackspace(this),
+    handleBackspace(this)
+  ]);
+};
+
+/**
+ * @api public
+ */
+Editor.prototype.end = function () {
+  return this.compose([
     createNewParagraph()
   ]);
 };
