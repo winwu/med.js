@@ -74,7 +74,8 @@ utils.isTag = function (tagName, el) {
 utils.isAllowedToHaveContent = function (el) {
   return !utils.isTag([
     'br',
-    'input'
+    'input',
+    'img'
   ], el);
 };
 
@@ -92,7 +93,15 @@ utils.isLastChild = function (el) {
  * @api public
  */
 utils.removeEmptyElements = function (el) {
+  var shouldIgnore = function (child) {
+    return utils.isType('figure', child)
+      || !utils.isAllowedToHaveContent(child);
+  };
+
   utils.each(el.children, function (child) {
+    if (shouldIgnore(child)) {
+      return;
+    }
     if (utils.isEmpty(child)) {
       el.removeChild(child);
     } else {
