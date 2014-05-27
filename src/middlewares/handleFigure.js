@@ -4,7 +4,7 @@ var handleFigure = function (editor) {
   var removeActive = function (el) {
     var figure = editor.el.querySelector('figure.is-active');
 
-    if (figure !== el) {
+    if (figure && figure !== el) {
       figure.classList.remove(klass);
     }
   };
@@ -40,6 +40,10 @@ var handleFigure = function (editor) {
     }
 
     removeActive(el);
+  });
+
+  editor.el.addEventListener('blur', function () {
+    removeActive();
   });
 
   return function (next) {

@@ -171,20 +171,20 @@ utils.isTextNode = function (node) {
  * @api public
  */
 utils.isAncestorOf = function (node, ancestor) {
-  var childNodes = Array.prototype.slice.call(ancestor.chlidNodes || []);
-  var child;
+  var parents = utils.getParents(node);
+  return !!~parents.indexOf(ancestor);
+};
 
-  if (!~childNodes.indexOf(child)) {
-    while (child = childNodes.shift()) {
-      if (utils.isAncestorOf(child)) {
-        return true;
-      }
-    }
+utils.getParents = function (node) {
+  var parents = [];
+  var parentNode;
 
-    return false;
+  while (parentNode = node.parentNode) {
+    parents.push(parentNode);
+    node = parentNode;
   }
 
-  return true;
+  return parents;
 };
 
 /**
