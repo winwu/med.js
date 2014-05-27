@@ -14,7 +14,6 @@ JS_FILES := $(SOURCE)/exports.js\
 	$(SOURCE)/utils.js\
 	$(shell find $(SOURCE)/utils/*.js)\
 	$(SOURCE)/keyboard.js\
-	$(shell find $(SOURCE)/middlewares/*.js)\
 	$(shell find $(SOURCE)/plugins/*.js)\
 	$(SOURCE)/schema.js\
 	$(SOURCE)/emitter.js\
