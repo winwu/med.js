@@ -54,6 +54,10 @@ utils.isNotEmpty = function (el) {
  * @api public
  */
 utils.isTag = function (tagName, el) {
+  if (!el) {
+    return false;
+  }
+
   if (typeof tagName === 'string') {
     tagName = [tagName];
   }

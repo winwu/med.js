@@ -1,5 +1,5 @@
 var handleBackspace = function (editor) {
-  var shouldHandleBackspace = function (ctx) {
+  var atElementStart = function (ctx) {
     var selection = document.getSelection();
     var el = ctx.paragraph;
 
@@ -111,14 +111,21 @@ var handleBackspace = function (editor) {
 
     var el = this.paragraph;
 
-    // 段落前面已經沒有文字
-    // 需要刪除 element
-    if (shouldHandleBackspace(this)) {
+    if (atElementStart(this)) {
+      // 段落前面已經沒有文字
+      // 需要刪除 element
       if (utils.isTag('li', el)) {
         handleList(this, next);
       } else {
         handleOthers(this, next);
       }
+    } else if (this.figure) {
+      this.prevent();
+
+      var previous = this.figure.previousElementSibling;
+
+      utils.removeElement(this.figure);
+      editor.caret.moveToEnd(previous);
     }
 
     next();

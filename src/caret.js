@@ -116,7 +116,8 @@ Caret.prototype.nextElement = function (node) {
   if (node) {
     node = node.nextSibling;
   } else {
-    node = this.focusNode().nextSibling;
+    node = this.focusNode();
+    node = node && node.nextSibling;
   }
 
   while (node) {
