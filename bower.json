@@ -13,7 +13,10 @@
     "test",
     "tests"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "polyfills": "poying/polyfills",
+    "github-markdown-css": "~0.1.0"
+  },
   "moduleType": [
     "amd",
     "globals"

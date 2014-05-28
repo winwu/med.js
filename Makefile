@@ -14,7 +14,6 @@ JS_FILES := $(SOURCE)/exports.js\
 	$(SOURCE)/utils.js\
 	$(shell find $(SOURCE)/utils/*.js)\
 	$(SOURCE)/keyboard.js\
-	$(shell find $(SOURCE)/middlewares/*.js)\
 	$(shell find $(SOURCE)/plugins/*.js)\
 	$(SOURCE)/schema.js\
 	$(SOURCE)/emitter.js\
@@ -22,6 +21,8 @@ JS_FILES := $(SOURCE)/exports.js\
 	$(SOURCE)/middleware.js\
 	$(SOURCE)/data.js\
 	$(SOURCE)/observe.js\
+	$(SOURCE)/figure.js\
+	$(SOURCE)/figure_type.js\
 	$(SOURCE)/html_builder.js\
 	$(SOURCE)/default_options.js\
 	$(SOURCE)/editor.js

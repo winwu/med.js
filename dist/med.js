@@ -73,6 +73,10 @@ utils.isNotEmpty = function (el) {
  * @api public
  */
 utils.isTag = function (tagName, el) {
+  if (!el) {
+    return false;
+  }
+
   if (typeof tagName === 'string') {
     tagName = [tagName];
   }
@@ -84,6 +88,14 @@ utils.isTag = function (tagName, el) {
   return !!~tagName
     .map(toUpperCase)
     .indexOf(el.tagName);
+};
+
+utils.isAllowedToHaveContent = function (el) {
+  return !utils.isTag([
+    'br',
+    'input',
+    'img'
+  ], el);
 };
 
 /**
@@ -100,7 +112,15 @@ utils.isLastChild = function (el) {
  * @api public
  */
 utils.removeEmptyElements = function (el) {
+  var shouldIgnore = function (child) {
+    return utils.isType('figure', child)
+      || !utils.isAllowedToHaveContent(child);
+  };
+
   utils.each(el.children, function (child) {
+    if (shouldIgnore(child)) {
+      return;
+    }
     if (utils.isEmpty(child)) {
       el.removeChild(child);
     } else {
@@ -167,7 +187,7 @@ utils.isType = function (types, el) {
  * @api public
  */
 utils.isElementNode = function (node) {
-  return node.nodeType === document.ELEMENT_NODE;
+  return node && node.nodeType === document.ELEMENT_NODE;
 };
 
 /**
@@ -176,7 +196,7 @@ utils.isElementNode = function (node) {
  * @api public
  */
 utils.isTextNode = function (node) {
-  return node.nodeType === document.TEXT_NODE;
+  return node && node.nodeType === document.TEXT_NODE;
 };
 
 /**
@@ -186,20 +206,20 @@ utils.isTextNode = function (node) {
  * @api public
  */
 utils.isAncestorOf = function (node, ancestor) {
-  var childNodes = Array.prototype.slice.call(ancestor.chlidNodes || []);
-  var child;
+  var parents = utils.getParents(node);
+  return !!~parents.indexOf(ancestor);
+};
 
-  if (!~childNodes.indexOf(child)) {
-    while (child = childNodes.shift()) {
-      if (utils.isAncestorOf(child)) {
-        return true;
-      }
-    }
+utils.getParents = function (node) {
+  var parents = [];
+  var parentNode;
 
-    return false;
+  while (parentNode = node.parentNode) {
+    parents.push(parentNode);
+    node = parentNode;
   }
 
-  return true;
+  return parents;
 };
 
 /**
@@ -445,7 +465,7 @@ var createNewParagraph = function () {
   };
 };
 var handleBackspace = function (editor) {
-  var shouldHandleBackspace = function (ctx) {
+  var atElementStart = function (ctx) {
     var selection = document.getSelection();
     var el = ctx.paragraph;
 
@@ -528,9 +548,11 @@ var handleBackspace = function (editor) {
         if (utils.isType('section', needToRemove)) {
           // section 的情況是要讓游標在畫面上跟著目前 element 移動
           editor.caret.moveToStart(firstChild);
-        } else {
+        } else if (lastNode) {
           // 段落的情況是要讓兩個 element 接起來後，游標移動到合併的位置
           editor.caret.moveToStart(lastNode, offset);
+        } else {
+          editor.caret.moveToStart(previous);
         }
       }
     } else {
@@ -557,14 +579,21 @@ var handleBackspace = function (editor) {
 
     var el = this.paragraph;
 
-    // 段落前面已經沒有文字
-    // 需要刪除 element
-    if (shouldHandleBackspace(this)) {
+    if (atElementStart(this)) {
+      // 段落前面已經沒有文字
+      // 需要刪除 element
       if (utils.isTag('li', el)) {
         handleList(this, next);
       } else {
         handleOthers(this, next);
       }
+    } else if (this.figure) {
+      this.prevent();
+
+      var previous = this.figure.previousElementSibling;
+
+      utils.removeElement(this.figure);
+      editor.caret.moveToEnd(previous);
     }
 
     next();
@@ -604,6 +633,66 @@ var handleBlockquote = function (editor) {
       editor.caret.split(el);
     }
 
+    next();
+  };
+};
+var handleEmptyParagraph = function (editor) {
+  editor.on('walk', function (ctx) {
+    var el = ctx.element;
+    if (utils.isType('paragraph', el) && utils.isEmpty(el)) {
+      el.innerHTML = '<br type="_med_placeholder" />';
+    }
+  });
+};
+var handleFigure = function (editor) {
+  var klass = 'is-active';
+
+  var removeActive = function (el) {
+    var figure = editor.el.querySelector('figure.is-active');
+
+    if (figure && figure !== el) {
+      figure.classList.remove(klass);
+    }
+  };
+
+  editor.on('walkEnd', function () {
+    var figure = editor.caret.focusFigure();
+
+    if (figure) {
+      figure.classList.add(klass);
+    }
+
+    removeActive(figure);
+  });
+
+  editor.el.addEventListener('mousedown', function (e) {
+    var el = e.target;
+
+    while (1) {
+      if (!el || el === editor.el) {
+        el = null;
+        break;
+      }
+
+      if (utils.isTag('figure', el)) {
+        break;
+      }
+
+      el = el.parentElement;
+    }
+
+    if (el) {
+      el.classList.add(klass);
+    }
+
+    removeActive(el);
+  });
+
+  editor.el.addEventListener('blur', function () {
+    removeActive();
+  });
+
+  return function (next) {
     next();
   };
 };
@@ -758,12 +847,13 @@ var initContext = function () {
     this.section = editor.caret.focusSection();
     this.paragraph = editor.caret.focusParagraph();
     this.paragraphs = editor.caret.focusParagraphs();
+    this.figure = editor.el.querySelector('figure.is-active');
     this.detail = editor.caret.focusDetail();
 
     var els = editor.el.querySelectorAll('br[type="_med_placeholder"]');
 
     Array.prototype.forEach.call(els, function (el) {
-      el.parentElement.removeChild(el);
+      utils.removeElement(el);
     });
 
     next();
@@ -788,11 +878,13 @@ var preventDefault = function () {
     next();
   };
 };
-var handleEmptyParagraph = function (editor) {
-  editor.on('walk', function (ctx) {
-    var el = ctx.element;
-    if (utils.isType('paragraph', el) && utils.isEmpty(el)) {
-      el.innerHTML = '<br class="_med_placeholder" />';
+var refocus = function (editor) {
+  editor.on('walkEnd', function (ctx) {
+    var node = ctx.focusTo;
+    var offset = ctx.focusOffset;
+
+    if (node) {
+      ctx.editor.caret.select(node, offset, node, offset);
     }
   });
 };
@@ -803,18 +895,27 @@ var removeExtraNodes = function () {
     var nodes = el.childNodes;
     var len = nodes.length;
     var curr, prev, lastNode;
+
+    var neetToCombine = function () {
+      return prev
+        && prev.nodeType === curr.nodeType
+        && utils.isAllowedToHaveContent(prev);
+    };
     
     while (len--) {
       curr = nodes[len];
       prev = nodes[len - 1];
 
-      if (prev && prev.nodeType === curr.nodeType) {
+      if (neetToCombine()) {
+        
+        // 目前要刪除的 element
+        // 就是正被使用者 focus 的 element
         if (prev === focus) {
           lastNode = utils.lastNode(focus);
-          ctx.__removeExtraNode__focus = lastNode;
-          ctx.__removeExtraNode__offset = lastNode.length;
+          ctx.focusTo = lastNode;
+          ctx.focusOffset = lastNode.length;
         }
-        
+
         if (utils.isTextNode(prev)) {
           prev.appendData(curr.data);
         } else if (utils.isElementNode(prev)) {
@@ -829,15 +930,6 @@ var removeExtraNodes = function () {
   editor.on('walk', function (ctx) {
     if (utils.isType('paragraph', ctx.element)) {
       removeExtraNode(ctx);
-    }
-  });
-
-  editor.on('walkEnd', function (ctx) {
-    var node = ctx.__removeExtraNode__focus;
-    var offset = ctx.__removeExtraNode__offset;
-
-    if (node) {
-      ctx.editor.caret.select(node, offset, node, offset);
     }
   });
 };
@@ -907,9 +999,7 @@ var schema = {
   },
 
   figure: {
-    type: 'paragraph',
-    figureType: 'dataset:type',
-    content: 'dataset:content'
+    type: 'figure'
   },
 
   ol: {
@@ -1118,6 +1208,14 @@ Caret.prototype.focusParagraphs = function () {
  * @return {Element}
  * @api public
  */
+Caret.prototype.focusFigure = function () {
+  return this.focusType('figure');
+};
+
+/**
+ * @return {Element}
+ * @api public
+ */
 Caret.prototype.focusDetail = function () {
   return this.focusType('detail');
 };
@@ -1157,7 +1255,8 @@ Caret.prototype.nextElement = function (node) {
   if (node) {
     node = node.nextSibling;
   } else {
-    node = this.focusNode().nextSibling;
+    node = this.focusNode();
+    node = node && node.nextSibling;
   }
 
   while (node) {
@@ -1176,6 +1275,10 @@ Caret.prototype.nextElement = function (node) {
  * @api public
  */
 Caret.prototype.focusTo = function (el) {
+  if (!el) {
+    return;
+  }
+
   if (el.innerHTML.trim()) {
     this.moveToStart(el);
   } else {
@@ -1223,6 +1326,10 @@ Caret.prototype.textAfter = function () {
  * @api public
  */
 Caret.prototype.moveToStart = function (el, offset) {
+  if (!el) {
+    return;
+  }
+
   var selection = document.getSelection();
   var range = document.createRange();
   var len;
@@ -1255,6 +1362,10 @@ Caret.prototype.moveToStart = function (el, offset) {
  * @api public
  */
 Caret.prototype.moveToEnd = function (el, offset) {
+  if (!el) {
+    return;
+  }
+
   var range = document.createRange();
   var selection = window.getSelection();
   var len;
@@ -1285,6 +1396,10 @@ Caret.prototype.moveToEnd = function (el, offset) {
  * @api public
  */
 Caret.prototype.split = function (el) {
+  if (!el) {
+    return null;
+  }
+
   var selection = document.getSelection();
   var node = selection.focusNode;
   var offset = selection.focusOffset;
@@ -1722,7 +1837,7 @@ Observe.section = function (el, data, structure, shouldBeDelete) {
       structure.sections.push(data.id);
     }
 
-    if (/^paragraph/.test(schema.type)) {
+    if (/^(paragraphs?|figure)$/.test(schema.type)) {
       p.push(Observe.scan.call(this, child, structure, shouldBeDelete).id);
     }
 
@@ -1757,6 +1872,18 @@ Observe.paragraphs = function (el, data, structure, shouldBeDelete) {
 
   data.set('start', structure.paragraphs.length);
   data.set('end', Array.prototype.push.apply(structure.paragraphs, p));
+};
+
+/**
+ * @param {Element} el
+ * @param {Data} data
+ * @param {Object} structure
+ * @param {Object} shouldBeDelete
+ * @api private
+ */
+Observe.figure = function (el, data) {
+  var figureType = this.getFigureType(el);
+  figureType.updateData(el, data);
 };
 
 /**
@@ -1880,6 +2007,10 @@ Observe.getOffset = function (el) {
  * @api public
  */
 Observe.prototype.toJSON = function () {
+  if (!this.structure) {
+    this.sync();
+  }
+
   var structure = this.structure;
   var sections = structure.sections;
   var paragraphs = structure.paragraphs;
@@ -1925,7 +2056,8 @@ Observe.prototype.toJSON = function () {
 Observe.rules = {
   section: {
     paragraph: 1,
-    paragraphs: 1
+    paragraphs: 1,
+    figure: 1
   },
 
   paragraphs: {
@@ -1962,6 +2094,50 @@ Observe.checkAndRemoveStrangeElement = function (el) {
     el.parentElement.removeChild(el);
   }
 };
+function Figure() {
+  this.figureTypes = {};
+  this.registerFigureType('default', {
+    updateData: function (el, data) {
+      data.set('html', el.innerHTML);
+    },
+    updateHTML: function (el, data) {
+      el.innerHTML = data.get('html');
+    }
+  });
+}
+
+Figure.prototype.registerFigureType = function (name, options) {
+  var type = new FigureType(name, options);
+  this.figureTypes[name] = type;
+  return this;
+};
+
+Figure.prototype.getFigureType = function (name) {
+  if (utils.isElementNode(name)) {
+    name = name.getAttribute('type');
+  }
+
+  return this.figureTypes[name]
+    || this.figureTypes.default;
+};
+function FigureType(name, options) {
+  this.options = options || (options = {});
+  this.name = name;
+}
+
+FigureType.prototype.updateData = function (el, data) {
+  data.set('figureType', this.name);
+
+  this.options.updateData
+    && this.options.updateData(el, data);
+};
+
+FigureType.prototype.updateHTML = function (el, data) {
+  el.setAttribute('type', this.name);
+
+  this.options.updateHTML
+    && this.options.updateHTML(el, data);
+};
 function HtmlBuilder() {
 }
 
@@ -1986,6 +2162,7 @@ HtmlBuilder.importData = function (json) {
   var sections = structure.sections = [];
   var paragraphs = structure.paragraphs = [];
 
+  // section
   (json.sections || []).forEach(function (section) {
     var name = section.name;
     var d = data[name] = new Data(name);
@@ -1997,6 +2174,7 @@ HtmlBuilder.importData = function (json) {
     sections.push(name);
   });
 
+  // paragraphs, paragraph and figure
   (json.paragraphs || []).forEach(function (paragraph) {
     var name = paragraph.name;
     var d = data[name] = new Data(name);
@@ -2004,12 +2182,18 @@ HtmlBuilder.importData = function (json) {
     delete paragraph.name;
 
     d.data = paragraph;
-    paragraph.detail = (paragraph.detail || []).map(detail);
+    
+    // figure 沒有 detail
+    if (d.get('type') !== 'figure') {
+      paragraph.detail = (paragraph.detail || []).map(detail);
+    }
+    
     d.update();
 
     paragraphs.push(name);
   });
 
+  // detail
   function detail(detail) {
     var name = detail.name;
     var d = data[name] = new Data(name);
@@ -2032,7 +2216,7 @@ HtmlBuilder.buildHTML = function () {
   var el = this.el;
   var html = '';
 
-  HtmlBuilder.createElements(docfrag, this.structure, this.data);
+  HtmlBuilder.createElements.call(this, docfrag);
 
   utils.each(docfrag.childNodes, function (child) {
     html += child.outerHTML;
@@ -2043,39 +2227,39 @@ HtmlBuilder.buildHTML = function () {
 
 /**
  * @param {DocumentFragment|Element} container
- * @param {Object} structure
- * @param {Object} data
  * @api private
  */
-HtmlBuilder.createElements = function (container, structure, data) {
-  HtmlBuilder.createSections(container, structure, data);
+HtmlBuilder.createElements = function (container) {
+  HtmlBuilder.createSections.call(this, container);
 };
 
 /**
  * @param {DocumentFragment|Element} container
- * @param {Object} structure
- * @param {Object} data
  * @api private
  */
-HtmlBuilder.createSections = function (container, structure, data) {
+HtmlBuilder.createSections = function (container) {
+  var structure = this.structure;
+  var data = this.data;
+
   structure.sections.forEach(function (name) {
     var section = data[name];
     var el = HtmlBuilder.createElement(section);
 
-    HtmlBuilder.createParagraphs(section, el, structure, data);
+    HtmlBuilder.createParagraphs.call(this, section, el);
 
     container.appendChild(el);
-  });
+  }.bind(this));
 };
 
 /**
  * @param {Object} section
  * @param {DocumentFragment|Element} container
- * @param {Object} structure
- * @param {Object} data
  * @api private
  */
-HtmlBuilder.createParagraphs = function (section, container, structure, data) {
+HtmlBuilder.createParagraphs = function (section, container) {
+  var structure = this.structure;
+  var data = this.data;
+
   structure
     .paragraphs
     .slice(section.get('start'), section.get('end'))
@@ -2083,26 +2267,39 @@ HtmlBuilder.createParagraphs = function (section, container, structure, data) {
       var paragraph = data[name];
       var el = HtmlBuilder.createElement(paragraph);
 
-      var s = schema[paragraph.get('tag')];
+      var type = utils.getType(el);
 
-      if (s.type === 'paragraphs') {
-        HtmlBuilder.createParagraphs(paragraph, el, structure, data);
+      if (type === 'paragraphs') {
+        HtmlBuilder.createParagraphs.call(this, paragraph, el);
       } else if (!paragraph.get('in-paragraphs')) {
-        HtmlBuilder.createDetails(paragraph, el, structure, data);
+        if (utils.isType('figure', el)) {
+          HtmlBuilder.createFigure.call(this, paragraph, el);
+        } else {
+          HtmlBuilder.createDetails.call(this, paragraph, el);
+        }
       }
 
       container.appendChild(el);
-    });
+    }.bind(this));
 };
 
 /**
- * @param {Object} paragraph
- * @param {DocumentFragment|Element} container
- * @param {Object} structure
- * @param {Object} data
+ * @param {Data} figure
+ * @param {DocumentFragment|Element} figureElement
  * @api private
  */
-HtmlBuilder.createDetails = function (paragraph, container, structure, data) {
+HtmlBuilder.createFigure = function (figure, figureElement) {
+  var figureType = this.getFigureType(figure.get('type'));
+  figureType.updateHTML(figureElement, figure);
+};
+
+/**
+ * @param {Data} paragraph
+ * @param {DocumentFragment|Element} container
+ * @api private
+ */
+HtmlBuilder.createDetails = function (paragraph, container) {
+  var data = this.data;
   var detail = paragraph.get('detail');
   var text = paragraph.get('text');
   var content, node;
@@ -2159,7 +2356,7 @@ HtmlBuilder.initElement = function (el, data) {
   var s = schema[data.get('tag')];
 
   s.attrs.forEach(function (attr) {
-    HtmlBuilder[attr.type].call(this, el, data, attr);
+    HtmlBuilder[attr.type](el, data, attr);
   });
 };
 
@@ -2209,12 +2406,14 @@ Editor.prototype = Object.create(Emitter.prototype);
 utils.mixin(Editor.prototype, Middleware.prototype);
 utils.mixin(Editor.prototype, Observe.prototype);
 utils.mixin(Editor.prototype, HtmlBuilder.prototype);
+utils.mixin(Editor.prototype, Figure.prototype);
 
 function Editor(options) {
   Emitter.call(this);
   Middleware.call(this);
   Observe.call(this);
   HtmlBuilder.call(this);
+  Figure.call(this);
 
   this.options = utils.mixin(Object.create(defaultOptions), options || {});
   this.context = {};
@@ -2241,18 +2440,28 @@ function Editor(options) {
 /**
  * @api public
  */
-Editor.prototype.default = function () {
+Editor.prototype.start = function () {
   removeExtraNodes(this);
   renameElements(this);
   removeInlineStyle(this);
   handleEmptyParagraph(this);
+  refocus(this);
 
   return this.compose([
     preventDefault(),
     handleParagraph(this),
     handleList(this),
+    handleFigure(this),
     handleBlockquote(this),
-    handleBackspace(this),
+    handleBackspace(this)
+  ]);
+};
+
+/**
+ * @api public
+ */
+Editor.prototype.end = function () {
+  return this.compose([
     createNewParagraph()
   ]);
 };

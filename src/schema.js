@@ -45,9 +45,7 @@ var schema = {
   },
 
   figure: {
-    type: 'paragraph',
-    figureType: 'dataset:type',
-    content: 'dataset:content'
+    type: 'figure'
   },
 
   ol: {

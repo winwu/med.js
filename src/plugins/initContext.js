@@ -20,12 +20,13 @@ var initContext = function () {
     this.section = editor.caret.focusSection();
     this.paragraph = editor.caret.focusParagraph();
     this.paragraphs = editor.caret.focusParagraphs();
+    this.figure = editor.el.querySelector('figure.is-active');
     this.detail = editor.caret.focusDetail();
 
     var els = editor.el.querySelectorAll('br[type="_med_placeholder"]');
 
     Array.prototype.forEach.call(els, function (el) {
-      el.parentElement.removeChild(el);
+      utils.removeElement(el);
     });
 
     next();

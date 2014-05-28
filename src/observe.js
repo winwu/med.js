@@ -107,7 +107,7 @@ Observe.section = function (el, data, structure, shouldBeDelete) {
       structure.sections.push(data.id);
     }
 
-    if (/^paragraph/.test(schema.type)) {
+    if (/^(paragraphs?|figure)$/.test(schema.type)) {
       p.push(Observe.scan.call(this, child, structure, shouldBeDelete).id);
     }
 
@@ -142,6 +142,18 @@ Observe.paragraphs = function (el, data, structure, shouldBeDelete) {
 
   data.set('start', structure.paragraphs.length);
   data.set('end', Array.prototype.push.apply(structure.paragraphs, p));
+};
+
+/**
+ * @param {Element} el
+ * @param {Data} data
+ * @param {Object} structure
+ * @param {Object} shouldBeDelete
+ * @api private
+ */
+Observe.figure = function (el, data) {
+  var figureType = this.getFigureType(el);
+  figureType.updateData(el, data);
 };
 
 /**
@@ -265,6 +277,10 @@ Observe.getOffset = function (el) {
  * @api public
  */
 Observe.prototype.toJSON = function () {
+  if (!this.structure) {
+    this.sync();
+  }
+
   var structure = this.structure;
   var sections = structure.sections;
   var paragraphs = structure.paragraphs;
@@ -310,7 +326,8 @@ Observe.prototype.toJSON = function () {
 Observe.rules = {
   section: {
     paragraph: 1,
-    paragraphs: 1
+    paragraphs: 1,
+    figure: 1
   },
 
   paragraphs: {

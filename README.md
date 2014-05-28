@@ -1,7 +1,7 @@
 med.js
-------
+======
 
-[![Build Status](https://travis-ci.org/poying/med.js.svg)](https://travis-ci.org/poying/med.js)
+[![Build Status](https://drone.io/github.com/poying/med.js/status.png)](https://drone.io/github.com/poying/med.js/latest)
 
 仿 Medium 式的 HTML5 編輯器 framework。
 

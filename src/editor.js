@@ -2,12 +2,14 @@ Editor.prototype = Object.create(Emitter.prototype);
 utils.mixin(Editor.prototype, Middleware.prototype);
 utils.mixin(Editor.prototype, Observe.prototype);
 utils.mixin(Editor.prototype, HtmlBuilder.prototype);
+utils.mixin(Editor.prototype, Figure.prototype);
 
 function Editor(options) {
   Emitter.call(this);
   Middleware.call(this);
   Observe.call(this);
   HtmlBuilder.call(this);
+  Figure.call(this);
 
   this.options = utils.mixin(Object.create(defaultOptions), options || {});
   this.context = {};
@@ -34,18 +36,28 @@ function Editor(options) {
 /**
  * @api public
  */
-Editor.prototype.default = function () {
+Editor.prototype.start = function () {
   removeExtraNodes(this);
   renameElements(this);
   removeInlineStyle(this);
   handleEmptyParagraph(this);
+  refocus(this);
 
   return this.compose([
     preventDefault(),
     handleParagraph(this),
     handleList(this),
+    handleFigure(this),
     handleBlockquote(this),
-    handleBackspace(this),
+    handleBackspace(this)
+  ]);
+};
+
+/**
+ * @api public
+ */
+Editor.prototype.end = function () {
+  return this.compose([
     createNewParagraph()
   ]);
 };

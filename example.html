@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="stylesheet" href="bower_components/github-markdown-css/github-markdown.css"></link>
   <link rel="stylesheet" href="theme/style.css"></link>
   <style>
     body {
@@ -16,7 +17,7 @@
   </style>
 </head>
 <body>
-  <div class="editor">
+  <div class="editor markdown-body">
     <section>
       <p>line 1</p>
       <ul>
@@ -25,8 +26,15 @@
       </ul>
       <p>line 2</p>
       <blockquote>blockquote <i>detail</i> <b>strong</b></blockquote>
+      <figure contenteditable="false">
+        <img src="http://html5doctor.com/wp-content/uploads/2010/03/kookaburra.jpg" />
+        <img src="http://html5doctor.com/wp-content/uploads/2010/03/pelican.jpg" />
+        <img src="http://html5doctor.com/wp-content/uploads/2010/03/lorikeet.jpg" />
+        <figcaption>Australian Birds. From left to right, Kookburra, Pelican and Rainbow Lorikeet. Originals by <a href="http://www.flickr.com/photos/rclark/">Richard Clark</a></figcaption>
+      </figure>
     </section>
   </div>
+  <script src="bower_components/polyfills/element.js"></script>
   <script src="dist/med.js"></script>
   <script>
     var el = document.querySelector('.editor');
@@ -34,7 +42,8 @@
       el: el
     });
 
-    editor.use(editor.default());
+    editor.use(editor.start());
+    editor.use(editor.end());
 
     editor.on('error', function (e) {
       console.log(e);

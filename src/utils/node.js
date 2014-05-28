@@ -54,6 +54,10 @@ utils.isNotEmpty = function (el) {
  * @api public
  */
 utils.isTag = function (tagName, el) {
+  if (!el) {
+    return false;
+  }
+
   if (typeof tagName === 'string') {
     tagName = [tagName];
   }
@@ -65,6 +69,14 @@ utils.isTag = function (tagName, el) {
   return !!~tagName
     .map(toUpperCase)
     .indexOf(el.tagName);
+};
+
+utils.isAllowedToHaveContent = function (el) {
+  return !utils.isTag([
+    'br',
+    'input',
+    'img'
+  ], el);
 };
 
 /**
@@ -81,7 +93,15 @@ utils.isLastChild = function (el) {
  * @api public
  */
 utils.removeEmptyElements = function (el) {
+  var shouldIgnore = function (child) {
+    return utils.isType('figure', child)
+      || !utils.isAllowedToHaveContent(child);
+  };
+
   utils.each(el.children, function (child) {
+    if (shouldIgnore(child)) {
+      return;
+    }
     if (utils.isEmpty(child)) {
       el.removeChild(child);
     } else {
@@ -148,7 +168,7 @@ utils.isType = function (types, el) {
  * @api public
  */
 utils.isElementNode = function (node) {
-  return node.nodeType === document.ELEMENT_NODE;
+  return node && node.nodeType === document.ELEMENT_NODE;
 };
 
 /**
@@ -157,7 +177,7 @@ utils.isElementNode = function (node) {
  * @api public
  */
 utils.isTextNode = function (node) {
-  return node.nodeType === document.TEXT_NODE;
+  return node && node.nodeType === document.TEXT_NODE;
 };
 
 /**
@@ -167,20 +187,20 @@ utils.isTextNode = function (node) {
  * @api public
  */
 utils.isAncestorOf = function (node, ancestor) {
-  var childNodes = Array.prototype.slice.call(ancestor.chlidNodes || []);
-  var child;
+  var parents = utils.getParents(node);
+  return !!~parents.indexOf(ancestor);
+};
 
-  if (!~childNodes.indexOf(child)) {
-    while (child = childNodes.shift()) {
-      if (utils.isAncestorOf(child)) {
-        return true;
-      }
-    }
+utils.getParents = function (node) {
+  var parents = [];
+  var parentNode;
 
-    return false;
+  while (parentNode = node.parentNode) {
+    parents.push(parentNode);
+    node = parentNode;
   }
 
-  return true;
+  return parents;
 };
 
 /**

@@ -5,18 +5,27 @@ var removeExtraNodes = function () {
     var nodes = el.childNodes;
     var len = nodes.length;
     var curr, prev, lastNode;
+
+    var neetToCombine = function () {
+      return prev
+        && prev.nodeType === curr.nodeType
+        && utils.isAllowedToHaveContent(prev);
+    };
     
     while (len--) {
       curr = nodes[len];
       prev = nodes[len - 1];
 
-      if (prev && prev.nodeType === curr.nodeType) {
+      if (neetToCombine()) {
+        
+        // 目前要刪除的 element
+        // 就是正被使用者 focus 的 element
         if (prev === focus) {
           lastNode = utils.lastNode(focus);
-          ctx.__removeExtraNode__focus = lastNode;
-          ctx.__removeExtraNode__offset = lastNode.length;
+          ctx.focusTo = lastNode;
+          ctx.focusOffset = lastNode.length;
         }
-        
+
         if (utils.isTextNode(prev)) {
           prev.appendData(curr.data);
         } else if (utils.isElementNode(prev)) {
@@ -31,15 +40,6 @@ var removeExtraNodes = function () {
   editor.on('walk', function (ctx) {
     if (utils.isType('paragraph', ctx.element)) {
       removeExtraNode(ctx);
-    }
-  });
-
-  editor.on('walkEnd', function (ctx) {
-    var node = ctx.__removeExtraNode__focus;
-    var offset = ctx.__removeExtraNode__offset;
-
-    if (node) {
-      ctx.editor.caret.select(node, offset, node, offset);
     }
   });
 };

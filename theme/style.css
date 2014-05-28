@@ -48,3 +48,18 @@
 .med section:first-child:after {
   border-top: none;
 }
+
+.med figure {
+	position: relative;
+}
+
+.med figure.is-active:after {
+	content: '';
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+  border: 3px #f60 solid;
+  box-sizing: border-box;
+}
