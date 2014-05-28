@@ -277,6 +277,10 @@ Observe.getOffset = function (el) {
  * @api public
  */
 Observe.prototype.toJSON = function () {
+  if (!this.structure) {
+    this.sync();
+  }
+
   var structure = this.structure;
   var sections = structure.sections;
   var paragraphs = structure.paragraphs;
