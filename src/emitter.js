@@ -33,9 +33,13 @@ Emitter.prototype.once = function (event, handler) {
 Emitter.prototype.off = function (event, handler) {
   if (typeof event === 'function') {
     handler = event;
+
     for (event in this.events) {
-      this.off(event, handler);
+      if (this.events.hasOwnProperty(event)) {
+        this.off(event, handler);
+      }
     }
+
     return this;
   }
 

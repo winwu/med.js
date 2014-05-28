@@ -141,7 +141,7 @@ Editor.prototype.handleEmpty = function () {
  * @api private
  */
 Editor.prototype.walk = function () {
-  var els = editor.el.querySelectorAll('[name]');
+  var els = this.el.querySelectorAll('[name]');
   var context = {
     editor: this
   };

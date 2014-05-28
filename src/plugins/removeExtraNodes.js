@@ -1,4 +1,4 @@
-var removeExtraNodes = function () {
+var removeExtraNodes = function (editor) {
   var removeExtraNode = function (ctx) {
     var el = ctx.element;
     var focus = ctx.editor.caret.focusElement();

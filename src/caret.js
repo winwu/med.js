@@ -146,7 +146,7 @@ Caret.prototype.focusTo = function (el) {
     el.innerHTML = '\uffff';
     this.moveToStart(el);
     el.innerHTML = '';
-  };
+  }
 };
 
 /**

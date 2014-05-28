@@ -5,5 +5,5 @@
  * (c) 2014 http://poying.me
  * MIT licensed
  */
-;(function (window) {
+(function (window) {
   'use strict';
