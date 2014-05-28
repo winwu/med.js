@@ -107,7 +107,7 @@ Observe.section = function (el, data, structure, shouldBeDelete) {
       structure.sections.push(data.id);
     }
 
-    if (/^paragraph/.test(schema.type)) {
+    if (/^(paragraphs?|figure)$/.test(schema.type)) {
       p.push(Observe.scan.call(this, child, structure, shouldBeDelete).id);
     }
 
@@ -142,6 +142,18 @@ Observe.paragraphs = function (el, data, structure, shouldBeDelete) {
 
   data.set('start', structure.paragraphs.length);
   data.set('end', Array.prototype.push.apply(structure.paragraphs, p));
+};
+
+/**
+ * @param {Element} el
+ * @param {Data} data
+ * @param {Object} structure
+ * @param {Object} shouldBeDelete
+ * @api private
+ */
+Observe.figure = function (el, data) {
+  var figureType = this.getFigureType(el);
+  figureType.updateData(el, data);
 };
 
 /**

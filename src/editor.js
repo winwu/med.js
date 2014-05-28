@@ -2,12 +2,14 @@ Editor.prototype = Object.create(Emitter.prototype);
 utils.mixin(Editor.prototype, Middleware.prototype);
 utils.mixin(Editor.prototype, Observe.prototype);
 utils.mixin(Editor.prototype, HtmlBuilder.prototype);
+utils.mixin(Editor.prototype, Figure.prototype);
 
 function Editor(options) {
   Emitter.call(this);
   Middleware.call(this);
   Observe.call(this);
   HtmlBuilder.call(this);
+  Figure.call(this);
 
   this.options = utils.mixin(Object.create(defaultOptions), options || {});
   this.context = {};

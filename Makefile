@@ -21,6 +21,8 @@ JS_FILES := $(SOURCE)/exports.js\
 	$(SOURCE)/middleware.js\
 	$(SOURCE)/data.js\
 	$(SOURCE)/observe.js\
+	$(SOURCE)/figure.js\
+	$(SOURCE)/figure_type.js\
 	$(SOURCE)/html_builder.js\
 	$(SOURCE)/default_options.js\
 	$(SOURCE)/editor.js

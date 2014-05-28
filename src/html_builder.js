@@ -22,6 +22,7 @@ HtmlBuilder.importData = function (json) {
   var sections = structure.sections = [];
   var paragraphs = structure.paragraphs = [];
 
+  // section
   (json.sections || []).forEach(function (section) {
     var name = section.name;
     var d = data[name] = new Data(name);
@@ -33,6 +34,7 @@ HtmlBuilder.importData = function (json) {
     sections.push(name);
   });
 
+  // paragraphs, paragraph and figure
   (json.paragraphs || []).forEach(function (paragraph) {
     var name = paragraph.name;
     var d = data[name] = new Data(name);
@@ -40,12 +42,18 @@ HtmlBuilder.importData = function (json) {
     delete paragraph.name;
 
     d.data = paragraph;
-    paragraph.detail = (paragraph.detail || []).map(detail);
+    
+    // figure 沒有 detail
+    if (d.get('type') !== 'figure') {
+      paragraph.detail = (paragraph.detail || []).map(detail);
+    }
+    
     d.update();
 
     paragraphs.push(name);
   });
 
+  // detail
   function detail(detail) {
     var name = detail.name;
     var d = data[name] = new Data(name);
@@ -68,7 +76,7 @@ HtmlBuilder.buildHTML = function () {
   var el = this.el;
   var html = '';
 
-  HtmlBuilder.createElements(docfrag, this.structure, this.data);
+  HtmlBuilder.createElements.call(this, docfrag);
 
   utils.each(docfrag.childNodes, function (child) {
     html += child.outerHTML;
@@ -79,39 +87,39 @@ HtmlBuilder.buildHTML = function () {
 
 /**
  * @param {DocumentFragment|Element} container
- * @param {Object} structure
- * @param {Object} data
  * @api private
  */
-HtmlBuilder.createElements = function (container, structure, data) {
-  HtmlBuilder.createSections(container, structure, data);
+HtmlBuilder.createElements = function (container) {
+  HtmlBuilder.createSections.call(this, container);
 };
 
 /**
  * @param {DocumentFragment|Element} container
- * @param {Object} structure
- * @param {Object} data
  * @api private
  */
-HtmlBuilder.createSections = function (container, structure, data) {
+HtmlBuilder.createSections = function (container) {
+  var structure = this.structure;
+  var data = this.data;
+
   structure.sections.forEach(function (name) {
     var section = data[name];
     var el = HtmlBuilder.createElement(section);
 
-    HtmlBuilder.createParagraphs(section, el, structure, data);
+    HtmlBuilder.createParagraphs.call(this, section, el);
 
     container.appendChild(el);
-  });
+  }.bind(this));
 };
 
 /**
  * @param {Object} section
  * @param {DocumentFragment|Element} container
- * @param {Object} structure
- * @param {Object} data
  * @api private
  */
-HtmlBuilder.createParagraphs = function (section, container, structure, data) {
+HtmlBuilder.createParagraphs = function (section, container) {
+  var structure = this.structure;
+  var data = this.data;
+
   structure
     .paragraphs
     .slice(section.get('start'), section.get('end'))
@@ -119,26 +127,39 @@ HtmlBuilder.createParagraphs = function (section, container, structure, data) {
       var paragraph = data[name];
       var el = HtmlBuilder.createElement(paragraph);
 
-      var s = schema[paragraph.get('tag')];
+      var type = utils.getType(el);
 
-      if (s.type === 'paragraphs') {
-        HtmlBuilder.createParagraphs(paragraph, el, structure, data);
+      if (type === 'paragraphs') {
+        HtmlBuilder.createParagraphs.call(this, paragraph, el);
       } else if (!paragraph.get('in-paragraphs')) {
-        HtmlBuilder.createDetails(paragraph, el, structure, data);
+        if (utils.isType('figure', el)) {
+          HtmlBuilder.createFigure.call(this, paragraph, el);
+        } else {
+          HtmlBuilder.createDetails.call(this, paragraph, el);
+        }
       }
 
       container.appendChild(el);
-    });
+    }.bind(this));
 };
 
 /**
- * @param {Object} paragraph
- * @param {DocumentFragment|Element} container
- * @param {Object} structure
- * @param {Object} data
+ * @param {Data} figure
+ * @param {DocumentFragment|Element} figureElement
  * @api private
  */
-HtmlBuilder.createDetails = function (paragraph, container, structure, data) {
+HtmlBuilder.createFigure = function (figure, figureElement) {
+  var figureType = this.getFigureType(figure.get('type'));
+  figureType.updateHTML(figureElement, figure);
+};
+
+/**
+ * @param {Data} paragraph
+ * @param {DocumentFragment|Element} container
+ * @api private
+ */
+HtmlBuilder.createDetails = function (paragraph, container) {
+  var data = this.data;
   var detail = paragraph.get('detail');
   var text = paragraph.get('text');
   var content, node;
@@ -195,7 +216,7 @@ HtmlBuilder.initElement = function (el, data) {
   var s = schema[data.get('tag')];
 
   s.attrs.forEach(function (attr) {
-    HtmlBuilder[attr.type].call(this, el, data, attr);
+    HtmlBuilder[attr.type](el, data, attr);
   });
 };
 

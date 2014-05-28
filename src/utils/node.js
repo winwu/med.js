@@ -168,7 +168,7 @@ utils.isType = function (types, el) {
  * @api public
  */
 utils.isElementNode = function (node) {
-  return node.nodeType === document.ELEMENT_NODE;
+  return node && node.nodeType === document.ELEMENT_NODE;
 };
 
 /**
