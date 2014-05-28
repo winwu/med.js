@@ -90,16 +90,14 @@ Editor.prototype.onKeydown = function (e) {
   ctx.event = e;
   ctx.prevent = utils.preventDefault.bind(null, e);
 
-  setTimeout(function () {
-    this.sync();
-    this.walk();
-  }.bind(this));
-
   this.exec(ctx, function (e) {
     if (e) {
       this.emit('error', e);
     }
   }.bind(this));
+
+  this.sync();
+  this.walk();
 };
 
 /**
