@@ -20,10 +20,10 @@
   <div class="editor markdown-body">
     <section>
       <p>line 1</p>
-      <ul>
+      <ol>
         <li><i>item</i> 1
         <li>item <b>2</b>
-      </ul>
+      </ol>
       <p>line 2</p>
       <blockquote>blockquote <i>detail</i> <b>strong</b></blockquote>
       <figure contenteditable="false">
@@ -44,6 +44,10 @@
 
     editor.use(editor.start());
     editor.use(editor.end());
+
+    editor.on('error', function (err) {
+      console.error(err);
+    });
 
     editor.on('changed', function () {
       //console.log(arguments);

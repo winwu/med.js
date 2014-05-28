@@ -2,14 +2,27 @@ var handleList = function (editor) {
   var leaveList = function (ctx) {
     ctx.prevent();
 
+    var el = ctx.paragraph;
     var p = document.createElement('p');
 
-    ctx.section.insertBefore(p, ctx.paragraphs.nextSibling);
-    utils.removeElement(ctx.paragraph);
+    p.innerHTML = '<br />';
 
-    setTimeout(function () {
-      editor.caret.moveToStart(p);
-    });
+    if (utils.isLastElementOf(ctx.paragraphs, el)) {
+      // 是最後一個 item
+      // 需要把新 p 塞到 list 後面
+
+      ctx.section.insertBefore(p, ctx.paragraphs.nextSibling);
+      utils.removeElement(el);
+    } else {
+      // 在 list 中間
+      // 需要把 list 分半，然後在中間插入新 p
+
+      utils.removeElement(el);
+      editor.caret.split(ctx.paragraphs);
+      ctx.section.insertBefore(p, ctx.paragraphs);
+    }
+
+    editor.caret.moveToStart(p);
   };
 
   var leaveAndMoveContentToNewElement = function (ctx) {

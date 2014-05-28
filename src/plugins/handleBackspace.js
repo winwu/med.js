@@ -106,6 +106,23 @@ var handleBackspace = function (editor) {
     }
   };
 
+  var shouldCombineList = function () {
+    var el = editor.caret.focusParagraphs();
+    var next = el.nextElementSibling;
+    
+    return el
+      && next
+      && next.tagName === el.tagName;
+  };
+
+  var combineList = function () {
+    var el = editor.caret.focusParagraphs();
+    var next = el.nextElementSibling;
+    
+    utils.moveChildNodes(next, el);
+    utils.removeElement(next);
+  };
+
   return function (next) {
     if (this.key !== 'backspace') {
       return next();
@@ -128,6 +145,11 @@ var handleBackspace = function (editor) {
 
       utils.removeElement(this.figure);
       editor.caret.moveToEnd(previous);
+    }
+
+    // 兩個 list 相鄰的時候應該要合併他們
+    if (shouldCombineList()) {
+      combineList();
     }
 
     next();
