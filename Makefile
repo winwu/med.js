@@ -4,6 +4,7 @@ BC = ./bower_components
 UGLIFY = $(NM)/.bin/uglifyjs
 ZUUL = $(NM)/.bin/zuul
 BOWER = $(NM)/.bin/bower
+ESLINT = $(NM)/.bin/eslint
 SOURCE = ./src
 DEST = ./dist
 
@@ -88,10 +89,13 @@ clean:
 		rm -r $(DEST);\
 	fi
 
-test: bower build-test
+lint: build
+	@$(ESLINT) $(DEST)/med.js
+
+test: bower lint
 	@$(ZUUL) -- test/*.js
 
-test-local: bower build-test
+test-local: bower lint
 	@$(ZUUL) --local 8080 -- test/*.js
 
 release:
