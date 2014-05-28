@@ -12,11 +12,6 @@ var handleList = function (editor) {
     });
   };
 
-  var splitAndMoveToStart = function (ctx) {
-    editor.caret.split(ctx.paragraph);
-    editor.caret.moveToStart(ctx.paragraph);
-  };
-
   var leaveAndMoveContentToNewElement = function (ctx) {
     var el = ctx.paragraph;
     var p = document.createElement('p');
@@ -48,7 +43,7 @@ var handleList = function (editor) {
 
         // 行尾換行預設動作會自動插入 <p>
         this.prevent();
-        splitAndMoveToStart(this);
+        editor.caret.split(el);
 
       } else if (editor.caret.atElementStart(el)) {
         
