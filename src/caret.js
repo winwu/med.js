@@ -407,6 +407,10 @@ Caret.prototype.closestElement = function () {
  * @api public
  */
 Caret.prototype.atElementStart = function (el) {
+  if (!el.childNodes.length) {
+    return true;
+  }
+
   var selection = document.getSelection();
   var focusNode = selection.focusNode;
   var offset = selection.focusOffset;
@@ -424,6 +428,10 @@ Caret.prototype.atElementStart = function (el) {
  * @api public
  */
 Caret.prototype.atElementEnd = function (el) {
+  if (!el.childNodes.length) {
+    return true;
+  }
+
   var selection = document.getSelection();
   var focusNode = selection.focusNode;
   var offset = selection.focusOffset;
