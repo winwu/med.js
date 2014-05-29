@@ -194,7 +194,7 @@ HtmlBuilder.createDetails = function (paragraph, container) {
 
 /**
  * @param {Data} data
- * @return {Element}
+ * @returns {Element}
  * @api private
  */
 HtmlBuilder.createElement = function (data) {

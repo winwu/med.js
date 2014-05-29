@@ -102,7 +102,7 @@ Editor.prototype.onKeydown = function (e) {
 };
 
 /**
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 Editor.prototype.isEmpty = function () {

@@ -3,7 +3,7 @@ function Caret(editor) {
 }
 
 /**
- * @return {Node}
+ * @returns {Node}
  * @api public
  */
 Caret.prototype.focusNode = function () {
@@ -12,7 +12,7 @@ Caret.prototype.focusNode = function () {
 
 /**
  * @param {String} tagName
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.focusElement = function (tagName) {
@@ -42,7 +42,7 @@ Caret.prototype.focusElement = function (tagName) {
 };
 
 /**
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.focusSection = function () {
@@ -50,7 +50,7 @@ Caret.prototype.focusSection = function () {
 };
 
 /**
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.focusParagraph = function () {
@@ -58,7 +58,7 @@ Caret.prototype.focusParagraph = function () {
 };
 
 /**
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.focusParagraphs = function () {
@@ -66,7 +66,7 @@ Caret.prototype.focusParagraphs = function () {
 };
 
 /**
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.focusFigure = function () {
@@ -74,7 +74,7 @@ Caret.prototype.focusFigure = function () {
 };
 
 /**
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.focusDetail = function () {
@@ -83,7 +83,7 @@ Caret.prototype.focusDetail = function () {
 
 /**
  * @param {String} type
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.focusType = function (type) {
@@ -109,7 +109,7 @@ Caret.prototype.focusType = function (type) {
 
 /**
  * @param {Node} node
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.nextElement = function (node) {
@@ -150,7 +150,7 @@ Caret.prototype.focusTo = function (el) {
 };
 
 /**
- * @return {String}
+ * @returns {String}
  * @api public
  */
 Caret.prototype.textBefore = function () {
@@ -166,7 +166,7 @@ Caret.prototype.textBefore = function () {
 };
 
 /**
- * @return {String}
+ * @returns {String}
  * @api public
  */
 Caret.prototype.textAfter = function () {
@@ -253,7 +253,7 @@ Caret.prototype.moveToEnd = function (el, offset) {
 
 /**
  * @param {Element} el
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.split = function (el) {
@@ -434,7 +434,7 @@ Caret.prototype.closestElement = function () {
 
 /**
  * @param {Element} el
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 Caret.prototype.atElementStart = function (el) {
@@ -455,7 +455,7 @@ Caret.prototype.atElementStart = function (el) {
 
 /**
  * @param {Element} el
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 Caret.prototype.atElementEnd = function (el) {

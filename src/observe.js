@@ -43,7 +43,7 @@ Observe.prototype.sync = function () {
 /**
  * @param {Object} context
  * @param {Element} el
- * @return {Data}
+ * @returns {Data}
  * @api private
  */
 Observe.scan = function (context, el) {
@@ -241,7 +241,7 @@ Observe.handleUnknownElement = function (el) {
 
 /**
  * @param {Element} el
- * @return {Number}
+ * @returns {Number}
  * @api private
  */
 Observe.getOffset = function (el) {
@@ -276,7 +276,7 @@ Observe.getOffset = function (el) {
 };
 
 /**
- * @return {Object}
+ * @returns {Object}
  * @api public
  */
 Observe.prototype.toJSON = function () {
