@@ -45,6 +45,7 @@ Editor.prototype.start = function () {
 
   return this.compose([
     preventDefault(),
+    commandA(this),
     handleParagraph(this),
     handleList(this),
     handleFigure(this),

@@ -27,6 +27,18 @@ utils.getTextContent = function (node) {
 };
 
 /**
+ * @param {Node} node
+ * @api public
+ */
+utils.setNodeContent = function (node, content) {
+  if (utils.isTextNode(node)) {
+    node.data = content;
+  } else {
+    node.innerHTML = content;
+  }
+};
+
+/**
  * @param {Element} el
  * @return {Boolean}
  * @api public

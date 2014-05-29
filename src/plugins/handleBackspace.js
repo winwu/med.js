@@ -108,10 +108,9 @@ var handleBackspace = function (editor) {
 
   var shouldCombineList = function () {
     var el = editor.caret.focusParagraphs();
-    var next = el.nextElementSibling;
+    var next = el && el.nextElementSibling;
     
-    return el
-      && next
+    return next
       && next.tagName === el.tagName;
   };
 

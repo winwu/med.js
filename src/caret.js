@@ -338,6 +338,31 @@ Caret.prototype.select = function () {
   var startNode, startOffset, endNode, endOffset;
   var range;
 
+  // Chrome 無法選取空 TextNode
+  // 所以這邊填入 \uffff 當作 placeholder
+
+  var insertPlaceholder = function () {
+    if (utils.isEmpty(startNode)) {
+      utils.setNodeContent(startNode, '\uffff');
+    }
+
+    if (utils.isEmpty(endNode)) {
+      utils.setNodeContent(endNode, '\uffff');
+    }
+  };
+
+  var removePlaceholder = function () {
+    var startNodeContent = utils.getTextContent(startNode);
+    var endNodeContent = utils.getTextContent(endNode);
+    var placeholder = /\uffff/g;
+
+    startNodeContent = startNodeContent.replace(placeholder, '');
+    endNodeContent = endNodeContent.replace(placeholder, '');
+
+    utils.setNodeContent(startNode, startNodeContent);
+    utils.setNodeContent(endNode, endNodeContent);
+  };
+
   switch (arguments.length) {
   case 1:
     startNode = endNode = arguments[0];
@@ -348,16 +373,19 @@ Caret.prototype.select = function () {
     if (typeof arguments[1] === 'number') {
       startNode = endNode = arguments[0];
       startOffset = endOffset = arguments[1];
+      insertPlaceholder();
     } else {
       startNode = arguments[0];
       startOffset = 0;
       endNode = arguments[1];
-      endOffset = utils.getTextContent(startNode).length;
+      insertPlaceholder();
+      endOffset = utils.getTextContent(endNode).length;
     }
     break;
   case 3:
     startNode = arguments[0];
     endNode = arguments[1];
+    insertPlaceholder();
     startOffset = 0;
     endOffset = utils.getTextContent(startNode).length;
     break;
@@ -366,6 +394,7 @@ Caret.prototype.select = function () {
     startOffset = arguments[1];
     endNode = arguments[2];
     endOffset = arguments[3];
+    insertPlaceholder();
     break;
   }
 
@@ -378,6 +407,8 @@ Caret.prototype.select = function () {
 
   selection.removeAllRanges();
   selection.addRange(range);
+
+  removePlaceholder();
 };
 
 /**
