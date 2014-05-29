@@ -11,6 +11,10 @@ Medium 編輯器強大的地方在於他背後幫處理掉了很多麻煩問題�
 2. 輕量
 3. Plugin，只專注於維持結構，其他事情都交給 plugin 處理
 
+## 文件
+
+[Wiki](./wiki)
+
 ## 貢獻者
 
 * [poying](http://github.com/poying)
