@@ -329,8 +329,8 @@ Caret.prototype.selectAllText = function (el) {
  * @api public
  */
 Caret.prototype.selectAll = function (el) {
-  var firstNode = utils.firstNode(el);
-  var lastNode = utils.lastNode(el);
+  var firstNode = utils.firstTextNode(el);
+  var lastNode = utils.lastTextNode(el);
 
   this.select(firstNode, lastNode);
 };
