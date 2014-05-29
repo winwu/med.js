@@ -203,9 +203,18 @@ utils.isAncestorOf = function (node, ancestor) {
   return !!~parents.indexOf(ancestor);
 };
 
+/**
+ * @param {Node} node
+ * @returns {Element[]}
+ * @api public
+ */
 utils.getParents = function (node) {
   var parents = [];
   var parentNode;
+
+  if (!node) {
+    return parents;
+  }
 
   while (parentNode = node.parentNode) {
     parents.push(parentNode);

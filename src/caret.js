@@ -325,6 +325,17 @@ Caret.prototype.selectAllText = function (el) {
 };
 
 /**
+ * @param {Element} el
+ * @api public
+ */
+Caret.prototype.selectAll = function (el) {
+  var firstNode = utils.firstNode(el);
+  var lastNode = utils.lastNode(el);
+
+  editor.caret.select(firstNode, lastNode);
+};
+
+/**
  *     caret.select(node)
  *     caret.select(node, offset)
  *     caret.select(startNode, endNode)

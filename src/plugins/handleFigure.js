@@ -21,6 +21,10 @@ var handleFigure = function (editor) {
 
   editor.el.addEventListener('mousedown', function (e) {
     var el = e.target;
+    
+    if (!utils.isAncestorOf(editor.caret.focusNode(), editor.el)) {
+      editor.caret.moveToStart(el);
+    }
 
     while (1) {
       if (!el || el === editor.el) {
