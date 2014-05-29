@@ -58,7 +58,8 @@ var handleList = function (editor) {
         this.prevent();
         editor.caret.split(el);
 
-      } else if (editor.caret.atElementStart(el)) {
+      } else if (editor.caret.atElementStart(el)
+          && utils.isLastElementOf(this.paragraphs, el)) {
         
         // 行首換行跳離 <ul>/<ol>
         this.prevent();
