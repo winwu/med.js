@@ -4,7 +4,7 @@ function Middleware() {
 
 /**
  * @param {Function} fn
- * @return {Editor}
+ * @returns {Editor}
  * @api public
  */
 Middleware.prototype.use = function (fn) {
@@ -29,7 +29,7 @@ Middleware.prototype.exec = function (ctx, cb) {
 
 /**
  * @param {Function[]} fns
- * @return {Function}
+ * @returns {Function}
  * @api public
  */
 Middleware.prototype.compose = function (fns) {

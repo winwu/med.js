@@ -7,7 +7,9 @@
   },
   "author": "Po-Ying Chen <poying.me@gmail.com> (陳柏穎)",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "eslint": "^0.6.2"
+  },
   "devDependencies": {
     "uglify-js": "^2.4.13",
     "mocha": "^1.18.2",

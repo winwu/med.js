@@ -8,7 +8,7 @@ function Data(id) {
 /**
  * @param {String} key
  * @param {Mixed} key
- * @return {Data}
+ * @returns {Data}
  * @api public
  */
 Data.prototype.set = function (key, val) {
@@ -24,7 +24,7 @@ Data.prototype.set = function (key, val) {
 /**
  * @param {String} key
  * @param {Mixed} key
- * @return {Data}
+ * @returns {Data}
  * @api private
  */
 Data.prototype._set = function (key, val) {
@@ -47,7 +47,7 @@ Data.prototype._set = function (key, val) {
 
 /**
  * @param {String} key
- * @return {Mixed}
+ * @returns {Mixed}
  * @api public
  */
 Data.prototype.get = function (key) {
@@ -70,7 +70,7 @@ Data.prototype.get = function (key) {
 };
 
 /**
- * @return {Data}
+ * @returns {Data}
  * @api public
  */
 Data.prototype.update = function () {
@@ -87,7 +87,7 @@ Data.prototype.update = function () {
 };
 
 /**
- * @return {Object}
+ * @returns {Object}
  * @api public
  */
 Data.prototype.toJSON = function () {

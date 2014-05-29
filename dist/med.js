@@ -5,7 +5,7 @@
  * (c) 2014 http://poying.me
  * MIT licensed
  */
-;(function (window) {
+(function (window) {
   'use strict';
 if (typeof module !== 'undefined') {
   module.exports = Editor;
@@ -19,7 +19,7 @@ if (typeof module !== 'undefined') {
 var utils = {};
 /**
  * @param {Node} node
- * @return {String}
+ * @returns {String}
  * @api public
  */
 utils.getTextContent = function (node) {
@@ -46,8 +46,20 @@ utils.getTextContent = function (node) {
 };
 
 /**
+ * @param {Node} node
+ * @api public
+ */
+utils.setNodeContent = function (node, content) {
+  if (utils.isTextNode(node)) {
+    node.data = content;
+  } else {
+    node.innerHTML = content;
+  }
+};
+
+/**
  * @param {Element} el
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 utils.isEmpty = function (el) {
@@ -59,7 +71,7 @@ utils.isEmpty = function (el) {
 
 /**
  * @param {Element} el
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 utils.isNotEmpty = function (el) {
@@ -69,7 +81,7 @@ utils.isNotEmpty = function (el) {
 /**
  * @param {String} tagName
  * @param {Element} el
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 utils.isTag = function (tagName, el) {
@@ -100,7 +112,7 @@ utils.isAllowedToHaveContent = function (el) {
 
 /**
  * @param {Element} el
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 utils.isLastChild = function (el) {
@@ -168,7 +180,7 @@ utils.moveChildNodes = function (src, dest) {
 /**
  * @param {String|String[]} types
  * @param {Element} el
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 utils.isType = function (types, el) {
@@ -183,7 +195,7 @@ utils.isType = function (types, el) {
 
 /**
  * @param {Node} node
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 utils.isElementNode = function (node) {
@@ -192,7 +204,7 @@ utils.isElementNode = function (node) {
 
 /**
  * @param {Node} node
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 utils.isTextNode = function (node) {
@@ -202,7 +214,7 @@ utils.isTextNode = function (node) {
 /**
  * @param {Node} node
  * @param {Node} ancestor
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 utils.isAncestorOf = function (node, ancestor) {
@@ -210,9 +222,18 @@ utils.isAncestorOf = function (node, ancestor) {
   return !!~parents.indexOf(ancestor);
 };
 
+/**
+ * @param {Node} node
+ * @returns {Element[]}
+ * @api public
+ */
 utils.getParents = function (node) {
   var parents = [];
   var parentNode;
+
+  if (!node) {
+    return parents;
+  }
 
   while (parentNode = node.parentNode) {
     parents.push(parentNode);
@@ -224,7 +245,7 @@ utils.getParents = function (node) {
 
 /**
  * @param {Node} node
- * @return {Number}
+ * @returns {Number}
  * @api public
  */
 utils.nodeContentLength = function (node) {
@@ -233,7 +254,7 @@ utils.nodeContentLength = function (node) {
 
 /**
  * @param {Node} node
- * @return {Node}
+ * @returns {Node}
  * @api public
  */
 utils.lastNode = function (node) {
@@ -242,7 +263,7 @@ utils.lastNode = function (node) {
 
 /**
  * @param {Node} node
- * @return {Text}
+ * @returns {Text}
  * @api public
  */
 utils.lastTextNode = function (node) {
@@ -254,7 +275,7 @@ utils.lastTextNode = function (node) {
 
 /**
  * @param {Node} node
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 utils.lastElement = function (node) {
@@ -263,7 +284,7 @@ utils.lastElement = function (node) {
 
 /**
  * @param {Node} node
- * @return {Node}
+ * @returns {Node}
  * @api public
  */
 utils.firstNode = function (node) {
@@ -272,7 +293,7 @@ utils.firstNode = function (node) {
 
 /**
  * @param {Node} node
- * @return {Text}
+ * @returns {Text}
  * @api public
  */
 utils.firstTextNode = function (node) {
@@ -284,7 +305,7 @@ utils.firstTextNode = function (node) {
 
 /**
  * @param {Node} node
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 utils.firstElement = function (node) {
@@ -294,7 +315,7 @@ utils.firstElement = function (node) {
 /**
  * @param {Element} container
  * @param {Element} el
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 utils.isLastElementOf = function (container, el) {
@@ -305,7 +326,7 @@ utils.isLastElementOf = function (container, el) {
 /**
  * @param {Element} container
  * @param {Element} el
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 utils.isFirstElementOf = function (container, el) {
@@ -381,16 +402,19 @@ utils.equal = function (a, b) {
       a = a.slice().sort();
       b = b.slice().sort();
       return a.join() === b.join();
-    } else {
-      return false;
     }
+    return false;
   }
 
   if (typeof a === 'object') {
-    if (typeof b === 'object') {
-      var prop, notEqual;
+    if (typeof b !== 'object') {
+      return false;
+    }
 
-      for (prop in a) {
+    var prop, notEqual;
+
+    for (prop in a) {
+      if (a.hasOwnProperty(prop)) {
         notEqual = a.hasOwnProperty(prop)
           && b.hasOwnProperty(prop)
           && !utils.equal(a[prop], b[prop]);
@@ -399,11 +423,9 @@ utils.equal = function (a, b) {
           return false;
         }
       }
-
-      return true;
     }
 
-    return false;
+    return true;
   }
 
   return false;
@@ -445,6 +467,16 @@ keyboard.map = {
 keyboard.super = utils.os() === 'mac'
   ? 'command'
   : 'ctrl';
+var commandA = function (editor) {
+  return function (next) {
+    if (this.super && this.key.toLowerCase() === 'a') {
+      this.prevent();
+      editor.caret.selectAll(editor.el);
+    } else {
+      next();
+    }
+  };
+};
 var createNewParagraph = function () {
   return function (next) {
     var needToCreateElement = this.key === 'enter'
@@ -547,7 +579,7 @@ var handleBackspace = function (editor) {
 
         if (utils.isType('section', needToRemove)) {
           // section 的情況是要讓游標在畫面上跟著目前 element 移動
-          editor.caret.moveToStart(firstChild);
+          editor.caret.focusTo(firstChild);
         } else if (lastNode) {
           // 段落的情況是要讓兩個 element 接起來後，游標移動到合併的位置
           editor.caret.moveToStart(lastNode, offset);
@@ -572,6 +604,22 @@ var handleBackspace = function (editor) {
     }
   };
 
+  var shouldCombineList = function () {
+    var el = editor.caret.focusParagraphs();
+    var next = el && el.nextElementSibling;
+    
+    return next
+      && next.tagName === el.tagName;
+  };
+
+  var combineList = function () {
+    var el = editor.caret.focusParagraphs();
+    var next = el.nextElementSibling;
+    
+    utils.moveChildNodes(next, el);
+    utils.removeElement(next);
+  };
+
   return function (next) {
     if (this.key !== 'backspace') {
       return next();
@@ -594,6 +642,11 @@ var handleBackspace = function (editor) {
 
       utils.removeElement(this.figure);
       editor.caret.moveToEnd(previous);
+    }
+
+    // 兩個 list 相鄰的時候應該要合併他們
+    if (shouldCombineList()) {
+      combineList();
     }
 
     next();
@@ -639,8 +692,13 @@ var handleBlockquote = function (editor) {
 var handleEmptyParagraph = function (editor) {
   editor.on('walk', function (ctx) {
     var el = ctx.element;
-    if (utils.isType('paragraph', el) && utils.isEmpty(el)) {
-      el.innerHTML = '<br type="_med_placeholder" />';
+
+    if (!el.innerHTML.trim()) {
+      if (utils.isType('paragraph', el)) {
+        el.innerHTML = '<br type="_med_placeholder" />';
+      } else if (utils.isType('section', el)) {
+        el.innerHTML = '<p><br type="_med_placeholder" /></p>';
+      }
     }
   });
 };
@@ -667,6 +725,10 @@ var handleFigure = function (editor) {
 
   editor.el.addEventListener('mousedown', function (e) {
     var el = e.target;
+    
+    if (!utils.isAncestorOf(editor.caret.focusNode(), editor.el)) {
+      editor.caret.moveToStart(el);
+    }
 
     while (1) {
       if (!el || el === editor.el) {
@@ -697,6 +759,44 @@ var handleFigure = function (editor) {
   };
 };
 var handleList = function (editor) {
+  var leaveList = function (ctx) {
+    ctx.prevent();
+
+    var el = ctx.paragraph;
+    var p = document.createElement('p');
+
+    p.innerHTML = '<br />';
+
+    if (utils.isLastElementOf(ctx.paragraphs, el)) {
+      // 是最後一個 item
+      // 需要把新 p 塞到 list 後面
+
+      ctx.section.insertBefore(p, ctx.paragraphs.nextSibling);
+      utils.removeElement(el);
+    } else {
+      // 在 list 中間
+      // 需要把 list 分半，然後在中間插入新 p
+
+      utils.removeElement(el);
+      editor.caret.split(ctx.paragraphs);
+      ctx.section.insertBefore(p, ctx.paragraphs);
+    }
+
+    editor.caret.moveToStart(p);
+  };
+
+  var leaveAndMoveContentToNewElement = function (ctx) {
+    var el = ctx.paragraph;
+    var p = document.createElement('p');
+
+    p.innerHTML = el.innerHTML;
+    utils.removeElement(el);
+
+    ctx.section.insertBefore(p, ctx.paragraphs.nextSibling);
+
+    editor.caret.moveToStart(p);
+  };
+
   return function (next) {
     var el = this.paragraph;
 
@@ -708,38 +808,23 @@ var handleList = function (editor) {
     // 所以必須自己處理換行動作
     if (this.key === 'enter' && !this.shift) {
       if (utils.isEmpty(el)) {
+
         // 空行，要讓使用者跳離 ul/ol
+        leaveList(this);
 
-        this.prevent();
-
-        var p = document.createElement('p');
-
-        this.section.insertBefore(p, this.paragraphs.nextSibling);
-        utils.removeElement(el);
-
-        setTimeout(function () {
-          editor.caret.moveToStart(p);
-        });
       } else if (editor.caret.atElementEnd(el)) {
+
         // 行尾換行預設動作會自動插入 <p>
-
         this.prevent();
-
         editor.caret.split(el);
-        editor.caret.moveToStart(el);
-      } else if (editor.caret.atElementStart(el)) {
+
+      } else if (editor.caret.atElementStart(el)
+          && utils.isLastElementOf(this.paragraphs, el)) {
+        
         // 行首換行跳離 <ul>/<ol>
-
         this.prevent();
+        leaveAndMoveContentToNewElement(this);
 
-        var p = document.createElement('p');
-
-        p.innerHTML = el.innerHTML;
-        utils.removeElement(el);
-
-        this.section.insertBefore(p, this.paragraphs.nextSibling);
-
-        editor.caret.moveToStart(p);
       }
     }
 
@@ -839,7 +924,7 @@ var initContext = function () {
     this.shift = e.shiftKey;
     this.command = this.meta = e.metaKey;
     this.code = code;
-    this.key = keyboard.map[code];
+    this.key = keyboard.map[code] || String.fromCharCode(code);
     this.super = this[keyboard.super];
     this.node = editor.caret.focusNode();
     this.element = editor.caret.focusElement();
@@ -861,18 +946,16 @@ var initContext = function () {
 };
 var preventDefault = function () {
   return function (next) {
+    var el = this.element;
+
     if (this.key === 'backspace' && this.editor.isEmpty()) {
       this.prevent();
       return;
     }
 
-    if (this.element === document.body) {
-      utils.preventDefault(e);
+    if (!!~[document.body, this.section].indexOf(el)) {
+      this.prevent();
       return;
-    }
-
-    if (el === el.section) {
-      return this.prevent();
     }
 
     next();
@@ -888,7 +971,7 @@ var refocus = function (editor) {
     }
   });
 };
-var removeExtraNodes = function () {
+var removeExtraNodes = function (editor) {
   var removeExtraNode = function (ctx) {
     var el = ctx.element;
     var focus = ctx.editor.caret.focusElement();
@@ -933,7 +1016,7 @@ var removeExtraNodes = function () {
     }
   });
 };
-var removeInlineStyle = function () {
+var removeInlineStyle = function (editor) {
   editor.on('walk', function (ctx) {
     // chrome
     ctx.el.setAttribute('style', '');
@@ -1093,9 +1176,13 @@ Emitter.prototype.once = function (event, handler) {
 Emitter.prototype.off = function (event, handler) {
   if (typeof event === 'function') {
     handler = event;
+
     for (event in this.events) {
-      this.off(event, handler);
+      if (this.events.hasOwnProperty(event)) {
+        this.off(event, handler);
+      }
     }
+
     return this;
   }
 
@@ -1142,7 +1229,7 @@ function Caret(editor) {
 }
 
 /**
- * @return {Node}
+ * @returns {Node}
  * @api public
  */
 Caret.prototype.focusNode = function () {
@@ -1151,7 +1238,7 @@ Caret.prototype.focusNode = function () {
 
 /**
  * @param {String} tagName
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.focusElement = function (tagName) {
@@ -1181,7 +1268,7 @@ Caret.prototype.focusElement = function (tagName) {
 };
 
 /**
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.focusSection = function () {
@@ -1189,7 +1276,7 @@ Caret.prototype.focusSection = function () {
 };
 
 /**
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.focusParagraph = function () {
@@ -1197,7 +1284,7 @@ Caret.prototype.focusParagraph = function () {
 };
 
 /**
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.focusParagraphs = function () {
@@ -1205,7 +1292,7 @@ Caret.prototype.focusParagraphs = function () {
 };
 
 /**
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.focusFigure = function () {
@@ -1213,7 +1300,7 @@ Caret.prototype.focusFigure = function () {
 };
 
 /**
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.focusDetail = function () {
@@ -1222,7 +1309,7 @@ Caret.prototype.focusDetail = function () {
 
 /**
  * @param {String} type
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.focusType = function (type) {
@@ -1248,7 +1335,7 @@ Caret.prototype.focusType = function (type) {
 
 /**
  * @param {Node} node
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.nextElement = function (node) {
@@ -1285,11 +1372,11 @@ Caret.prototype.focusTo = function (el) {
     el.innerHTML = '\uffff';
     this.moveToStart(el);
     el.innerHTML = '';
-  };
+  }
 };
 
 /**
- * @return {String}
+ * @returns {String}
  * @api public
  */
 Caret.prototype.textBefore = function () {
@@ -1305,7 +1392,7 @@ Caret.prototype.textBefore = function () {
 };
 
 /**
- * @return {String}
+ * @returns {String}
  * @api public
  */
 Caret.prototype.textAfter = function () {
@@ -1392,7 +1479,7 @@ Caret.prototype.moveToEnd = function (el, offset) {
 
 /**
  * @param {Element} el
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.split = function (el) {
@@ -1464,6 +1551,17 @@ Caret.prototype.selectAllText = function (el) {
 };
 
 /**
+ * @param {Element} el
+ * @api public
+ */
+Caret.prototype.selectAll = function (el) {
+  var firstNode = utils.firstNode(el);
+  var lastNode = utils.lastNode(el);
+
+  editor.caret.select(firstNode, lastNode);
+};
+
+/**
  *     caret.select(node)
  *     caret.select(node, offset)
  *     caret.select(startNode, endNode)
@@ -1477,6 +1575,31 @@ Caret.prototype.select = function () {
   var startNode, startOffset, endNode, endOffset;
   var range;
 
+  // Chrome 無法選取空 TextNode
+  // 所以這邊填入 \uffff 當作 placeholder
+
+  var insertPlaceholder = function () {
+    if (utils.isEmpty(startNode)) {
+      utils.setNodeContent(startNode, '\uffff');
+    }
+
+    if (utils.isEmpty(endNode)) {
+      utils.setNodeContent(endNode, '\uffff');
+    }
+  };
+
+  var removePlaceholder = function () {
+    var startNodeContent = utils.getTextContent(startNode);
+    var endNodeContent = utils.getTextContent(endNode);
+    var placeholder = /\uffff/g;
+
+    startNodeContent = startNodeContent.replace(placeholder, '');
+    endNodeContent = endNodeContent.replace(placeholder, '');
+
+    utils.setNodeContent(startNode, startNodeContent);
+    utils.setNodeContent(endNode, endNodeContent);
+  };
+
   switch (arguments.length) {
   case 1:
     startNode = endNode = arguments[0];
@@ -1487,16 +1610,19 @@ Caret.prototype.select = function () {
     if (typeof arguments[1] === 'number') {
       startNode = endNode = arguments[0];
       startOffset = endOffset = arguments[1];
+      insertPlaceholder();
     } else {
       startNode = arguments[0];
       startOffset = 0;
       endNode = arguments[1];
-      endOffset = utils.getTextContent(startNode).length;
+      insertPlaceholder();
+      endOffset = utils.getTextContent(endNode).length;
     }
     break;
   case 3:
     startNode = arguments[0];
     endNode = arguments[1];
+    insertPlaceholder();
     startOffset = 0;
     endOffset = utils.getTextContent(startNode).length;
     break;
@@ -1505,6 +1631,7 @@ Caret.prototype.select = function () {
     startOffset = arguments[1];
     endNode = arguments[2];
     endOffset = arguments[3];
+    insertPlaceholder();
     break;
   }
 
@@ -1517,6 +1644,8 @@ Caret.prototype.select = function () {
 
   selection.removeAllRanges();
   selection.addRange(range);
+
+  removePlaceholder();
 };
 
 /**
@@ -1542,10 +1671,14 @@ Caret.prototype.closestElement = function () {
 
 /**
  * @param {Element} el
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 Caret.prototype.atElementStart = function (el) {
+  if (!el.childNodes.length) {
+    return true;
+  }
+
   var selection = document.getSelection();
   var focusNode = selection.focusNode;
   var offset = selection.focusOffset;
@@ -1559,10 +1692,14 @@ Caret.prototype.atElementStart = function (el) {
 
 /**
  * @param {Element} el
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 Caret.prototype.atElementEnd = function (el) {
+  if (!el.childNodes.length) {
+    return true;
+  }
+
   var selection = document.getSelection();
   var focusNode = selection.focusNode;
   var offset = selection.focusOffset;
@@ -1580,7 +1717,7 @@ function Middleware() {
 
 /**
  * @param {Function} fn
- * @return {Editor}
+ * @returns {Editor}
  * @api public
  */
 Middleware.prototype.use = function (fn) {
@@ -1605,7 +1742,7 @@ Middleware.prototype.exec = function (ctx, cb) {
 
 /**
  * @param {Function[]} fns
- * @return {Function}
+ * @returns {Function}
  * @api public
  */
 Middleware.prototype.compose = function (fns) {
@@ -1643,7 +1780,7 @@ function Data(id) {
 /**
  * @param {String} key
  * @param {Mixed} key
- * @return {Data}
+ * @returns {Data}
  * @api public
  */
 Data.prototype.set = function (key, val) {
@@ -1659,7 +1796,7 @@ Data.prototype.set = function (key, val) {
 /**
  * @param {String} key
  * @param {Mixed} key
- * @return {Data}
+ * @returns {Data}
  * @api private
  */
 Data.prototype._set = function (key, val) {
@@ -1682,7 +1819,7 @@ Data.prototype._set = function (key, val) {
 
 /**
  * @param {String} key
- * @return {Mixed}
+ * @returns {Mixed}
  * @api public
  */
 Data.prototype.get = function (key) {
@@ -1705,7 +1842,7 @@ Data.prototype.get = function (key) {
 };
 
 /**
- * @return {Data}
+ * @returns {Data}
  * @api public
  */
 Data.prototype.update = function () {
@@ -1722,7 +1859,7 @@ Data.prototype.update = function () {
 };
 
 /**
- * @return {Object}
+ * @returns {Object}
  * @api public
  */
 Data.prototype.toJSON = function () {
@@ -1746,6 +1883,11 @@ Observe.prototype.sync = function () {
 
   var shouldBeDelete = {};
 
+  var context = {
+    structure: structure,
+    shouldBeDelete: shouldBeDelete
+  };
+
   Object
     .keys(data)
     .forEach(function (name) {
@@ -1753,7 +1895,7 @@ Observe.prototype.sync = function () {
     });
 
   utils.each(this.el.children, function (el) {
-    Observe.scan.call(this, el, structure, shouldBeDelete);
+    Observe.scan.call(this, context, el);
   }.bind(this));
 
   Object
@@ -1766,13 +1908,12 @@ Observe.prototype.sync = function () {
 };
 
 /**
+ * @param {Object} context
  * @param {Element} el
- * @param {Object} structure
- * @param {Object} shouldBeDelete
- * @return {Data}
+ * @returns {Data}
  * @api private
  */
-Observe.scan = function (el, structure, shouldBeDelete) {
+Observe.scan = function (context, el) {
   var tagName = el.tagName.toLowerCase();
   var name = el.getAttribute('name');
   var data = this.data[name];
@@ -1786,7 +1927,7 @@ Observe.scan = function (el, structure, shouldBeDelete) {
   Observe.checkAndRemoveStrangeElement.call(this, el);
 
   if (name) {
-    delete shouldBeDelete[name];
+    delete context.shouldBeDelete[name];
   }
 
   if (!data) {
@@ -1801,7 +1942,7 @@ Observe.scan = function (el, structure, shouldBeDelete) {
     el.setAttribute('name', data.id);
   }
 
-  Observe[schema.type].call(this, el, data, structure, shouldBeDelete);
+  Observe[schema.type].call(this, context, el, data);
 
   schema.attrs.forEach(function (attr) {
     Observe[attr.type].call(this, el, data, attr);
@@ -1816,13 +1957,13 @@ Observe.scan = function (el, structure, shouldBeDelete) {
 };
 
 /**
+ * @param {Object} context
  * @param {Element} el
  * @param {Data} data
- * @param {Object} structure
- * @param {Object} shouldBeDelete
  * @api private
  */
-Observe.section = function (el, data, structure, shouldBeDelete) {
+Observe.section = function (context, el, data) {
+  var structure = context.structure;
   var p = [];
 
   utils.each(el.children, function (child) {
@@ -1838,7 +1979,7 @@ Observe.section = function (el, data, structure, shouldBeDelete) {
     }
 
     if (/^(paragraphs?|figure)$/.test(schema.type)) {
-      p.push(Observe.scan.call(this, child, structure, shouldBeDelete).id);
+      p.push(Observe.scan.call(this, context, child).id);
     }
 
   }.bind(this));
@@ -1848,13 +1989,13 @@ Observe.section = function (el, data, structure, shouldBeDelete) {
 };
 
 /**
+ * @param {Object} context
  * @param {Element} el
  * @param {Data} data
- * @param {Object} structure
- * @param {Object} shouldBeDelete
  * @api private
  */
-Observe.paragraphs = function (el, data, structure, shouldBeDelete) {
+Observe.paragraphs = function (context, el, data) {
+  var structure = context.structure;
   var p = [];
 
   utils.each(el.children, function (child) {
@@ -1866,7 +2007,7 @@ Observe.paragraphs = function (el, data, structure, shouldBeDelete) {
     }
 
     if (schema.type === 'paragraph') {
-      p.push(Observe.scan.call(this, child, structure, shouldBeDelete).id);
+      p.push(Observe.scan.call(this, context, child).id);
     }
   }.bind(this));
 
@@ -1875,25 +2016,23 @@ Observe.paragraphs = function (el, data, structure, shouldBeDelete) {
 };
 
 /**
+ * @param {Object} context
  * @param {Element} el
  * @param {Data} data
- * @param {Object} structure
- * @param {Object} shouldBeDelete
  * @api private
  */
-Observe.figure = function (el, data) {
+Observe.figure = function (context, el, data) {
   var figureType = this.getFigureType(el);
   figureType.updateData(el, data);
 };
 
 /**
+ * @param {Object} context
  * @param {Element} el
  * @param {Data} data
- * @param {Object} structure
- * @param {Object} shouldBeDelete
  * @api private
  */
-Observe.paragraph = function (el, data, structure, shouldBeDelete) {
+Observe.paragraph = function (context, el, data) {
   var detail = [];
 
   utils.each(el.children, function (child) {
@@ -1905,7 +2044,7 @@ Observe.paragraph = function (el, data, structure, shouldBeDelete) {
     }
 
     if (schema.type === 'detail') {
-      detail.push(Observe.scan.call(this, child, structure, shouldBeDelete).id);
+      detail.push(Observe.scan.call(this, context, child).id);
     }
   }.bind(this));
 
@@ -1913,11 +2052,12 @@ Observe.paragraph = function (el, data, structure, shouldBeDelete) {
 };
 
 /**
+ * @param {Object} context
  * @param {Element} el
  * @param {Data} data
  * @api private
  */
-Observe.detail = function (el, data) {
+Observe.detail = function (context, el, data) {
   var offset = Observe.getOffset(el);
   data.set('start', offset.start);
   data.set('end', offset.end);
@@ -1968,7 +2108,7 @@ Observe.handleUnknownElement = function (el) {
 
 /**
  * @param {Element} el
- * @return {Number}
+ * @returns {Number}
  * @api private
  */
 Observe.getOffset = function (el) {
@@ -2003,7 +2143,7 @@ Observe.getOffset = function (el) {
 };
 
 /**
- * @return {Object}
+ * @returns {Object}
  * @api public
  */
 Observe.prototype.toJSON = function () {
@@ -2036,12 +2176,12 @@ Observe.prototype.toJSON = function () {
     
     d.name = name;
 
-    d.detail = (d.detail || []).map(detail);
+    d.detail = (d.detail || []).map(getDetailData);
 
     json.paragraphs.push(d);
   });
 
-  function detail(name) {
+  function getDetailData(name) {
     var detail = data[name];
     var d = detail && detail.toJSON() || {};
     
@@ -2334,7 +2474,7 @@ HtmlBuilder.createDetails = function (paragraph, container) {
 
 /**
  * @param {Data} data
- * @return {Element}
+ * @returns {Element}
  * @api private
  */
 HtmlBuilder.createElement = function (data) {
@@ -2449,6 +2589,7 @@ Editor.prototype.start = function () {
 
   return this.compose([
     preventDefault(),
+    commandA(this),
     handleParagraph(this),
     handleList(this),
     handleFigure(this),
@@ -2494,20 +2635,18 @@ Editor.prototype.onKeydown = function (e) {
   ctx.event = e;
   ctx.prevent = utils.preventDefault.bind(null, e);
 
-  setTimeout(function () {
-    this.sync();
-    this.walk();
-  }.bind(this));
-
   this.exec(ctx, function (e) {
     if (e) {
       this.emit('error', e);
     }
   }.bind(this));
+
+  this.sync();
+  this.walk();
 };
 
 /**
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 Editor.prototype.isEmpty = function () {
@@ -2547,7 +2686,7 @@ Editor.prototype.handleEmpty = function () {
  * @api private
  */
 Editor.prototype.walk = function () {
-  var els = editor.el.querySelectorAll('[name]');
+  var els = this.el.querySelectorAll('[name]');
   var context = {
     editor: this
   };
@@ -2566,4 +2705,4 @@ Editor.prototype.walk = function () {
 
   this.emit('walkEnd', context);
 };
-})(this);
+}(this));

@@ -3,7 +3,7 @@ function Caret(editor) {
 }
 
 /**
- * @return {Node}
+ * @returns {Node}
  * @api public
  */
 Caret.prototype.focusNode = function () {
@@ -12,7 +12,7 @@ Caret.prototype.focusNode = function () {
 
 /**
  * @param {String} tagName
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.focusElement = function (tagName) {
@@ -42,7 +42,7 @@ Caret.prototype.focusElement = function (tagName) {
 };
 
 /**
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.focusSection = function () {
@@ -50,7 +50,7 @@ Caret.prototype.focusSection = function () {
 };
 
 /**
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.focusParagraph = function () {
@@ -58,7 +58,7 @@ Caret.prototype.focusParagraph = function () {
 };
 
 /**
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.focusParagraphs = function () {
@@ -66,7 +66,7 @@ Caret.prototype.focusParagraphs = function () {
 };
 
 /**
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.focusFigure = function () {
@@ -74,7 +74,7 @@ Caret.prototype.focusFigure = function () {
 };
 
 /**
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.focusDetail = function () {
@@ -83,7 +83,7 @@ Caret.prototype.focusDetail = function () {
 
 /**
  * @param {String} type
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.focusType = function (type) {
@@ -109,7 +109,7 @@ Caret.prototype.focusType = function (type) {
 
 /**
  * @param {Node} node
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.nextElement = function (node) {
@@ -146,11 +146,11 @@ Caret.prototype.focusTo = function (el) {
     el.innerHTML = '\uffff';
     this.moveToStart(el);
     el.innerHTML = '';
-  };
+  }
 };
 
 /**
- * @return {String}
+ * @returns {String}
  * @api public
  */
 Caret.prototype.textBefore = function () {
@@ -166,7 +166,7 @@ Caret.prototype.textBefore = function () {
 };
 
 /**
- * @return {String}
+ * @returns {String}
  * @api public
  */
 Caret.prototype.textAfter = function () {
@@ -253,7 +253,7 @@ Caret.prototype.moveToEnd = function (el, offset) {
 
 /**
  * @param {Element} el
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 Caret.prototype.split = function (el) {
@@ -325,6 +325,17 @@ Caret.prototype.selectAllText = function (el) {
 };
 
 /**
+ * @param {Element} el
+ * @api public
+ */
+Caret.prototype.selectAll = function (el) {
+  var firstNode = utils.firstNode(el);
+  var lastNode = utils.lastNode(el);
+
+  editor.caret.select(firstNode, lastNode);
+};
+
+/**
  *     caret.select(node)
  *     caret.select(node, offset)
  *     caret.select(startNode, endNode)
@@ -338,6 +349,31 @@ Caret.prototype.select = function () {
   var startNode, startOffset, endNode, endOffset;
   var range;
 
+  // Chrome 無法選取空 TextNode
+  // 所以這邊填入 \uffff 當作 placeholder
+
+  var insertPlaceholder = function () {
+    if (utils.isEmpty(startNode)) {
+      utils.setNodeContent(startNode, '\uffff');
+    }
+
+    if (utils.isEmpty(endNode)) {
+      utils.setNodeContent(endNode, '\uffff');
+    }
+  };
+
+  var removePlaceholder = function () {
+    var startNodeContent = utils.getTextContent(startNode);
+    var endNodeContent = utils.getTextContent(endNode);
+    var placeholder = /\uffff/g;
+
+    startNodeContent = startNodeContent.replace(placeholder, '');
+    endNodeContent = endNodeContent.replace(placeholder, '');
+
+    utils.setNodeContent(startNode, startNodeContent);
+    utils.setNodeContent(endNode, endNodeContent);
+  };
+
   switch (arguments.length) {
   case 1:
     startNode = endNode = arguments[0];
@@ -348,16 +384,19 @@ Caret.prototype.select = function () {
     if (typeof arguments[1] === 'number') {
       startNode = endNode = arguments[0];
       startOffset = endOffset = arguments[1];
+      insertPlaceholder();
     } else {
       startNode = arguments[0];
       startOffset = 0;
       endNode = arguments[1];
-      endOffset = utils.getTextContent(startNode).length;
+      insertPlaceholder();
+      endOffset = utils.getTextContent(endNode).length;
     }
     break;
   case 3:
     startNode = arguments[0];
     endNode = arguments[1];
+    insertPlaceholder();
     startOffset = 0;
     endOffset = utils.getTextContent(startNode).length;
     break;
@@ -366,6 +405,7 @@ Caret.prototype.select = function () {
     startOffset = arguments[1];
     endNode = arguments[2];
     endOffset = arguments[3];
+    insertPlaceholder();
     break;
   }
 
@@ -378,6 +418,8 @@ Caret.prototype.select = function () {
 
   selection.removeAllRanges();
   selection.addRange(range);
+
+  removePlaceholder();
 };
 
 /**
@@ -403,10 +445,14 @@ Caret.prototype.closestElement = function () {
 
 /**
  * @param {Element} el
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 Caret.prototype.atElementStart = function (el) {
+  if (!el.childNodes.length) {
+    return true;
+  }
+
   var selection = document.getSelection();
   var focusNode = selection.focusNode;
   var offset = selection.focusOffset;
@@ -420,10 +466,14 @@ Caret.prototype.atElementStart = function (el) {
 
 /**
  * @param {Element} el
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 Caret.prototype.atElementEnd = function (el) {
+  if (!el.childNodes.length) {
+    return true;
+  }
+
   var selection = document.getSelection();
   var focusNode = selection.focusNode;
   var offset = selection.focusOffset;

@@ -16,6 +16,11 @@ Observe.prototype.sync = function () {
 
   var shouldBeDelete = {};
 
+  var context = {
+    structure: structure,
+    shouldBeDelete: shouldBeDelete
+  };
+
   Object
     .keys(data)
     .forEach(function (name) {
@@ -23,7 +28,7 @@ Observe.prototype.sync = function () {
     });
 
   utils.each(this.el.children, function (el) {
-    Observe.scan.call(this, el, structure, shouldBeDelete);
+    Observe.scan.call(this, context, el);
   }.bind(this));
 
   Object
@@ -36,13 +41,12 @@ Observe.prototype.sync = function () {
 };
 
 /**
+ * @param {Object} context
  * @param {Element} el
- * @param {Object} structure
- * @param {Object} shouldBeDelete
- * @return {Data}
+ * @returns {Data}
  * @api private
  */
-Observe.scan = function (el, structure, shouldBeDelete) {
+Observe.scan = function (context, el) {
   var tagName = el.tagName.toLowerCase();
   var name = el.getAttribute('name');
   var data = this.data[name];
@@ -56,7 +60,7 @@ Observe.scan = function (el, structure, shouldBeDelete) {
   Observe.checkAndRemoveStrangeElement.call(this, el);
 
   if (name) {
-    delete shouldBeDelete[name];
+    delete context.shouldBeDelete[name];
   }
 
   if (!data) {
@@ -71,7 +75,7 @@ Observe.scan = function (el, structure, shouldBeDelete) {
     el.setAttribute('name', data.id);
   }
 
-  Observe[schema.type].call(this, el, data, structure, shouldBeDelete);
+  Observe[schema.type].call(this, context, el, data);
 
   schema.attrs.forEach(function (attr) {
     Observe[attr.type].call(this, el, data, attr);
@@ -86,13 +90,13 @@ Observe.scan = function (el, structure, shouldBeDelete) {
 };
 
 /**
+ * @param {Object} context
  * @param {Element} el
  * @param {Data} data
- * @param {Object} structure
- * @param {Object} shouldBeDelete
  * @api private
  */
-Observe.section = function (el, data, structure, shouldBeDelete) {
+Observe.section = function (context, el, data) {
+  var structure = context.structure;
   var p = [];
 
   utils.each(el.children, function (child) {
@@ -108,7 +112,7 @@ Observe.section = function (el, data, structure, shouldBeDelete) {
     }
 
     if (/^(paragraphs?|figure)$/.test(schema.type)) {
-      p.push(Observe.scan.call(this, child, structure, shouldBeDelete).id);
+      p.push(Observe.scan.call(this, context, child).id);
     }
 
   }.bind(this));
@@ -118,13 +122,13 @@ Observe.section = function (el, data, structure, shouldBeDelete) {
 };
 
 /**
+ * @param {Object} context
  * @param {Element} el
  * @param {Data} data
- * @param {Object} structure
- * @param {Object} shouldBeDelete
  * @api private
  */
-Observe.paragraphs = function (el, data, structure, shouldBeDelete) {
+Observe.paragraphs = function (context, el, data) {
+  var structure = context.structure;
   var p = [];
 
   utils.each(el.children, function (child) {
@@ -136,7 +140,7 @@ Observe.paragraphs = function (el, data, structure, shouldBeDelete) {
     }
 
     if (schema.type === 'paragraph') {
-      p.push(Observe.scan.call(this, child, structure, shouldBeDelete).id);
+      p.push(Observe.scan.call(this, context, child).id);
     }
   }.bind(this));
 
@@ -145,25 +149,23 @@ Observe.paragraphs = function (el, data, structure, shouldBeDelete) {
 };
 
 /**
+ * @param {Object} context
  * @param {Element} el
  * @param {Data} data
- * @param {Object} structure
- * @param {Object} shouldBeDelete
  * @api private
  */
-Observe.figure = function (el, data) {
+Observe.figure = function (context, el, data) {
   var figureType = this.getFigureType(el);
   figureType.updateData(el, data);
 };
 
 /**
+ * @param {Object} context
  * @param {Element} el
  * @param {Data} data
- * @param {Object} structure
- * @param {Object} shouldBeDelete
  * @api private
  */
-Observe.paragraph = function (el, data, structure, shouldBeDelete) {
+Observe.paragraph = function (context, el, data) {
   var detail = [];
 
   utils.each(el.children, function (child) {
@@ -175,7 +177,7 @@ Observe.paragraph = function (el, data, structure, shouldBeDelete) {
     }
 
     if (schema.type === 'detail') {
-      detail.push(Observe.scan.call(this, child, structure, shouldBeDelete).id);
+      detail.push(Observe.scan.call(this, context, child).id);
     }
   }.bind(this));
 
@@ -183,11 +185,12 @@ Observe.paragraph = function (el, data, structure, shouldBeDelete) {
 };
 
 /**
+ * @param {Object} context
  * @param {Element} el
  * @param {Data} data
  * @api private
  */
-Observe.detail = function (el, data) {
+Observe.detail = function (context, el, data) {
   var offset = Observe.getOffset(el);
   data.set('start', offset.start);
   data.set('end', offset.end);
@@ -238,7 +241,7 @@ Observe.handleUnknownElement = function (el) {
 
 /**
  * @param {Element} el
- * @return {Number}
+ * @returns {Number}
  * @api private
  */
 Observe.getOffset = function (el) {
@@ -273,7 +276,7 @@ Observe.getOffset = function (el) {
 };
 
 /**
- * @return {Object}
+ * @returns {Object}
  * @api public
  */
 Observe.prototype.toJSON = function () {
@@ -306,12 +309,12 @@ Observe.prototype.toJSON = function () {
     
     d.name = name;
 
-    d.detail = (d.detail || []).map(detail);
+    d.detail = (d.detail || []).map(getDetailData);
 
     json.paragraphs.push(d);
   });
 
-  function detail(name) {
+  function getDetailData(name) {
     var detail = data[name];
     var d = detail && detail.toJSON() || {};
     

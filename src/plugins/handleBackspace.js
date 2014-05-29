@@ -81,7 +81,7 @@ var handleBackspace = function (editor) {
 
         if (utils.isType('section', needToRemove)) {
           // section 的情況是要讓游標在畫面上跟著目前 element 移動
-          editor.caret.moveToStart(firstChild);
+          editor.caret.focusTo(firstChild);
         } else if (lastNode) {
           // 段落的情況是要讓兩個 element 接起來後，游標移動到合併的位置
           editor.caret.moveToStart(lastNode, offset);
@@ -106,6 +106,22 @@ var handleBackspace = function (editor) {
     }
   };
 
+  var shouldCombineList = function () {
+    var el = editor.caret.focusParagraphs();
+    var next = el && el.nextElementSibling;
+    
+    return next
+      && next.tagName === el.tagName;
+  };
+
+  var combineList = function () {
+    var el = editor.caret.focusParagraphs();
+    var next = el.nextElementSibling;
+    
+    utils.moveChildNodes(next, el);
+    utils.removeElement(next);
+  };
+
   return function (next) {
     if (this.key !== 'backspace') {
       return next();
@@ -128,6 +144,11 @@ var handleBackspace = function (editor) {
 
       utils.removeElement(this.figure);
       editor.caret.moveToEnd(previous);
+    }
+
+    // 兩個 list 相鄰的時候應該要合併他們
+    if (shouldCombineList()) {
+      combineList();
     }
 
     next();

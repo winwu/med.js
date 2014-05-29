@@ -45,6 +45,7 @@ Editor.prototype.start = function () {
 
   return this.compose([
     preventDefault(),
+    commandA(this),
     handleParagraph(this),
     handleList(this),
     handleFigure(this),
@@ -90,20 +91,18 @@ Editor.prototype.onKeydown = function (e) {
   ctx.event = e;
   ctx.prevent = utils.preventDefault.bind(null, e);
 
-  setTimeout(function () {
-    this.sync();
-    this.walk();
-  }.bind(this));
-
   this.exec(ctx, function (e) {
     if (e) {
       this.emit('error', e);
     }
   }.bind(this));
+
+  this.sync();
+  this.walk();
 };
 
 /**
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 Editor.prototype.isEmpty = function () {
@@ -143,7 +142,7 @@ Editor.prototype.handleEmpty = function () {
  * @api private
  */
 Editor.prototype.walk = function () {
-  var els = editor.el.querySelectorAll('[name]');
+  var els = this.el.querySelectorAll('[name]');
   var context = {
     editor: this
   };

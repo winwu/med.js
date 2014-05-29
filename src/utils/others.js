@@ -67,16 +67,19 @@ utils.equal = function (a, b) {
       a = a.slice().sort();
       b = b.slice().sort();
       return a.join() === b.join();
-    } else {
-      return false;
     }
+    return false;
   }
 
   if (typeof a === 'object') {
-    if (typeof b === 'object') {
-      var prop, notEqual;
+    if (typeof b !== 'object') {
+      return false;
+    }
 
-      for (prop in a) {
+    var prop, notEqual;
+
+    for (prop in a) {
+      if (a.hasOwnProperty(prop)) {
         notEqual = a.hasOwnProperty(prop)
           && b.hasOwnProperty(prop)
           && !utils.equal(a[prop], b[prop]);
@@ -85,11 +88,9 @@ utils.equal = function (a, b) {
           return false;
         }
       }
-
-      return true;
     }
 
-    return false;
+    return true;
   }
 
   return false;

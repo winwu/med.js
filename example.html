@@ -20,11 +20,14 @@
   <div class="editor markdown-body">
     <section>
       <p>line 1</p>
-      <ul>
+      <ol>
         <li><i>item</i> 1
         <li>item <b>2</b>
-      </ul>
+      </ol>
+      <h2>title</h2>
       <p>line 2</p>
+      <h3>title</h3>
+      <p>line 3</p>
       <blockquote>blockquote <i>detail</i> <b>strong</b></blockquote>
       <figure contenteditable="false">
         <img src="http://html5doctor.com/wp-content/uploads/2010/03/kookaburra.jpg" />
@@ -32,6 +35,7 @@
         <img src="http://html5doctor.com/wp-content/uploads/2010/03/lorikeet.jpg" />
         <figcaption>Australian Birds. From left to right, Kookburra, Pelican and Rainbow Lorikeet. Originals by <a href="http://www.flickr.com/photos/rclark/">Richard Clark</a></figcaption>
       </figure>
+      <p><br /></p>
     </section>
   </div>
   <script src="bower_components/polyfills/element.js"></script>
@@ -45,8 +49,8 @@
     editor.use(editor.start());
     editor.use(editor.end());
 
-    editor.on('error', function (e) {
-      console.log(e);
+    editor.on('error', function (err) {
+      console.error(err);
     });
 
     editor.on('changed', function () {

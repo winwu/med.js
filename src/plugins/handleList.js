@@ -1,4 +1,42 @@
 var handleList = function (editor) {
+  var leaveList = function (ctx) {
+    ctx.prevent();
+
+    var el = ctx.paragraph;
+    var p = document.createElement('p');
+
+    p.innerHTML = '<br />';
+
+    if (utils.isLastElementOf(ctx.paragraphs, el)) {
+      // 是最後一個 item
+      // 需要把新 p 塞到 list 後面
+
+      ctx.section.insertBefore(p, ctx.paragraphs.nextSibling);
+      utils.removeElement(el);
+    } else {
+      // 在 list 中間
+      // 需要把 list 分半，然後在中間插入新 p
+
+      utils.removeElement(el);
+      editor.caret.split(ctx.paragraphs);
+      ctx.section.insertBefore(p, ctx.paragraphs);
+    }
+
+    editor.caret.moveToStart(p);
+  };
+
+  var leaveAndMoveContentToNewElement = function (ctx) {
+    var el = ctx.paragraph;
+    var p = document.createElement('p');
+
+    p.innerHTML = el.innerHTML;
+    utils.removeElement(el);
+
+    ctx.section.insertBefore(p, ctx.paragraphs.nextSibling);
+
+    editor.caret.moveToStart(p);
+  };
+
   return function (next) {
     var el = this.paragraph;
 
@@ -10,38 +48,23 @@ var handleList = function (editor) {
     // 所以必須自己處理換行動作
     if (this.key === 'enter' && !this.shift) {
       if (utils.isEmpty(el)) {
+
         // 空行，要讓使用者跳離 ul/ol
+        leaveList(this);
 
-        this.prevent();
-
-        var p = document.createElement('p');
-
-        this.section.insertBefore(p, this.paragraphs.nextSibling);
-        utils.removeElement(el);
-
-        setTimeout(function () {
-          editor.caret.moveToStart(p);
-        });
       } else if (editor.caret.atElementEnd(el)) {
+
         // 行尾換行預設動作會自動插入 <p>
-
         this.prevent();
-
         editor.caret.split(el);
-        editor.caret.moveToStart(el);
-      } else if (editor.caret.atElementStart(el)) {
+
+      } else if (editor.caret.atElementStart(el)
+          && utils.isLastElementOf(this.paragraphs, el)) {
+        
         // 行首換行跳離 <ul>/<ol>
-
         this.prevent();
+        leaveAndMoveContentToNewElement(this);
 
-        var p = document.createElement('p');
-
-        p.innerHTML = el.innerHTML;
-        utils.removeElement(el);
-
-        this.section.insertBefore(p, this.paragraphs.nextSibling);
-
-        editor.caret.moveToStart(p);
       }
     }
 

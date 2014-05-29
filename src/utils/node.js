@@ -1,6 +1,6 @@
 /**
  * @param {Node} node
- * @return {String}
+ * @returns {String}
  * @api public
  */
 utils.getTextContent = function (node) {
@@ -27,8 +27,20 @@ utils.getTextContent = function (node) {
 };
 
 /**
+ * @param {Node} node
+ * @api public
+ */
+utils.setNodeContent = function (node, content) {
+  if (utils.isTextNode(node)) {
+    node.data = content;
+  } else {
+    node.innerHTML = content;
+  }
+};
+
+/**
  * @param {Element} el
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 utils.isEmpty = function (el) {
@@ -40,7 +52,7 @@ utils.isEmpty = function (el) {
 
 /**
  * @param {Element} el
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 utils.isNotEmpty = function (el) {
@@ -50,7 +62,7 @@ utils.isNotEmpty = function (el) {
 /**
  * @param {String} tagName
  * @param {Element} el
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 utils.isTag = function (tagName, el) {
@@ -81,7 +93,7 @@ utils.isAllowedToHaveContent = function (el) {
 
 /**
  * @param {Element} el
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 utils.isLastChild = function (el) {
@@ -149,7 +161,7 @@ utils.moveChildNodes = function (src, dest) {
 /**
  * @param {String|String[]} types
  * @param {Element} el
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 utils.isType = function (types, el) {
@@ -164,7 +176,7 @@ utils.isType = function (types, el) {
 
 /**
  * @param {Node} node
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 utils.isElementNode = function (node) {
@@ -173,7 +185,7 @@ utils.isElementNode = function (node) {
 
 /**
  * @param {Node} node
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 utils.isTextNode = function (node) {
@@ -183,7 +195,7 @@ utils.isTextNode = function (node) {
 /**
  * @param {Node} node
  * @param {Node} ancestor
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 utils.isAncestorOf = function (node, ancestor) {
@@ -191,9 +203,18 @@ utils.isAncestorOf = function (node, ancestor) {
   return !!~parents.indexOf(ancestor);
 };
 
+/**
+ * @param {Node} node
+ * @returns {Element[]}
+ * @api public
+ */
 utils.getParents = function (node) {
   var parents = [];
   var parentNode;
+
+  if (!node) {
+    return parents;
+  }
 
   while (parentNode = node.parentNode) {
     parents.push(parentNode);
@@ -205,7 +226,7 @@ utils.getParents = function (node) {
 
 /**
  * @param {Node} node
- * @return {Number}
+ * @returns {Number}
  * @api public
  */
 utils.nodeContentLength = function (node) {
@@ -214,7 +235,7 @@ utils.nodeContentLength = function (node) {
 
 /**
  * @param {Node} node
- * @return {Node}
+ * @returns {Node}
  * @api public
  */
 utils.lastNode = function (node) {
@@ -223,7 +244,7 @@ utils.lastNode = function (node) {
 
 /**
  * @param {Node} node
- * @return {Text}
+ * @returns {Text}
  * @api public
  */
 utils.lastTextNode = function (node) {
@@ -235,7 +256,7 @@ utils.lastTextNode = function (node) {
 
 /**
  * @param {Node} node
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 utils.lastElement = function (node) {
@@ -244,7 +265,7 @@ utils.lastElement = function (node) {
 
 /**
  * @param {Node} node
- * @return {Node}
+ * @returns {Node}
  * @api public
  */
 utils.firstNode = function (node) {
@@ -253,7 +274,7 @@ utils.firstNode = function (node) {
 
 /**
  * @param {Node} node
- * @return {Text}
+ * @returns {Text}
  * @api public
  */
 utils.firstTextNode = function (node) {
@@ -265,7 +286,7 @@ utils.firstTextNode = function (node) {
 
 /**
  * @param {Node} node
- * @return {Element}
+ * @returns {Element}
  * @api public
  */
 utils.firstElement = function (node) {
@@ -275,7 +296,7 @@ utils.firstElement = function (node) {
 /**
  * @param {Element} container
  * @param {Element} el
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 utils.isLastElementOf = function (container, el) {
@@ -286,7 +307,7 @@ utils.isLastElementOf = function (container, el) {
 /**
  * @param {Element} container
  * @param {Element} el
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 utils.isFirstElementOf = function (container, el) {
