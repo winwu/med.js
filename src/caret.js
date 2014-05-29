@@ -332,7 +332,7 @@ Caret.prototype.selectAll = function (el) {
   var firstNode = utils.firstNode(el);
   var lastNode = utils.lastNode(el);
 
-  editor.caret.select(firstNode, lastNode);
+  this.select(firstNode, lastNode);
 };
 
 /**
