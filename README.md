@@ -1,90 +1,15 @@
-med.js
+med.js [![Build Status](https://drone.io/github.com/poying/med.js/status.png)](https://drone.io/github.com/poying/med.js/latest)
 ======
 
-[![Build Status](https://drone.io/github.com/poying/med.js/status.png)](https://drone.io/github.com/poying/med.js/latest)
+> 仿 Medium 式的 HTML5 編輯器 framework。
 
-仿 Medium 式的 HTML5 編輯器 framework。
+Medium 編輯器強大的地方在於他背後幫使用者處理掉了很多麻煩問題，使用者可以很直覺得使用這個平台，完全專注於內容編輯。也是這樣，所以友好幾套仿 Medium 的編輯器出現，像是 [medium-editor](https://github.com/daviferreira/medium-editor/)、[Medium.js](https://github.com/jakiestfu/Medium.js/)，不過他們都有一個公通問題，只仿了表面，沒有考慮到輸出資料的結構，Medium 編輯器會那麼強大的主要原因之一就是輸出資料的結構，有漂亮的結構才能有效的用程式處理內容（可惜的是大家好像都不怎麼看重這點，只要有相似外觀就好了...）。med.js 就是在發現了這些問題後決定開始撰寫。
 
-> med.js 只是一個基本的框架，其他功能需要透過 plugin 擴充
+## 特色
 
-## Plugins
-
-* [med-toolbar](https://github.com/poying/med-toolbar)
-
-## API
-
-### Basic
-
-#### editor#sync()
-
-同步 HTML 內容與編輯器保存的資料
-
-#### editor#toJSON()
-
-取得編輯器資料
-
-#### editor#fromJSON(json)
-
-匯入編輯器資料
-
-### Events
-
-* changed
-* walkStart
-* walk
-* walkEnd
-
-#### editor#on(event, handler)
-
-#### editor#once(event, handler)
-
-#### editor#off(event, handler)
-
-#### editor#emit(event)
-
-### Middleware
-
-#### editor#use(middleware)
-
-context:
-
-```javascript
-{
-  event: KeyboardEvent,
-  editor: editor,
-  prevent: preventEvent
-}
-```
-
-### Caret (editor#caret)
-
-#### caret#focusElement([tagName])
-
-回傳當前指標所在的 Element
-
-#### caret#focusTo(el)
-
-#### caret#textBefore(el)
-
-#### caret#textAfter(el)
-
-#### caret#moveToStart(el)
-
-#### caret#moveToEnd(el)
-
-#### caret#split(el)
-
-#### caret#save()
-
-保存當前選取範圍
-
-#### caret#restore()
-
-恢復選取範圍
-
-#### caret#selectAllText(el)
-
-#### caret#insertElement(el)
+1. 資料輸出結構
+2. 輕量
+3. Plugin，只專注於維持結構，其他事情都交給 plugin 處理
 
 ## License
 
