@@ -239,7 +239,8 @@ utils.nodeContentLength = function (node) {
  * @api public
  */
 utils.lastNode = function (node) {
-  return node.childNodes[node.childNodes.length - 1];
+  return node
+    && node.childNodes[node.childNodes.length - 1];
 };
 
 /**
@@ -260,7 +261,8 @@ utils.lastTextNode = function (node) {
  * @api public
  */
 utils.lastElement = function (node) {
-  return node.children[node.children.length - 1];
+  return node
+    && node.children[node.children.length - 1];
 };
 
 /**
@@ -269,7 +271,8 @@ utils.lastElement = function (node) {
  * @api public
  */
 utils.firstNode = function (node) {
-  return node.childNodes[0];
+  return node
+    && node.childNodes[0];
 };
 
 /**
@@ -290,7 +293,8 @@ utils.firstTextNode = function (node) {
  * @api public
  */
 utils.firstElement = function (node) {
-  return node.children[0];
+  return node
+    && node.children[0];
 };
 
 /**
