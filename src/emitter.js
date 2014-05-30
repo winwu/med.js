@@ -1,3 +1,7 @@
+'use strict';
+
+module.exports = Emitter;
+
 function Emitter() {
   this.events = {};
 }

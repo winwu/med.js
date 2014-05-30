@@ -1,4 +1,8 @@
-var handleBackspace = function (editor) {
+'use strict';
+
+var utils = require('../utils');
+
+module.exports = function (editor) {
   var atElementStart = function (ctx) {
     var selection = document.getSelection();
     var el = ctx.paragraph;

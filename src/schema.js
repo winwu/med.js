@@ -1,4 +1,6 @@
-var schema = {
+'use strict';
+
+var schema = module.exports = {
   section: {
     type: 'section'
   },

@@ -1,4 +1,6 @@
-var preventDefault = function () {
+'use strict';
+
+module.exports = function () {
   return function (next) {
     var el = this.element;
 

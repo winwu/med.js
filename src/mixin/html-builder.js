@@ -1,3 +1,11 @@
+'use strict';
+
+var Data = require('../data');
+var schema = require('../schema');
+var utils = require('../utils');
+
+module.exports = HtmlBuilder;
+
 function HtmlBuilder() {
 }
 

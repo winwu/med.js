@@ -1,11 +1,31 @@
+'use strict';
+
+module.exports = Editor;
+
+var Emitter = require('./emitter');
+var Caret = require('./caret');
+var Middleware = require('./mixin/middleware');
+var Observe = require('./mixin/observe');
+var HtmlBuilder = require('./mixin/html-builder');
+var Figure = require('./mixin/figure');
+var utils = require('./utils');
+var plugins = require('./plugins');
+var defaultOptions = require('./default-options');
+
+// extends
 Editor.prototype = Object.create(Emitter.prototype);
+
+// mixin
 utils.mixin(Editor.prototype, Middleware.prototype);
 utils.mixin(Editor.prototype, Observe.prototype);
 utils.mixin(Editor.prototype, HtmlBuilder.prototype);
 utils.mixin(Editor.prototype, Figure.prototype);
 
 function Editor(options) {
+  // parent
   Emitter.call(this);
+
+  // init mixin
   Middleware.call(this);
   Observe.call(this);
   HtmlBuilder.call(this);
@@ -30,27 +50,27 @@ function Editor(options) {
   this.bindEvents();
   this.handleEmpty();
 
-  this.use(initContext());
+  this.use(plugins.initContext());
+
+  plugins.removeExtraNodes(this);
+  plugins.renameElements(this);
+  plugins.removeInlineStyle(this);
+  plugins.handleEmptyParagraph(this);
+  plugins.refocus(this);
 }
 
 /**
  * @api public
  */
 Editor.prototype.start = function () {
-  removeExtraNodes(this);
-  renameElements(this);
-  removeInlineStyle(this);
-  handleEmptyParagraph(this);
-  refocus(this);
-
   return this.compose([
-    preventDefault(),
-    commandA(this),
-    handleParagraph(this),
-    handleList(this),
-    handleFigure(this),
-    handleBlockquote(this),
-    handleBackspace(this)
+    plugins.preventDefault(),
+    plugins.commandA(this),
+    plugins.handleParagraph(this),
+    plugins.handleList(this),
+    plugins.handleFigure(this),
+    plugins.handleBlockquote(this),
+    plugins.handleBackspace(this)
   ]);
 };
 
@@ -59,11 +79,9 @@ Editor.prototype.start = function () {
  */
 Editor.prototype.end = function () {
   return this.compose([
-    createNewParagraph()
+    plugins.createNewParagraph()
   ]);
 };
-
-Editor.prototype.schema = schema;
 
 /**
  * @api private

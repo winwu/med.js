@@ -1,3 +1,9 @@
+'use strict';
+
+var utils = require('./utils');
+
+module.exports = Caret;
+
 function Caret(editor) {
   this.editor = editor;
 }

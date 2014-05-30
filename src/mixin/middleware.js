@@ -1,3 +1,7 @@
+'use strict';
+
+module.exports = Middleware;
+
 function Middleware() {
   this.middleware = [];
 }

@@ -1,4 +1,8 @@
-var handleEmptyParagraph = function (editor) {
+'use strict';
+
+var utils = require('../utils');
+
+module.exports = function (editor) {
   editor.on('walk', function (ctx) {
     var el = ctx.element;
 

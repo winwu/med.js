@@ -1,4 +1,8 @@
-var handleBlockquote = function (editor) {
+'use strict';
+
+var utils = require('../utils');
+
+module.exports = function (editor) {
   return function (next) {
     var el = this.paragraph;
 

@@ -1,4 +1,6 @@
-var defaultOptions = {
+'use strict';
+
+module.exports = {
   genName: function () {
     var format = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
     return format.replace(/[xy]/g, function (c) {
