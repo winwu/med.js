@@ -73,6 +73,11 @@ var handleBackspace = function (editor) {
         lastNode = previous.childNodes[previous.childNodes.length - 1];
         offset = utils.getTextContent(lastNode).length;
 
+        if (utils.isElementNode(lastNode) && utils.isTag('br', lastNode)) {
+          utils.removeElement(lastNode);
+          lastNode = null;
+        }
+
         utils.removeEmptyElements(previous);
 
         utils.moveChildNodes(needToRemove, previous);
