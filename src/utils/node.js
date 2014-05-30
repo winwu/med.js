@@ -44,11 +44,23 @@ utils.setNodeContent = function (node, content) {
  * @api public
  */
 utils.isEmpty = function (el) {
-  if (utils.isTag('br', el)) {
+  if (!utils.isAllowedToHaveContent(el)) {
     return false;
   }
   return !utils.getTextContent(el).trim();
 };
+
+/**
+ * @parame {Element} el
+ * @returns {Boolean}
+ * @api public
+ */
+utils.isStrictEmpty = function (el) {
+  if (!utils.isAllowedToHaveContent(el)) {
+    return false;
+  }
+  return !el.innerHTML.trim();
+}
 
 /**
  * @param {Element} el
@@ -57,6 +69,15 @@ utils.isEmpty = function (el) {
  */
 utils.isNotEmpty = function (el) {
   return !utils.isEmpty(el);
+};
+
+/**
+ * @param {Element} el
+ * @returns {Boolean}
+ * @api public
+ */
+utils.isNotStrictEmpty = function (el) {
+  return !utils.isStrictEmpty(el);
 };
 
 /**
@@ -105,17 +126,29 @@ utils.isLastChild = function (el) {
  * @api public
  */
 utils.removeEmptyElements = function (el) {
-  var shouldIgnore = function (child) {
-    return utils.isType('figure', child)
-      || !utils.isAllowedToHaveContent(child);
+  var shouldRemoveParagraphs = function (child) {
+    return utils.isType('paragraphs', child)
+      && utils.isEmpty(child);
+  };
+
+  var shouldRemoveP = function (child) {
+    return utils.isTag('p', child)
+      && utils.isEmpty(child)
+      && !utils.isFirstElementOf(child.parentElement, child);
+  };
+
+  var shouldRemoveParagraph = function (child) {
+    return utils.isType('paragraph', child)
+      && utils.isStrictEmpty(child);
   };
 
   utils.each(el.children, function (child) {
-    if (shouldIgnore(child)) {
-      return;
-    }
-    if (utils.isEmpty(child)) {
-      el.removeChild(child);
+    var shouldRemove = shouldRemoveParagraphs(child)
+      || shouldRemoveP(child)
+      || shouldRemoveParagraph(child);
+
+    if (shouldRemove) {
+      utils.removeElement(child);
     } else {
       utils.removeEmptyElements(child);
     }
@@ -249,10 +282,23 @@ utils.lastNode = function (node) {
  * @api public
  */
 utils.lastTextNode = function (node) {
+  if (!node) {
+    return null;
+  }
+
   if (utils.isTextNode(node)) {
     return node;
   }
-  return utils.lastTextNode(utils.lastNode(node));
+
+  var nodes = Array.prototype.slice.call(node.childNodes);
+
+  while (node = nodes.pop()) {
+    if (node = utils.lastTextNode(node)) {
+      return node;
+    }
+  }
+
+  return null;
 };
 
 /**
@@ -281,10 +327,23 @@ utils.firstNode = function (node) {
  * @api public
  */
 utils.firstTextNode = function (node) {
+  if (!node) {
+    return null;
+  }
+
   if (utils.isTextNode(node)) {
     return node;
   }
-  return utils.firstTextNode(utils.firstNode(node));
+
+  var nodes = Array.prototype.slice.call(node.childNodes);
+
+  while (node = nodes.shift()) {
+    if (node = utils.lastTextNode(node)) {
+      return node;
+    }
+  }
+
+  return null;
 };
 
 /**

@@ -353,11 +353,11 @@ Caret.prototype.select = function () {
   // 所以這邊填入 \uffff 當作 placeholder
 
   var insertPlaceholder = function () {
-    if (utils.isEmpty(startNode)) {
+    if (startNode && utils.isEmpty(startNode)) {
       utils.setNodeContent(startNode, '\uffff');
     }
 
-    if (utils.isEmpty(endNode)) {
+    if (endNode && utils.isEmpty(endNode)) {
       utils.setNodeContent(endNode, '\uffff');
     }
   };
@@ -479,6 +479,10 @@ Caret.prototype.atElementEnd = function (el) {
   var offset = selection.focusOffset;
   var range = document.createRange();
   var lastNode = utils.lastTextNode(el);
+
+  if (!lastNode) {
+    return true;
+  }
 
   range.setStart(focusNode, offset);
   range.setEnd(lastNode, lastNode.length);

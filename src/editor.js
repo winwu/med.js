@@ -99,6 +99,13 @@ Editor.prototype.onKeydown = function (e) {
 
   this.sync();
   this.walk();
+
+
+  // 預設動作結束後必須在 sync 一次
+  // 因為預設動作也會改變 html 結構
+  setTimeout(function () {
+    this.sync();
+  }.bind(this));
 };
 
 /**
