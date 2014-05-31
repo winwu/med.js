@@ -5,7 +5,7 @@ med.js
 
 Medium 編輯器強大的地方在於他背後幫處理掉了很多麻煩問題，使用者可以很直覺得使用這個平台，完全專注於內容編輯。也是這樣，所以友好幾套仿 Medium 的編輯器出現，像是 [medium-editor](https://github.com/daviferreira/medium-editor/)、[Medium.js](https://github.com/jakiestfu/Medium.js/)，不過他們都有一個公通問題，只仿了表面，沒有考慮到輸出資料的結構，Medium 編輯器會那麼強大的主要原因之一就是輸出資料的結構，有漂亮的結構才能有效的用程式處理內容（可惜的是大家好像都不怎麼看重這點，只要有相似外觀就好了...）。med.js 就是在發現了這些問題後決定開始撰寫。
 
-最新版本 (last version): `Pre Release` [0.0.20140525](./releases/tag/0.0.20140525)
+最新版本 (last version): `Pre Release` [0.0.20140531](./releases/tag/0.0.20140531)
 
 [![browser support](https://ci.testling.com/poying/med.js.png)](https://ci.testling.com/poying/med.js)
 
