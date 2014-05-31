@@ -12,19 +12,21 @@ SOURCE := ./src
 DEST := ./dist
 
 DATE := `date +'%Y%m%d'`
+JS_FILES := $(shell find src -name "*.js")
+FILE_NAME := med
+JS_FILE := $(DEST)/$(FILE_NAME).js
+JS_FILE_MIN := $(DEST)/$(FILE_NAME).min.js
+JS_FILE_MAP := $(DEST)/$(FILE_NAME).map
 
-JS_FILES := $(shell find $(SOURCE)/**/*.js)
+all: clean npm bower build
 
-all: npm bower build
+build: create-folder $(JS_FILE)
 
-build: clean $(DEST)/med.js
-
-$(DEST)/med.js:
+$(JS_FILE): $(JS_FILES)
 	@$(COMPONMENT) build scripts -s Med -o ./tmp
-	@mkdir $(DEST)
-	@cat $(SOURCE)/header > $(DEST)/med.js
-	@cat ./tmp/build.js >> $(DEST)/med.js
-	@$(UGLIFY) $(DEST)/med.js -m -c --source-map=$(DEST)/med.map -o $(DEST)/med.min.js
+	@cat $(SOURCE)/header > $(JS_FILE)
+	@cat ./tmp/build.js >> $(JS_FILE)
+	@$(UGLIFY) $(JS_FILE) -m -c --source-map=$(JS_FILE_MAP) -o $(JS_FILE_MIN)
 	@rm -r ./tmp
 
 install-watch:
@@ -56,10 +58,12 @@ lint:
 server:
 	@$(SERVER) .
 
-test: clean lint npm bower
-	@mkdir $(DEST)
+test: clean create-folder lint npm bower
 	@$(BROWSERIFY) test/*.js > dist/test.js
 	@$(SERVER) .
+
+create-folder:
+	@mkdir -p $(DEST)
 
 release:
 	git checkout release
