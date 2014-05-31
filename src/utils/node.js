@@ -456,4 +456,17 @@ module.exports = function (utils) {
 
     return node;
   };
+
+  /**
+   * @param {Element} el
+   * @returns {Element}
+   */
+  utils.nextElement = function (el) {
+    while (el && !el.nextElementSibling) {
+      el = el.parentElement;
+    }
+
+    return el
+      && el.nextElementSibling;
+  };
 };
