@@ -65,13 +65,23 @@ test: clean create-folder lint npm bower
 create-folder:
 	@mkdir -p $(DEST)
 
-release:
+pre-release: clean
 	git checkout release
 	-git merge master
 	make
 	git add .
 	git commit -am 'release 0.0.'$(DATE)
 	git tag -a '0.0.'$(DATE) -m '0.0.'$(DATE)': '$<
+	git checkout master
+
+release: clean
+	$(error version is undefined)
+	git checkout release
+	-git merge master
+	make
+	git add .
+	git commit -am 'release '$(version)
+	git tag -a $(version) -m $(version)': '$<
 	git checkout master
 
 .PHONY: build clean test
