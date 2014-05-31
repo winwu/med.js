@@ -1,4 +1,4 @@
-med.js [![Build Status](https://drone.io/github.com/poying/med.js/status.png)](https://drone.io/github.com/poying/med.js/latest)
+med.js
 ======
 
 > 仿 Medium 式的 HTML5 編輯器 framework。
