@@ -59,6 +59,8 @@ function Editor(options) {
   plugins.refocus(this);
 }
 
+Editor.prototype.utils = utils;
+
 /**
  * @api public
  */
