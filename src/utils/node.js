@@ -136,6 +136,7 @@ module.exports = function (utils) {
 
     var shouldRemoveP = function (child) {
       return utils.isTag('p', child)
+        && !utils.isTag('figure', child.previousElementSibling)
         && utils.isEmpty(child)
         && !utils.isFirstElementOf(child.parentElement, child);
     };
