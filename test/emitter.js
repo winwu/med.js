@@ -1,4 +1,5 @@
 var expect = require('chai').expect;
+var Emitter = require('../src/emitter');
 
 describe('Emitter', function () {
   describe('#on(event, handler)', function () {

@@ -6,6 +6,8 @@ ZUUL := $(NM)/.bin/zuul
 BOWER := $(NM)/.bin/bower
 ESLINT := $(NM)/.bin/eslint
 COMPONMENT := $(NM)/.bin/component
+BROWSERIFY := $(NM)/.bin/browserify
+SERVER := $(NM)/.bin/http-server
 SOURCE := ./src
 DEST := ./dist
 
@@ -16,12 +18,6 @@ JS_FILES := $(shell find $(SOURCE)/**/*.js)
 all: npm bower build
 
 build: clean $(DEST)/med.js
-
-build-test: clean
-	@$(COMPONMENT) build scripts -o ./tmp
-	@mkdir $(DEST)
-	@mv ./tmp/build.js $(DEST)/med.test.js
-	@rm -r ./tmp
 
 $(DEST)/med.js:
 	@$(COMPONMENT) build scripts -s Med -o ./tmp
@@ -57,11 +53,13 @@ clean:
 lint:
 	@$(ESLINT) $(SOURCE)
 
-test: lint bower biuld-test
-	@$(ZUUL) -- test/*.js
+server:
+	@$(SERVER) .
 
-test-local: lint bower build-test
-	@$(ZUUL) --local 8080 -- test/*.js
+test: clean lint npm bower
+	@mkdir $(DEST)
+	@$(BROWSERIFY) test/*.js > dist/test.js
+	@$(SERVER) .
 
 release:
 	git checkout release

@@ -1,4 +1,5 @@
 var expect = require('chai').expect;
+var Data = require('../src/data');
 
 describe('Data', function () {
   describe('#set(key, val)', function () {
