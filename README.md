@@ -7,7 +7,12 @@ Medium 編輯器強大的地方在於他背後幫處理掉了很多麻煩問題�
 
 最新版本 (last version): [0.1.0-rc1](./releases/tag/0.1.0-rc1)
 
-[![browser support](https://ci.testling.com/poying/med.js.png)](https://ci.testling.com/poying/med.js)
+## 瀏覽器支援
+
+* Firefox, Chrome 良好
+* Safari 還可以
+* IE9+ 有點異常
+* IE9- 吃X去
 
 ## 特色
 
