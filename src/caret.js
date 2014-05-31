@@ -378,7 +378,7 @@ Caret.prototype.select = function () {
       utils.setNodeContent(startNode, startNodeContent);
     }
 
-    if (placeholder.test(startNodeContent)) {
+    if (placeholder.test(endNodeContent)) {
       endNodeContent = endNodeContent.replace(placeholder, '');
       utils.setNodeContent(endNode, endNodeContent);
     }

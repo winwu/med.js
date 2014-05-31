@@ -3,12 +3,19 @@
 var utils = require('../utils');
 
 module.exports = function (editor) {
+  var isArrow = function (ctx) {
+    return /^(left|right|top|bottom)$/.test(ctx.key);
+  };
+
   return function (next) {
     var selection = document.getSelection();
     var range = selection.getRangeAt(0);
 
     // 有選取內容
-    if (!range.collapsed && !this.modifier) {
+    //  + 沒有按 shift, command...
+    //  + 不是方向鍵
+    if (!range.collapsed && !this.modifier && !isArrow(this)) {
+
       var startNode = utils.startNodeInRange(range);
       var focus = range.startContainer;
       var focusOffset = range.startOffset;

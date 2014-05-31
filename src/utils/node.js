@@ -342,7 +342,7 @@ module.exports = function (utils) {
     var nodes = Array.prototype.slice.call(node.childNodes);
 
     while (node = nodes.shift()) {
-      if (node = utils.lastTextNode(node)) {
+      if (node = utils.firstTextNode(node)) {
         return node;
       }
     }
