@@ -59,12 +59,15 @@ function Editor(options) {
   plugins.refocus(this);
 }
 
+Editor.prototype.utils = utils;
+
 /**
  * @api public
  */
 Editor.prototype.start = function () {
   return this.compose([
     plugins.preventDefault(),
+    plugins.selection(this),
     plugins.commandA(this),
     plugins.handleParagraph(this),
     plugins.handleList(this),

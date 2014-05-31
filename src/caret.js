@@ -373,11 +373,15 @@ Caret.prototype.select = function () {
     var endNodeContent = utils.getTextContent(endNode);
     var placeholder = /\uffff/g;
 
-    startNodeContent = startNodeContent.replace(placeholder, '');
-    endNodeContent = endNodeContent.replace(placeholder, '');
+    if (placeholder.test(startNodeContent)) {
+      startNodeContent = startNodeContent.replace(placeholder, '');
+      utils.setNodeContent(startNode, startNodeContent);
+    }
 
-    utils.setNodeContent(startNode, startNodeContent);
-    utils.setNodeContent(endNode, endNodeContent);
+    if (placeholder.test(endNodeContent)) {
+      endNodeContent = endNodeContent.replace(placeholder, '');
+      utils.setNodeContent(endNode, endNodeContent);
+    }
   };
 
   switch (arguments.length) {

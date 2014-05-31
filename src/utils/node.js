@@ -136,6 +136,7 @@ module.exports = function (utils) {
 
     var shouldRemoveP = function (child) {
       return utils.isTag('p', child)
+        && !utils.isTag('figure', child.previousElementSibling)
         && utils.isEmpty(child)
         && !utils.isFirstElementOf(child.parentElement, child);
     };
@@ -341,7 +342,7 @@ module.exports = function (utils) {
     var nodes = Array.prototype.slice.call(node.childNodes);
 
     while (node = nodes.shift()) {
-      if (node = utils.lastTextNode(node)) {
+      if (node = utils.firstTextNode(node)) {
         return node;
       }
     }
@@ -379,5 +380,93 @@ module.exports = function (utils) {
   utils.isFirstElementOf = function (container, el) {
     var firstElement = utils.firstElement(container);
     return firstElement === el;
+  };
+
+  /**
+   * by Stefan Lundström
+   * http://stackoverflow.com/a/668058/2548809
+   * 
+   * @param {Node} node
+   * @param {Boolean} skipChildren
+   * @param {Node} endNode
+   * @returns {Node}
+   */
+  utils.getNextNode = function (node, skipChildren, endNode) {
+    if (endNode === node) {
+      return null;
+    }
+
+    if (node.firstChild && !skipChildren) {
+      return node.firstChild;
+    }
+
+    if (!node.parentNode){
+      return null;
+    }
+
+    return node.nextSibling 
+      || utils.getNextNode(node.parentNode, true, endNode); 
+  };
+
+  /**
+   * @param {Range} range
+   * @param {Function} fn
+   */
+  utils.eachNodeInRange = function (range, fn) {
+    var startNode = range.startContainer;
+    var endNode = range.endContainer;
+
+    if (utils.isElementNode(startNode)) {
+      startNode = startNode.childNodes[range.startOffset];
+    }
+
+    if (utils.isElementNode(endNode)) {
+      endNode = startNode.childNodes[range.endOffset];
+    }
+
+    while (startNode = utils.getNextNode(startNode, endNode)) {
+      fn(startNode);
+    }
+  };
+
+  /**
+   * @param {Range} range
+   * @returns {Node}
+   */
+  utils.startNodeInRange = function (range) {
+    var node = range.startContainer;
+
+    if (utils.isElementNode(node)) {
+      node = node.childNodes[range.startOffset];
+    }
+
+    return node;
+  };
+
+  /**
+   * @param {Range} range
+   * @returns {Node}
+   */
+  utils.endNodeInRange = function (range) {
+    var node = range.endContainer;
+
+    if (utils.isElementNode(node)) {
+      node = node.childNodes[range.endOffset];
+    }
+
+    return node;
+  };
+
+  /**
+   * @param {Element} el
+   * @returns {Element}
+   */
+  utils.nextElement = function (el) {
+    while (el && !el.nextElementSibling) {
+      el = el.parentElement;
+    }
+
+    return el
+      && el.nextElementSibling;
   };
 };

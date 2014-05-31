@@ -2,7 +2,7 @@
 
 var utils = require('../utils');
 
-var shouldHandleThis = function (ctx) {
+var isPTag = function (ctx) {
   return !ctx.modifier
     && utils.isTag('p', ctx.paragraph)
     && isCreateNewLineAction(ctx);
@@ -13,7 +13,7 @@ var isCreateNewLineAction = function (ctx) {
     && !ctx.shift;
 };
 
-var createNewLine = function (ctx, next) {
+var createNewP = function (ctx, next) {
   var editor = ctx.editor;
   var el = ctx.paragraph;
 
@@ -69,12 +69,48 @@ var createNewLine = function (ctx, next) {
   }
 };
 
+var shouldHandleCreateNewParagraphAction = function (ctx) {
+  var el = ctx.paragraph;
+  return el
+    && !utils.isTag(['li', 'paragraph'], el)
+    && isCreateNewLineAction(ctx);
+};
+
+var whatElementWeShouldCreate = function (el) {
+  if (/^h\d$/i.test(el.tagName)) {
+    return 'p';
+  }
+  return el.tagName;
+};
+
+var createNewParagraph = function (ctx, next) {
+  var el = ctx.paragraph;
+
+  if (ctx.editor.caret.atElementEnd(el)) {
+    ctx.prevent();
+
+    var tagName = whatElementWeShouldCreate(el);
+    var p = document.createElement(tagName);
+    p.innerHTML = '<br />';
+    
+    el.parentElement.insertBefore(p, el.nextElementSibling);
+
+    ctx.editor.caret.focusTo(p);
+  }
+
+  next();
+};
+
 module.exports = function () {
   return function (next) {
-    if (!shouldHandleThis(this)) {
-      return next();
+    if (isPTag(this)) {
+      // p 的動作比較特別，需要獨立處理
+      createNewP(this, next);
+    } else if (shouldHandleCreateNewParagraphAction(this)) {
+      // 主要是避免換行的時候產生一些我們看不懂的 tag
+      createNewParagraph(this, next);
+    } else {
+      next();
     }
-
-    createNewLine(this, next);
   };
 };
