@@ -1,4 +1,8 @@
-var handleBackspace = function (editor) {
+'use strict';
+
+var utils = require('../utils');
+
+module.exports = function (editor) {
   var atElementStart = function (ctx) {
     var selection = document.getSelection();
     var el = ctx.paragraph;
@@ -72,6 +76,11 @@ var handleBackspace = function (editor) {
         firstChild = needToRemove.firstChild;
         lastNode = previous.childNodes[previous.childNodes.length - 1];
         offset = utils.getTextContent(lastNode).length;
+
+        if (utils.isElementNode(lastNode) && utils.isTag('br', lastNode)) {
+          utils.removeElement(lastNode);
+          lastNode = null;
+        }
 
         utils.removeEmptyElements(previous);
 

@@ -1,4 +1,8 @@
-var handleList = function (editor) {
+'use strict';
+
+var utils = require('../utils');
+
+module.exports = function (editor) {
   var leaveList = function (ctx) {
     ctx.prevent();
 

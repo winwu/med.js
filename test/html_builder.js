@@ -1,4 +1,7 @@
 var expect = require('chai').expect;
+var Med = require('../src/main');
+var HtmlBuilder = require('../src/mixin/html-builder');
+var Data = require('../src/data');
 
 var createName = (function () {
   var n = 0;

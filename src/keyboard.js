@@ -1,4 +1,8 @@
-var keyboard = {};
+'use strict';
+
+var utils = require('./utils');
+
+var keyboard = module.exports = {};
 
 keyboard.modifiers = {
   224: 'command',

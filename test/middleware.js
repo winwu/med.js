@@ -1,4 +1,5 @@
 var expect = require('chai').expect;
+var Middleware = require('../src/mixin/middleware');
 
 describe('middleware', function () {
   describe('#use(fn)', function () {

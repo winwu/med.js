@@ -1,3 +1,11 @@
+'use strict';
+
+var Data = require('../data');
+var utils = require('../utils');
+var schema = require('../schema');
+
+module.exports = Observe;
+
 function Observe() {
   this.structure = null;
   this.data = {};
@@ -50,9 +58,9 @@ Observe.scan = function (context, el) {
   var tagName = el.tagName.toLowerCase();
   var name = el.getAttribute('name');
   var data = this.data[name];
-  var schema = this.schema[tagName];
+  var tagSchema = schema[tagName];
   
-  if (!schema) {
+  if (!tagSchema) {
     el.parentElement.removeChild(el);
     return;
   }
@@ -75,9 +83,9 @@ Observe.scan = function (context, el) {
     el.setAttribute('name', data.id);
   }
 
-  Observe[schema.type].call(this, context, el, data);
+  Observe[tagSchema.type].call(this, context, el, data);
 
-  schema.attrs.forEach(function (attr) {
+  tagSchema.attrs.forEach(function (attr) {
     Observe[attr.type].call(this, el, data, attr);
   }.bind(this));
 
@@ -100,9 +108,9 @@ Observe.section = function (context, el, data) {
   var p = [];
 
   utils.each(el.children, function (child) {
-    var schema = utils.getElementSchema(child);
+    var tagSchema = utils.getElementSchema(child);
 
-    if (!schema) {
+    if (!tagSchema) {
       Observe.handleUnknownElement(child);
       return;
     }
@@ -111,7 +119,7 @@ Observe.section = function (context, el, data) {
       structure.sections.push(data.id);
     }
 
-    if (/^(paragraphs?|figure)$/.test(schema.type)) {
+    if (/^(paragraphs?|figure)$/.test(tagSchema.type)) {
       p.push(Observe.scan.call(this, context, child).id);
     }
 
@@ -132,14 +140,14 @@ Observe.paragraphs = function (context, el, data) {
   var p = [];
 
   utils.each(el.children, function (child) {
-    var schema = utils.getElementSchema(child);
+    var tagSchema = utils.getElementSchema(child);
 
-    if (!schema) {
+    if (!tagSchema) {
       Observe.handleUnknownElement(child);
       return;
     }
 
-    if (schema.type === 'paragraph') {
+    if (tagSchema.type === 'paragraph') {
       p.push(Observe.scan.call(this, context, child).id);
     }
   }.bind(this));
@@ -169,14 +177,14 @@ Observe.paragraph = function (context, el, data) {
   var detail = [];
 
   utils.each(el.children, function (child) {
-    var schema = utils.getElementSchema(child);
+    var tagSchema = utils.getElementSchema(child);
 
-    if (!schema) {
+    if (!tagSchema) {
       Observe.handleUnknownElement(child);
       return;
     }
 
-    if (schema.type === 'detail') {
+    if (tagSchema.type === 'detail') {
       detail.push(Observe.scan.call(this, context, child).id);
     }
   }.bind(this));

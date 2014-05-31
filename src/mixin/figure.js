@@ -1,3 +1,10 @@
+'use strict';
+
+var FigureType = require('../figure-type');
+var utils = require('../utils');
+
+module.exports = Figure;
+
 function Figure() {
   this.figureTypes = {};
   this.registerFigureType('default', {

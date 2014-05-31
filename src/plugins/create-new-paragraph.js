@@ -1,4 +1,8 @@
-var createNewParagraph = function () {
+'use strict';
+
+var utils = require('../utils');
+
+module.exports = function () {
   return function (next) {
     var needToCreateElement = this.key === 'enter'
       && this.section === this.editor.caret.focusSection()

@@ -1,0 +1,51 @@
+{
+  "name": "med",
+  "description": "A Medium-like editor framework",
+  "version": "2.0.0",
+  "keywords": [
+    "medium",
+    "editor"
+  ],
+  "dependencies": {},
+  "development": {},
+  "scripts": [
+    "src/main.js",
+    "src/caret.js",
+    "src/data.js",
+    "src/default-options.js",
+    "src/emitter.js",
+    "src/figure-type.js",
+    "src/keyboard.js",
+    "src/schema.js",
+    "src/mixin/figure.js",
+    "src/mixin/html-builder.js",
+    "src/mixin/middleware.js",
+    "src/mixin/observe.js",
+    "src/plugins/index.js",
+    "src/plugins/command-a.js",
+    "src/plugins/prevent-default.js",
+    "src/plugins/create-new-paragraph.js",
+    "src/plugins/handle-backspace.js",
+    "src/plugins/handle-blockquote.js",
+    "src/plugins/handle-empty-paragraph.js",
+    "src/plugins/handle-figure.js",
+    "src/plugins/handle-list.js",
+    "src/plugins/handle-paragraph.js",
+    "src/plugins/init-context.js",
+    "src/plugins/refocus.js",
+    "src/plugins/remove-extra-nodes.js",
+    "src/plugins/remove-inline-style.js",
+    "src/plugins/rename-elements.js",
+    "src/utils/index.js",
+    "src/utils/node.js",
+    "src/utils/others.js",
+    "src/utils/schema.js"
+  ],
+  "styles": [
+    "theme/style.css"
+  ],
+  "demo": [
+    "http://poying.me/med.js"
+  ],
+  "license": "MIT"
+}

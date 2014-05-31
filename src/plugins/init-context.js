@@ -1,4 +1,9 @@
-var initContext = function () {
+'use strict';
+
+var keyboard = require('../keyboard');
+var utils = require('../utils');
+
+module.exports = function () {
   return function (next) {
     var e = this.event;
     var code = e.keyCode || e.which;

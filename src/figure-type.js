@@ -1,3 +1,7 @@
+'use strict';
+
+module.exports = FigureType;
+
 function FigureType(name, options) {
   this.options = options || (options = {});
   this.name = name;

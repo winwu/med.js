@@ -1,4 +1,5 @@
 var expect = require('chai').expect;
+var utils = require('../src/utils');
 
 describe('utils', function () {
   describe('.mixin(obj1, obj2)', function () {

@@ -1,4 +1,7 @@
 var expect = require('chai').expect;
+var Med = require('../src/main');
+var Data = require('../src/data');
+var Observe = require('../src/mixin/observe');
 
 describe('Observe', function () {
   var els = [];

@@ -1,4 +1,6 @@
-var renameElements = function (editor) {
+'use strict';
+
+module.exports = function (editor) {
   editor.on('walkStart', function (ctx) {
     ctx.names = {};
   });

@@ -1,4 +1,8 @@
-var handleBlockquote = function (editor) {
+'use strict';
+
+var utils = require('../utils');
+
+module.exports = function (editor) {
   return function (next) {
     var el = this.paragraph;
 
@@ -11,24 +15,31 @@ var handleBlockquote = function (editor) {
       return next();
     }
 
+    this.prevent();
+
     if (editor.caret.atElementEnd(el)) {
+
       // 所有行尾換行都要建立新 <p>
       // 沒有例外
-
-      this.prevent();
 
       var p = document.createElement('p');
 
       p.innerHTML = '<br />';
-
       this.section.insertBefore(p, el.nextSibling);
-
       editor.caret.moveToStart(p);
+
+    } else if (editor.caret.atElementStart(el)) {
+
+      // 行首在前面插入 element
+      var quote = document.createElement('blockquote');
+
+      quote.innerHTML = '<br />';
+      this.section.insertBefore(quote, el);
+      //editor.caret.moveToStart(quote);
+
     } else {
+
       // 其他情況下都將現有的 blockquote 分割
-
-      this.prevent();
-
       editor.caret.split(el);
     }
 
