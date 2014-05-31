@@ -7,6 +7,8 @@ Medium 編輯器強大的地方在於他背後幫處理掉了很多麻煩問題�
 
 最新版本 (last version): `Pre Release` [0.0.20140525](./releases/tag/0.0.20140525)
 
+[![browser support](https://ci.testling.com/poying/med.js.png)](https://ci.testling.com/poying/med.js)
+
 ## 特色
 
 1. 資料輸出結構
