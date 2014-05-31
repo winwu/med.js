@@ -2,6 +2,7 @@
 
 var plugins = module.exports = {};
 
+plugins.selection = require('./selection');
 plugins.commandA = require('./command-a');
 plugins.preventDefault = require('./prevent-default');
 plugins.createNewParagraph = require('./create-new-paragraph');

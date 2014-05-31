@@ -22,6 +22,7 @@
     "src/mixin/middleware.js",
     "src/mixin/observe.js",
     "src/plugins/index.js",
+    "src/plugins/selection.js",
     "src/plugins/command-a.js",
     "src/plugins/prevent-default.js",
     "src/plugins/create-new-paragraph.js",
