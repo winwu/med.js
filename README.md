@@ -11,8 +11,7 @@ Medium 編輯器強大的地方在於他背後幫處理掉了很多麻煩問題�
 
 * Firefox, Chrome 良好
 * Safari 還可以
-* IE9+ 有點異常
-* IE9- 吃X去
+* IE 可以用來 render 畫面，但不可編輯
 
 ## 特色
 
