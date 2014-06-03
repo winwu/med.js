@@ -16,7 +16,9 @@ Middleware.prototype.use = function (fn) {
     throw new Error('The first argument must me a function.');
   }
 
-  this.middleware.push(fn);
+  if (this.isSupported()) {
+    this.middleware.push(fn);
+  }
 
   return this;
 };

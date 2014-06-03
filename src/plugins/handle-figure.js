@@ -23,38 +23,36 @@ module.exports = function (editor) {
     removeActive(figure);
   });
 
-  editor.el.addEventListener('mousedown', function (e) {
-    var el = e.target;
-    
-    if (!utils.isAncestorOf(editor.caret.focusNode(), editor.el)) {
-      editor.caret.moveToStart(el);
-    }
-
-    while (1) {
-      if (!el || el === editor.el) {
-        el = null;
-        break;
+  if (editor.isSupported()) {
+    editor.el.addEventListener('mousedown', function (e) {
+      var el = e.target;
+      
+      if (!utils.isAncestorOf(editor.caret.focusNode(), editor.el)) {
+        editor.caret.moveToStart(el);
       }
 
-      if (utils.isTag('figure', el)) {
-        break;
+      while (1) {
+        if (!el || el === editor.el) {
+          el = null;
+          break;
+        }
+
+        if (utils.isTag('figure', el)) {
+          break;
+        }
+
+        el = el.parentElement;
       }
 
-      el = el.parentElement;
-    }
+      if (el) {
+        el.classList.add(klass);
+      }
 
-    if (el) {
-      el.classList.add(klass);
-    }
+      removeActive(el);
+    });
 
-    removeActive(el);
-  });
-
-  editor.el.addEventListener('blur', function () {
-    removeActive();
-  });
-
-  return function (next) {
-    next();
-  };
+    editor.el.addEventListener('blur', function () {
+      removeActive();
+    });
+  }
 };

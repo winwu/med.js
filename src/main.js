@@ -41,22 +41,26 @@ function Editor(options) {
     el = document.createElement('div');
   }
 
-  el.setAttribute('contenteditable', true);
   el.classList.add('med');
-
   this.el = el;
   this.caret = new Caret(this);
 
-  this.bindEvents();
-  this.handleEmpty();
+  if (this.isSupported() && el.parentElement) {
 
-  this.use(plugins.initContext());
+    this.bindEvents();
+    this.handleEmpty();
 
-  plugins.removeExtraNodes(this);
-  plugins.renameElements(this);
-  plugins.removeInlineStyle(this);
-  plugins.handleEmptyParagraph(this);
-  plugins.refocus(this);
+    this.use(plugins.initContext());
+
+    plugins.removeExtraNodes(this);
+    plugins.renameElements(this);
+    plugins.removeInlineStyle(this);
+    plugins.handleEmptyParagraph(this);
+    plugins.refocus(this);
+
+    el.setAttribute('contenteditable', true);
+    this.sync();
+  }
 }
 
 Editor.prototype.utils = utils;
@@ -188,4 +192,12 @@ Editor.prototype.walk = function () {
   }.bind(this));
 
   this.emit('walkEnd', context);
+};
+
+/**
+ * @api public
+ */
+Editor.prototype.isSupported = function () {
+  var userAgent = navigator.userAgent.toLowerCase();
+  return !/msie/.test(userAgent)
 };
