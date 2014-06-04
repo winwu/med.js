@@ -98,8 +98,4 @@ module.exports = function (utils) {
 
     return false;
   };
-
-  utils.isIE = function () {
-    return /chrome/i, test(navigator.userAgent);
-  };
 };

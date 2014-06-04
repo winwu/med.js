@@ -7,10 +7,12 @@ var Caret = require('./caret');
 var Middleware = require('./mixin/middleware');
 var Observe = require('./mixin/observe');
 var HtmlBuilder = require('./mixin/html-builder');
+var Command = require('./mixin/command');
 var Figure = require('./mixin/figure');
 var utils = require('./utils');
 var plugins = require('./plugins');
 var defaultOptions = require('./default-options');
+var defineCommands = require('./commands');
 
 // extends
 Editor.prototype = Object.create(Emitter.prototype);
@@ -20,6 +22,7 @@ utils.mixin(Editor.prototype, Middleware.prototype);
 utils.mixin(Editor.prototype, Observe.prototype);
 utils.mixin(Editor.prototype, HtmlBuilder.prototype);
 utils.mixin(Editor.prototype, Figure.prototype);
+utils.mixin(Editor.prototype, Command.prototype);
 
 function Editor(options) {
   // parent
@@ -30,6 +33,7 @@ function Editor(options) {
   Observe.call(this);
   HtmlBuilder.call(this);
   Figure.call(this);
+  Command.call(this);
 
   this.options = utils.mixin(Object.create(defaultOptions), options || {});
   this.context = {};
@@ -45,7 +49,9 @@ function Editor(options) {
   this.el = el;
   this.caret = new Caret(this);
 
-  if (this.isSupported() && el.parentElement) {
+  defineCommands(this);
+
+  if (this.isSupported()) {
 
     this.bindEvents();
     this.handleEmpty();
@@ -56,10 +62,14 @@ function Editor(options) {
     plugins.renameElements(this);
     plugins.removeInlineStyle(this);
     plugins.handleEmptyParagraph(this);
+    plugins.handleFigure(this);
     plugins.refocus(this);
 
     el.setAttribute('contenteditable', true);
-    this.sync();
+
+    if (el.parentElement) {
+      this.sync();
+    }
   }
 }
 
@@ -75,7 +85,6 @@ Editor.prototype.start = function () {
     plugins.commandA(this),
     plugins.handleParagraph(this),
     plugins.handleList(this),
-    plugins.handleFigure(this),
     plugins.handleBlockquote(this),
     plugins.handleBackspace(this)
   ]);
@@ -199,5 +208,5 @@ Editor.prototype.walk = function () {
  */
 Editor.prototype.isSupported = function () {
   var userAgent = navigator.userAgent.toLowerCase();
-  return !/msie/.test(userAgent)
+  return !/msie/.test(userAgent);
 };

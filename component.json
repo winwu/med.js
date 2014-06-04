@@ -1,7 +1,7 @@
 {
   "name": "med",
   "description": "A Medium-like editor framework",
-  "version": "2.0.0",
+  "version": "0.0.1-rc1",
   "keywords": [
     "medium",
     "editor"
@@ -21,6 +21,10 @@
     "src/mixin/html-builder.js",
     "src/mixin/middleware.js",
     "src/mixin/observe.js",
+    "src/mixin/command.js",
+    "src/commands/index.js",
+    "src/commands/select.js",
+    "src/commands/selectAll.js",
     "src/plugins/index.js",
     "src/plugins/selection.js",
     "src/plugins/command-a.js",

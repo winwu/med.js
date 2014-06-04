@@ -116,12 +116,25 @@ module.exports = function (utils) {
   };
 
   /**
-   * @param {Element} el
+   * @param {Node} node
    * @returns {Boolean}
    * @api public
    */
-  utils.isLastChild = function (el) {
-    return el.parentELement.lastChild === el;
+  utils.isLastChild = function (node) {
+    return node
+      && node.parentElement
+      && node.parentElement.lastChild === node;
+  };
+
+  /**
+   * @param {Node} node
+   * @returns {Boolean}
+   * @api public
+   */
+  utils.isFirstChild = function (node) {
+    return node
+      && node.parentElement
+      && node.parentElement.firstChild === node;
   };
 
   /**
