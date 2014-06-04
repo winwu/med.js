@@ -9,6 +9,7 @@ var Observe = require('./mixin/observe');
 var HtmlBuilder = require('./mixin/html-builder');
 var Command = require('./mixin/command');
 var Figure = require('./mixin/figure');
+var UndoManager = require('./mixin/undo-manager');
 var utils = require('./utils');
 var plugins = require('./plugins');
 var defaultOptions = require('./default-options');
@@ -23,8 +24,13 @@ utils.mixin(Editor.prototype, Observe.prototype);
 utils.mixin(Editor.prototype, HtmlBuilder.prototype);
 utils.mixin(Editor.prototype, Figure.prototype);
 utils.mixin(Editor.prototype, Command.prototype);
+utils.mixin(Editor.prototype, UndoManager.prototype);
 
 function Editor(options) {
+  this.options = utils.mixin(Object.create(defaultOptions), options || {});
+  this.context = {};
+  this.context.editor = this;
+
   // parent
   Emitter.call(this);
 
@@ -34,10 +40,7 @@ function Editor(options) {
   HtmlBuilder.call(this);
   Figure.call(this);
   Command.call(this);
-
-  this.options = utils.mixin(Object.create(defaultOptions), options || {});
-  this.context = {};
-  this.context.editor = this;
+  UndoManager.call(this);
 
   var el = this.options.el;
 
@@ -139,6 +142,9 @@ Editor.prototype.onKeydown = function (e) {
   // 因為預設動作也會改變 html 結構
   setTimeout(function () {
     this.sync();
+    if (!~['left', 'right', 'top', 'bottom'].indexOf(ctx.key)) {
+      this.record(500);
+    }
   }.bind(this));
 };
 

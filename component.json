@@ -22,6 +22,7 @@
     "src/mixin/middleware.js",
     "src/mixin/observe.js",
     "src/mixin/command.js",
+    "src/mixin/undo-manager.js",
     "src/commands/index.js",
     "src/commands/select.js",
     "src/commands/selectAll.js",
