@@ -17,7 +17,7 @@ module.exports = function () {
     this.shift = e.shiftKey;
     this.command = this.meta = e.metaKey;
     this.code = code;
-    this.key = keyboard.map[code] || String.fromCharCode(code);
+    this.key = keyboard.map[code] || String.fromCharCode(code).toLowerCase();
     this.super = this[keyboard.super];
     this.node = editor.caret.focusNode();
     this.element = editor.caret.focusElement();

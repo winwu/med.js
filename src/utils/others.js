@@ -98,4 +98,13 @@ module.exports = function (utils) {
 
     return false;
   };
+
+  utils.delegate = function (target, obj) {
+    var delegate = function (prop, newName) {
+      target[newName || prop] = obj[prop].bind(obj);
+      return delegate;
+    };
+
+    return delegate;
+  };
 };

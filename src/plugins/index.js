@@ -17,3 +17,4 @@ plugins.refocus = require('./refocus');
 plugins.removeExtraNodes = require('./remove-extra-nodes');
 plugins.removeInlineStyle = require('./remove-inline-style');
 plugins.renameElements = require('./rename-elements');
+plugins.undo = require('./undo');

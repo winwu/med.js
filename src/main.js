@@ -4,12 +4,12 @@ module.exports = Editor;
 
 var Emitter = require('./emitter');
 var Caret = require('./caret');
+var UndoManager = require('./undo-manager');
 var Middleware = require('./mixin/middleware');
 var Observe = require('./mixin/observe');
 var HtmlBuilder = require('./mixin/html-builder');
 var Command = require('./mixin/command');
 var Figure = require('./mixin/figure');
-var UndoManager = require('./mixin/undo-manager');
 var utils = require('./utils');
 var plugins = require('./plugins');
 var defaultOptions = require('./default-options');
@@ -24,7 +24,6 @@ utils.mixin(Editor.prototype, Observe.prototype);
 utils.mixin(Editor.prototype, HtmlBuilder.prototype);
 utils.mixin(Editor.prototype, Figure.prototype);
 utils.mixin(Editor.prototype, Command.prototype);
-utils.mixin(Editor.prototype, UndoManager.prototype);
 
 function Editor(options) {
   this.options = utils.mixin(Object.create(defaultOptions), options || {});
@@ -40,7 +39,6 @@ function Editor(options) {
   HtmlBuilder.call(this);
   Figure.call(this);
   Command.call(this);
-  UndoManager.call(this);
 
   var el = this.options.el;
 
@@ -51,6 +49,12 @@ function Editor(options) {
   el.classList.add('med');
   this.el = el;
   this.caret = new Caret(this);
+  this.undoManager = new UndoManager();
+
+  // delegate
+  utils.delegate(this, this.undoManager)
+    ('canUndo')
+    ('canRedo');
 
   defineCommands(this);
 
@@ -86,6 +90,7 @@ Editor.prototype.start = function () {
     plugins.preventDefault(),
     plugins.selection(this),
     plugins.commandA(this),
+    plugins.undo(this),
     plugins.handleParagraph(this),
     plugins.handleList(this),
     plugins.handleBlockquote(this),
@@ -142,9 +147,6 @@ Editor.prototype.onKeydown = function (e) {
   // 因為預設動作也會改變 html 結構
   setTimeout(function () {
     this.sync();
-    if (!~['left', 'right', 'top', 'bottom'].indexOf(ctx.key)) {
-      this.record(500);
-    }
   }.bind(this));
 };
 
@@ -215,4 +217,16 @@ Editor.prototype.walk = function () {
 Editor.prototype.isSupported = function () {
   var userAgent = navigator.userAgent.toLowerCase();
   return !/msie/.test(userAgent);
+};
+
+Editor.prototype.undo = function () {
+  var json = this.undoManager.undo();
+  this.fromJSON(json);
+  return this;
+};
+
+Editor.prototype.redo = function () {
+  var json = this.undoManager.redo();
+  this.fromJSON(json);
+  return this;
 };

@@ -2,7 +2,7 @@
 
 module.exports = function (editor) {
   return function (next) {
-    if (this.super && this.key.toLowerCase() === 'a') {
+    if (this.super && this.key === 'a') {
       this.prevent();
       editor.caret.selectAll(editor.el);
     } else {

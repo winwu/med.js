@@ -11,6 +11,7 @@
   "scripts": [
     "src/main.js",
     "src/caret.js",
+    "src/undo-manager.js",
     "src/data.js",
     "src/default-options.js",
     "src/emitter.js",
@@ -22,7 +23,6 @@
     "src/mixin/middleware.js",
     "src/mixin/observe.js",
     "src/mixin/command.js",
-    "src/mixin/undo-manager.js",
     "src/commands/index.js",
     "src/commands/select.js",
     "src/commands/selectAll.js",
@@ -42,6 +42,7 @@
     "src/plugins/remove-extra-nodes.js",
     "src/plugins/remove-inline-style.js",
     "src/plugins/rename-elements.js",
+    "src/plugins/undo.js",
     "src/utils/index.js",
     "src/utils/node.js",
     "src/utils/others.js",
