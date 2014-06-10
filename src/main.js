@@ -29,6 +29,7 @@ function Editor(options) {
   this.options = utils.mixin(Object.create(defaultOptions), options || {});
   this.context = {};
   this.context.editor = this;
+  this.context.preventEmitChangedEvent = false;
 
   // parent
   Emitter.call(this);
@@ -126,6 +127,8 @@ Editor.prototype.bindEvents = function () {
  */
 Editor.prototype.onKeydown = function (e) {
   var ctx;
+  var walkResult, syncResult1;
+  var hold;
 
   this.handleEmpty();
   
@@ -133,20 +136,43 @@ Editor.prototype.onKeydown = function (e) {
   ctx.event = e;
   ctx.prevent = utils.preventDefault.bind(null, e);
 
+  // 執行前先儲存狀態
+  hold = this.toJSON();
+
   this.exec(ctx, function (e) {
     if (e) {
       this.emit('error', e);
     }
   }.bind(this));
 
-  this.sync();
-  this.walk();
+  if (ctx.preventEditorDefault) {
+    return;
+  }
 
+  // 必須在畫面 render 前把動作執行完
+  // 所以必須先 sync 一次
+  syncResult1 = this.sync(!ctx.preventEmitChangedEvent);
+  walkResult = this.walk();
 
   // 預設動作結束後必須在 sync 一次
   // 因為預設動作也會改變 html 結構
   setTimeout(function () {
-    this.sync();
+    var syncResult2 = this.sync(!ctx.preventEmitChangedEvent);
+    var changed = syncResult1.changed
+        || syncResult2.changed;
+
+    this.emit('finished', {
+      walk: walkResult,
+      sync: {
+        beforeWalk: syncResult1,
+        afterWalk: syncResult2
+      },
+      changed: changed
+    });
+
+    if (changed) {
+      this.undoManager.save(hold);
+    }
   }.bind(this));
 };
 
@@ -193,7 +219,8 @@ Editor.prototype.handleEmpty = function () {
 Editor.prototype.walk = function () {
   var els = this.el.querySelectorAll('[name]');
   var context = {
-    editor: this
+    editor: this,
+    htmlHasChanged: false
   };
 
   context.editor = this;
@@ -209,6 +236,8 @@ Editor.prototype.walk = function () {
   }.bind(this));
 
   this.emit('walkEnd', context);
+
+  return context;
 };
 
 /**

@@ -14,7 +14,7 @@ function Observe() {
 /**
  * @api public
  */
-Observe.prototype.sync = function () {
+Observe.prototype.sync = function (shouldEmitChangedEvent) {
   var structure = {
     paragraphs: [],
     sections: []
@@ -26,7 +26,9 @@ Observe.prototype.sync = function () {
 
   var context = {
     structure: structure,
-    shouldBeDelete: shouldBeDelete
+    shouldBeDelete: shouldBeDelete,
+    changedData: [],
+    changed: false
   };
 
   Object
@@ -46,6 +48,12 @@ Observe.prototype.sync = function () {
     });
 
   this.structure = structure;
+
+  if (context.changed && shouldEmitChangedEvent) {
+    this.emit('changed', context.changedData);
+  }
+
+  return context;
 };
 
 /**
@@ -91,7 +99,8 @@ Observe.scan = function (context, el) {
 
   if (data.modified) {
     data.update();
-    this.emit('changed', data);
+    context.changedData.push(data);
+    context.changed = true;
   }
 
   return data;
