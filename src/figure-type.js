@@ -3,7 +3,7 @@
 module.exports = FigureType;
 
 function FigureType(name, options) {
-  this.options = options || (options = {});
+  this.options = options || {};
   this.name = name;
 }
 
